@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0",
+  "appId": "leave_request",
+  "tenantId": "tenant_beta",
+  "version": 1,
+  "name": "Đăng ký nghỉ phép — tenant Beta",
+  "roles": ["employee", "manager", "hr", "publisher"],
+  "fields": [
+    { "id": "start_date", "type": "date", "required": true },
+    { "id": "days", "type": "integer", "required": true, "min": 1, "max": 30 },
+    { "id": "leave_type", "type": "enum", "required": true, "options": ["annual", "unpaid"] },
+    { "id": "reason", "type": "string", "required": true, "min": 5, "max": 500 },
+    { "id": "manager_decision", "type": "enum", "required": false, "options": ["approved", "rejected"] },
+    { "id": "hr_decision", "type": "enum", "required": false, "options": ["approved", "rejected"] }
+  ],
+  "steps": [
+    { "id": "submitted", "type": "start" },
+    { "id": "manager_review", "type": "task", "role": "manager", "decisionField": "manager_decision", "noSelfApproval": true },
+    { "id": "manager_route", "type": "gateway" },
+    { "id": "hr_review", "type": "task", "role": "hr", "decisionField": "hr_decision", "noSelfApproval": true },
+    { "id": "hr_route", "type": "gateway" },
+    { "id": "accepted", "type": "end", "endState": "approved" },
+    { "id": "declined", "type": "end", "endState": "rejected" }
+  ],
+  "transitions": [
+    { "from": "submitted", "to": "manager_review" },
+    { "from": "manager_review", "to": "manager_route" },
+    { "from": "manager_route", "to": "declined", "when": { "all": [{ "field": "manager_decision", "op": "eq", "value": "rejected" }] } },
+    { "from": "manager_route", "to": "accepted", "when": { "all": [{ "field": "manager_decision", "op": "eq", "value": "approved" }, { "field": "days", "op": "lt", "value": 3 }] } },
+    { "from": "manager_route", "to": "hr_review", "when": { "all": [{ "field": "manager_decision", "op": "eq", "value": "approved" }, { "field": "days", "op": "gte", "value": 3 }] } },
+    { "from": "hr_review", "to": "hr_route" },
+    { "from": "hr_route", "to": "accepted", "when": { "all": [{ "field": "hr_decision", "op": "eq", "value": "approved" }] } },
+    { "from": "hr_route", "to": "declined", "when": { "all": [{ "field": "hr_decision", "op": "eq", "value": "rejected" }] } }
+  ]
+}

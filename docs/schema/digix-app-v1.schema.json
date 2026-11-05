@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://digix.example/schema/app-v1",
+  "title": "DigiX Lab application definition v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "appId", "tenantId", "version", "name", "roles", "fields", "steps", "transitions"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "appId": { "$ref": "#/$defs/id" },
+    "tenantId": { "$ref": "#/$defs/id" },
+    "version": { "type": "integer", "minimum": 1 },
+    "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "roles": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+    "fields": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/field" } },
+    "steps": { "type": "array", "minItems": 3, "items": { "$ref": "#/$defs/step" } },
+    "transitions": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/transition" } }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{1,63}$" },
+    "field": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "type", "required"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "type": { "enum": ["string", "integer", "date", "boolean", "enum"] },
+        "required": { "type": "boolean" },
+        "min": { "type": "integer" },
+        "max": { "type": "integer" },
+        "options": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } }
+      }
+    },
+    "step": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "type"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "type": { "enum": ["start", "task", "gateway", "end"] },
+        "role": { "$ref": "#/$defs/id" },
+        "decisionField": { "$ref": "#/$defs/id" },
+        "endState": { "enum": ["approved", "rejected"] },
+        "noSelfApproval": { "type": "boolean" }
+      }
+    },
+    "transition": {
+      "type": "object", "additionalProperties": false,
+      "required": ["from", "to"],
+      "properties": {
+        "from": { "$ref": "#/$defs/id" },
+        "to": { "$ref": "#/$defs/id" },
+        "when": { "$ref": "#/$defs/condition" }
+      }
+    },
+    "condition": {
+      "type": "object", "additionalProperties": false,
+      "required": ["all"],
+      "properties": {
+        "all": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/comparison" } }
+      }
+    },
+    "comparison": {
+      "type": "object", "additionalProperties": false,
+      "required": ["field", "op", "value"],
+      "properties": {
+        "field": { "$ref": "#/$defs/id" },
+        "op": { "enum": ["eq", "lt", "gte"] },
+        "value": { "type": ["string", "integer", "boolean"] }
+      }
+    }
+  }
+}

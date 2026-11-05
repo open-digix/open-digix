@@ -1,0 +1,23 @@
+{
+  "tenantId": "tenant_beta",
+  "appId": "leave_request",
+  "appVersion": 1,
+  "identities": [
+    { "id": "beta_employee", "roles": ["employee"] },
+    { "id": "beta_manager", "roles": ["manager"] },
+    { "id": "beta_hr", "roles": ["hr"] },
+    { "id": "beta_publisher", "roles": ["publisher"] },
+    { "id": "alpha_manager", "tenantId": "tenant_alpha", "roles": ["manager"] }
+  ],
+  "cases": [
+    { "id": "short_approved", "requester": "beta_employee", "input": { "start_date": "2026-11-16", "days": 2, "leave_type": "annual", "reason": "Nghỉ việc gia đình" }, "decisions": [{ "actor": "beta_manager", "field": "manager_decision", "value": "approved" }], "expectedSteps": ["submitted", "manager_review", "manager_route", "accepted"] },
+    { "id": "long_approved", "requester": "beta_employee", "input": { "start_date": "2026-11-23", "days": 4, "leave_type": "annual", "reason": "Nghỉ đi du lịch" }, "decisions": [{ "actor": "beta_manager", "field": "manager_decision", "value": "approved" }, { "actor": "beta_hr", "field": "hr_decision", "value": "approved" }], "expectedSteps": ["submitted", "manager_review", "manager_route", "hr_review", "hr_route", "accepted"] },
+    { "id": "manager_rejected", "requester": "beta_employee", "input": { "start_date": "2026-11-30", "days": 2, "leave_type": "unpaid", "reason": "Nghỉ việc cá nhân" }, "decisions": [{ "actor": "beta_manager", "field": "manager_decision", "value": "rejected" }], "expectedSteps": ["submitted", "manager_review", "manager_route", "declined"] }
+  ],
+  "negativeCases": [
+    { "id": "cross_tenant", "actor": "alpha_manager", "action": "read_beta_request", "expected": "forbidden" },
+    { "id": "self_approval", "actor": "beta_employee", "action": "approve_own_request", "expected": "forbidden" },
+    { "id": "unauthorized_publish", "actor": "beta_employee", "action": "publish_app", "expected": "forbidden" },
+    { "id": "invalid_days", "input": { "days": 0 }, "action": "submit_request", "expected": "validation_error" }
+  ]
+}
