@@ -1,9 +1,14 @@
 # DigiX — môi trường phát triển tối thiểu
 
 Lát cắt hiện có: **Next.js → NestJS → PostgreSQL**. Trang Web gọi API từ
-server Next.js; `/health` của API chạy `SELECT 1` để kiểm tra kết nối DB.
-Chưa có migration/nghiệp vụ, Keycloak, Gateway, kho tệp hoặc workflow engine;
-đây **không phải** bằng chứng đã hoàn tất GĐ0 hay lõi theo đề thi.
+server Next.js; `/health` của API chạy `SELECT 1` để kiểm tra kết nối DB. API
+chạy migration có version trước khi khởi động; schema nền đã có tenant,
+membership/role, application/version, business record, workflow reference,
+metadata tệp và audit với ràng buộc tenant ở PostgreSQL.
+
+Chưa có API nghiệp vụ, tenant guard/RLS, Keycloak, Gateway, kho tệp hoặc
+workflow engine. Đây **không phải** bằng chứng đã hoàn tất GĐ0 hay MVP theo đề
+thi. Xem [ERD và quy tắc database](docs/database-schema.md).
 
 ## Yêu cầu
 
@@ -33,6 +38,18 @@ docker compose ps
 docker compose logs --tail=100 api web db
 ```
 
+Compose tự chạy migration trước khi API khởi động. Có thể chạy lại và kiểm
+chứng schema bằng các lệnh sau:
+
+```sh
+docker compose exec api node dist/database/migrate.js
+docker compose exec api node dist/database/verify-schema.js
+docker compose exec db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT id, checksum, applied_at FROM schema_migrations ORDER BY id"'
+```
+
+Verification kiểm tra đủ bảng, checksum migration, sáu trường hợp truy cập chéo
+tenant ở lớp khóa ngoại và rollback toàn bộ dữ liệu thử.
+
 Dừng bằng `docker compose down`. Volume `postgres_data` giữ dữ liệu qua lần
 khởi động sau; **`docker compose down -v` sẽ xóa dữ liệu DB**, chỉ dùng khi
 chủ động muốn reset. Khi thay đổi tên DB/user/password sau lần chạy đầu,
@@ -47,18 +64,18 @@ không expose). Cách đơn giản để thử tái lập hiện tại là chạ
 Compose. Mỗi app có thể tự kiểm tra mã nguồn:
 
 ```sh
-cd apps/api && npm ci && npm run build && npm test
+cd apps/api && npm ci && npm run lint && npm run build && npm test
 cd ../web && npm ci && npm run build && npm run lint
 ```
 
 ## Bố cục
 
 ```text
-apps/api/          NestJS; GET /health truy vấn PostgreSQL
+apps/api/          NestJS; health, migration và schema verification
 apps/web/          Next.js; trang chính gọi API bằng API_INTERNAL_URL nội bộ
 compose.yaml       DB, API, Web + healthcheck/depends_on
 .env.example       Chỉ là ví dụ; .env thật được git bỏ qua
-docs/              SRS, roadmap, GĐ0 và thiết kế (chưa thay thế code chạy)
+docs/              SRS, roadmap, ERD và tài liệu thiết kế
 ```
 
 Không đưa secret thật vào `.env.example`, source, ảnh log hoặc commit. Cấu

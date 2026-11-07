@@ -1,98 +1,84 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# DigiX API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS API cho DigiX. Lát cắt hiện tại cung cấp health check PostgreSQL,
+versioned database migrations và công cụ kiểm chứng tenant isolation. API nghiệp
+vụ, xác thực, workflow và Builder chưa được triển khai.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Chạy bằng Docker Compose
 
-## Description
+Cách tái lập được khuyến nghị nằm ở README thư mục gốc:
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
+```sh
+cp .env.example .env
+# Đặt POSTGRES_PASSWORD riêng cho máy local.
+docker compose up --build --wait
 ```
 
-## Compile and run the project
+Compose chạy migration trước khi khởi động API. API chỉ healthy sau khi kết nối
+PostgreSQL và migration thành công.
 
-```bash
-# development
-$ npm run start
+## Scripts
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```sh
+npm ci
+npm run lint
+npm run build
+npm test
+npm run test:e2e
 ```
 
-## Run tests
+Các lệnh database khi API có thể kết nối PostgreSQL:
 
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```sh
+npm run db:migrate
+npm run db:verify
 ```
 
-## Deployment
+Lệnh tương ứng trong production image:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+```sh
+node dist/database/migrate.js
+node dist/database/verify-schema.js
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Migration workflow
 
-## Resources
+1. Tạo migration mới trong `src/database/migrations/` với ID
+   `NNNN_lowercase_name`.
+2. Đăng ký migration theo thứ tự trong `src/database/migrations.ts`.
+3. Không sửa migration đã áp dụng; thêm migration mới cho mọi thay đổi tiếp
+   theo.
+4. Chạy lint, build, unit test, migration và schema verification.
+5. Review SQL, tenant constraints và bằng chứng kiểm thử trước khi merge.
 
-Check out a few resources that may come in handy when working with NestJS:
+Migration runner dùng transaction, PostgreSQL advisory lock và SHA-256 checksum.
+Lịch sử được lưu trong bảng `schema_migrations`.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Cấu trúc database source
 
-## Support
+```text
+src/database/
+├── database.config.ts
+├── migrate.ts
+├── migration-runner.ts
+├── migration-runner.spec.ts
+├── migrations.ts
+├── migrations.spec.ts
+├── migrations/
+│   └── 0001-initial-schema.ts
+└── verify-schema.ts
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Xem ERD, mô tả bảng và quy tắc tenant isolation tại
+[`docs/database-schema.md`](../../docs/database-schema.md).
 
-## Stay in touch
+## Trạng thái kiểm chứng
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- Migration chạy trên PostgreSQL 17.
+- Chạy migration lặp lại không tạo schema trùng.
+- Verification xác nhận 13 bảng bắt buộc.
+- Sáu liên kết chéo tenant bị PostgreSQL từ chối.
+- Dữ liệu verification được rollback hoàn toàn.
 
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Các kết quả trên chỉ chứng minh database foundation, không chứng minh MVP
+đầu-cuối đã hoàn thành.
