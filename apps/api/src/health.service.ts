@@ -4,17 +4,11 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { Pool } from 'pg';
+import { getDatabaseConfig } from './database/database.config';
 
 @Injectable()
 export class HealthService implements OnModuleDestroy {
-  private readonly pool = new Pool({
-    host: process.env.DB_HOST ?? 'localhost',
-    port: Number(process.env.DB_PORT ?? 5432),
-    user: process.env.DB_USER ?? 'digix',
-    database: process.env.DB_NAME ?? 'digix',
-    password: process.env.DB_PASSWORD,
-    connectionTimeoutMillis: 2000,
-  });
+  private readonly pool = new Pool(getDatabaseConfig());
 
   async check(): Promise<{ status: string; database: string }> {
     try {

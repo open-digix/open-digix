@@ -16,6 +16,7 @@ services:
 
   api:
     build: ./apps/api
+    command: ["sh", "-c", "node dist/database/migrate.js && exec node dist/main.js"]
     environment:
       PORT: 3000
       DB_HOST: db
