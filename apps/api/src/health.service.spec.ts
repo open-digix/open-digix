@@ -20,7 +20,9 @@ describe('HealthService', () => {
   });
 
   it('returns an unavailable error when the database cannot be reached', async () => {
-    jest.spyOn(Pool.prototype, 'query').mockRejectedValue(new Error('db down'));
+    jest
+      .spyOn(Pool.prototype, 'query')
+      .mockRejectedValue(new Error('db down') as never);
     const service = new HealthService();
 
     await expect(service.check()).rejects.toBeInstanceOf(
