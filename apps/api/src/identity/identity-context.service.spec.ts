@@ -93,6 +93,33 @@ describe('IdentityContextService', () => {
     expect(result.activeMembership).toEqual(resolvedContext.memberships[0]);
   });
 
+  it('builds a reusable tenant context for tenant-scoped endpoints', async () => {
+    repository.findByExternalIdentity.mockResolvedValue(resolvedContext);
+
+    await expect(
+      service.resolveRequiredTenant(identity, tenantAlphaId),
+    ).resolves.toEqual({
+      user: resolvedContext.user,
+      membership: resolvedContext.memberships[0],
+    });
+  });
+
+  it('requires X-Tenant-Id for a tenant-scoped endpoint', async () => {
+    try {
+      await service.resolveRequiredTenant(identity);
+      throw new Error('Operation unexpectedly succeeded');
+    } catch (error) {
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect((error as BadRequestException).getResponse()).toEqual({
+        error: {
+          code: 'TENANT_CONTEXT_REQUIRED',
+          message: 'X-Tenant-Id is required for this endpoint.',
+        },
+      });
+    }
+    expect(repository.findByExternalIdentity).not.toHaveBeenCalled();
+  });
+
   it('rejects an identity that is not provisioned', async () => {
     repository.findByExternalIdentity.mockResolvedValue(undefined);
 

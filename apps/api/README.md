@@ -101,6 +101,41 @@ Header tenant chỉ biểu thị tenant người dùng muốn chọn; API không
 client gửi là bằng chứng quyền. Role trong response đến từ
 `membership_roles`/`tenant_roles`, không lấy từ JWT.
 
+## Tenant và role guards
+
+Endpoint nghiệp vụ có dữ liệu theo tenant phải khai báo `@TenantScoped()` và
+nhận context đã được guard xác minh, thay vì tự đọc `X-Tenant-Id` trong
+controller:
+
+```ts
+@Get('records')
+@TenantScoped()
+list(@CurrentTenantContext() context: TenantContext) {
+  return this.records.list(context);
+}
+```
+
+Endpoint yêu cầu role dùng `@RequireRoles(...)`. Decorator này tự động bật
+tenant guard; user có ít nhất một role được liệt kê thì được phép:
+
+```ts
+@Post('publish')
+@RequireRoles('publisher', 'tenant_admin')
+publish(@CurrentTenantContext() context: TenantContext) {
+  return this.publisher.publish(context);
+}
+```
+
+Guard chạy theo thứ tự JWT → tenant context → roles. Tenant context chứa user và
+active membership đã đọc từ PostgreSQL. Controller/service phía sau phải dùng
+`context.membership.tenant.id` cho mọi query tenant-owned, không dùng lại header
+thô và không lấy role từ JWT.
+
+Các lỗi bổ sung:
+
+- `400 TENANT_CONTEXT_REQUIRED`: endpoint tenant-scoped thiếu `X-Tenant-Id`.
+- `403 ROLE_REQUIRED`: active membership không có một trong các role yêu cầu.
+
 ## Scripts
 
 ```sh

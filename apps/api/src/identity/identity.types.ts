@@ -29,3 +29,8 @@ export interface MeResponse {
   memberships: MeMembership[];
   activeMembership: MeMembership | null;
 }
+
+export interface TenantContext {
+  user: MeUser;
+  membership: MeMembership;
+}
