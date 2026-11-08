@@ -48,6 +48,59 @@ Request thiếu token trả `401 AUTHENTICATION_REQUIRED`; Bearer token sai ho�
 hết hạn trả `401 INVALID_ACCESS_TOKEN`. Chi tiết lỗi JOSE không được trả cho
 client.
 
+## `GET /v1/me`
+
+Endpoint được bảo vệ này resolve cặp `(iss, sub)` từ token sang
+`identity_users`, sau đó đọc memberships và role hiện hành từ PostgreSQL:
+
+```http
+GET /v1/me
+Authorization: Bearer <access-token>
+X-Tenant-Id: <optional-tenant-uuid>
+```
+
+Không gửi `X-Tenant-Id` khi tải phiên lần đầu; response trả tất cả memberships
+và `activeMembership: null`. Sau khi người dùng chọn tenant, frontend gửi UUID
+tenant trong header. API chỉ đặt active membership khi user, tenant và
+membership đều đang `active`.
+
+```json
+{
+  "user": {
+    "id": "11111111-1111-4111-8111-111111111111",
+    "subject": "keycloak-subject",
+    "email": "dung@example.test",
+    "displayName": "Dung",
+    "status": "active"
+  },
+  "memberships": [
+    {
+      "id": "22222222-2222-4222-8222-222222222222",
+      "status": "active",
+      "tenant": {
+        "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "slug": "tenant_alpha",
+        "name": "Tenant Alpha",
+        "status": "active"
+      },
+      "roles": ["employee"]
+    }
+  ],
+  "activeMembership": null
+}
+```
+
+Các lỗi riêng của endpoint:
+
+- `400 INVALID_TENANT_ID`: header không phải UUID.
+- `403 USER_NOT_PROVISIONED`: token hợp lệ nhưng chưa có identity mapping.
+- `403 ACCOUNT_DISABLED`: tài khoản DigiX bị vô hiệu hóa.
+- `403 TENANT_ACCESS_DENIED`: không có active membership trong tenant đã chọn.
+
+Header tenant chỉ biểu thị tenant người dùng muốn chọn; API không coi giá trị do
+client gửi là bằng chứng quyền. Role trong response đến từ
+`membership_roles`/`tenant_roles`, không lấy từ JWT.
+
 ## Scripts
 
 ```sh
