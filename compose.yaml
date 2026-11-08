@@ -14,6 +14,54 @@ services:
       retries: 10
     restart: unless-stopped
 
+  keycloak-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${KEYCLOAK_DB_USER:-keycloak}
+      POSTGRES_DB: ${KEYCLOAK_DB_NAME:-keycloak}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?Copy .env.example to .env and set KEYCLOAK_DB_PASSWORD}
+    volumes:
+      - keycloak_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.2
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/${KEYCLOAK_DB_NAME:-keycloak}
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USER:-keycloak}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?Copy .env.example to .env and set KEYCLOAK_DB_PASSWORD}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Copy .env.example to .env and set KEYCLOAK_ADMIN_PASSWORD}
+      KC_HOSTNAME: http://localhost:${KEYCLOAK_PORT:-8080}
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "127.0.0.1:${KEYCLOAK_PORT:-8080}:8080"
+    volumes:
+      - ./infra/keycloak:/opt/keycloak/data/import:ro
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          bash -c 'exec 3<>/dev/tcp/127.0.0.1/9000;
+          printf "GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" >&3;
+          IFS= read -r status <&3;
+          [[ "$$status" == *"200"* ]]'
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+    restart: unless-stopped
+
   api:
     build: ./apps/api
     command: ["sh", "-c", "node dist/database/migrate.js && exec node dist/main.js"]
@@ -24,6 +72,9 @@ services:
       DB_USER: ${POSTGRES_USER:-digix}
       DB_NAME: ${POSTGRES_DB:-digix}
       DB_PASSWORD: ${POSTGRES_PASSWORD:?Copy .env.example to .env and set POSTGRES_PASSWORD}
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:8080/realms/digix}
+      OIDC_AUDIENCE: ${OIDC_AUDIENCE:-digix-api}
+      OIDC_JWKS_URI: ${OIDC_JWKS_URI:-http://keycloak:8080/realms/digix/protocol/openid-connect/certs}
     ports:
       - "127.0.0.1:${API_PORT:-3001}:3000"
     depends_on:
@@ -36,6 +87,40 @@ services:
       retries: 12
       start_period: 10s
     restart: unless-stopped
+
+  auth-demo-seed:
+    profiles: ["demo"]
+    build: ./apps/api
+    command:
+      [
+        "sh",
+        "-c",
+        "node dist/database/migrate.js && exec node dist/dev/provision-auth-demo.js",
+      ]
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:-digix}
+      DB_NAME: ${POSTGRES_DB:-digix}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Copy .env.example to .env and set POSTGRES_PASSWORD}
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:8080/realms/digix}
+      KEYCLOAK_INTERNAL_URL: http://keycloak:8080
+      KEYCLOAK_REALM: digix
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Copy .env.example to .env and set KEYCLOAK_ADMIN_PASSWORD}
+      DEMO_USER_USERNAME: ${DEMO_USER_USERNAME:-dung.demo}
+      # Keep normal Compose commands usable without the optional demo profile.
+      # The provisioner fails fast if this is empty when auth-demo-seed runs.
+      DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD:-}
+      DEMO_USER_EMAIL: ${DEMO_USER_EMAIL:-dung.demo@example.test}
+      DEMO_USER_DISPLAY_NAME: ${DEMO_USER_DISPLAY_NAME:-Dung Demo}
+      DEMO_TENANT_SLUG: ${DEMO_TENANT_SLUG:-tenant_alpha}
+      DEMO_TENANT_NAME: ${DEMO_TENANT_NAME:-Tenant Alpha}
+    depends_on:
+      db:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
 
   web:
     build: ./apps/web
@@ -56,3 +141,4 @@ services:
 
 volumes:
   postgres_data:
+  keycloak_postgres_data:
