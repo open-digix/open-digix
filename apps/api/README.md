@@ -136,6 +136,20 @@ Các lỗi bổ sung:
 - `400 TENANT_CONTEXT_REQUIRED`: endpoint tenant-scoped thiếu `X-Tenant-Id`.
 - `403 ROLE_REQUIRED`: active membership không có một trong các role yêu cầu.
 
+## Seed dữ liệu xác thực demo
+
+Sau khi điền các biến `DEMO_*` trong `.env`, có thể tạo một user Keycloak
+synthetic và identity/membership tương ứng trong PostgreSQL bằng:
+
+```sh
+docker compose --profile demo run --rm auth-demo-seed
+```
+
+Seed này chỉ phục vụ local integration test, không tự chạy cùng API và có thể
+chạy lặp lại. Mật khẩu nằm ngoài Git. Sau khi đăng nhập qua Authorization Code
+flow với PKCE của client `digix-web`, access token có thể gọi `GET /v1/me` để
+lấy danh sách tenant; gửi `X-Tenant-Id` để chọn active membership.
+
 ## Scripts
 
 ```sh

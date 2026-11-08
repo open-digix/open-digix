@@ -8,9 +8,9 @@ reference, metadata tệp và audit với ràng buộc tenant ở PostgreSQL. Ke
 development import realm `digix` cùng client `digix-web` và audience
 `digix-api` từ cấu hình có version trong repo.
 
-Chưa có API nghiệp vụ, tenant membership/role guard, RLS, Gateway, kho tệp hoặc
-workflow engine. NestJS đã xác minh JWT bằng issuer/audience/JWKS nhưng chưa
-resolve identity sang tenant. Đây **không phải** bằng chứng đã hoàn tất GĐ0 hay
+Chưa có API nghiệp vụ, RLS, Gateway, kho tệp hoặc workflow engine. NestJS đã
+xác minh JWT bằng issuer/audience/JWKS, resolve identity sang tenant và kiểm tra
+membership/role từ PostgreSQL. Đây **không phải** bằng chứng đã hoàn tất GĐ0 hay
 MVP theo đề thi. Xem [ERD và quy tắc database](docs/database-schema.md) và
 [hướng dẫn Keycloak](infra/keycloak/README.md).
 

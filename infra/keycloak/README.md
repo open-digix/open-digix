@@ -56,6 +56,25 @@ Không thêm user password, admin credential, token hoặc client secret vào re
 JSON. Tài khoản demo phải dùng dữ liệu synthetic và credential được cấp ngoài
 Git.
 
+## Tạo dữ liệu đăng nhập demo
+
+Profile `demo` cung cấp một bước seed tùy chọn để kiểm thử tích hợp. Điền các
+biến `DEMO_*` trong `.env`, dùng email `.test` và mật khẩu chỉ dành cho máy
+local, sau đó chạy:
+
+```sh
+docker compose --profile demo run --rm auth-demo-seed
+```
+
+Lệnh này chạy migration, tạo hoặc cập nhật user synthetic trong Keycloak, rồi
+liên kết `sub` của user với identity, membership và các role `employee`,
+`manager` trong PostgreSQL. Lệnh có tính lặp lại an toàn; chạy lại không tạo bản
+ghi trùng. Nó cũng tạo `tenant_beta` nhưng không cấp membership để kiểm tra
+trường hợp truy cập tenant bị từ chối.
+
+Service seed không chạy trong `docker compose up` thông thường. Không dùng tài
+khoản hoặc mật khẩu thật, và không commit `.env`.
+
 ## Kiểm chứng
 
 ```sh
