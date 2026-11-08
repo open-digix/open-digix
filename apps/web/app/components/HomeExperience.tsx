@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+import { signIn } from "next-auth/react";
 
 type IconName =
   | "arrow"
@@ -169,7 +170,7 @@ export default function HomeExperience({
   const [modalOpen, setModalOpen] = useState(Boolean(initialAuth));
   const [submitted, setSubmitted] = useState(false);
   const [authMode, setAuthMode] = useState<"register" | "login">(initialAuth ?? "register",);
-  const [formError, setFormError] = useState("");
+  const [, setFormError] = useState("");
   const [activeProduct, setActiveProduct] = useState(0);
 
   const openAuth = (mode: "register" | "login") => {
@@ -177,16 +178,6 @@ export default function HomeExperience({
     setSubmitted(false);
     setFormError("");
     setModalOpen(true);
-  };
-
-  const submitAuth = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    if (authMode === "register" && data.get("password") !== data.get("confirmPassword")) {
-      setFormError("Mật khẩu xác nhận chưa khớp. Vui lòng kiểm tra lại.");
-      return;
-    }
-    setFormError("Đây là giao diện thử. Chức năng đăng nhập và đăng ký chưa được kết nối.",);
   };
 
   return (
@@ -545,7 +536,7 @@ export default function HomeExperience({
             <div className="person">
               <span>NT</span>
               <div>
-                <b>Nguyễn Thu Hà</b>
+                <b>Phạm Lê Đình An</b>
                 <small>Giám đốc Vận hành</small>
               </div>
             </div>
@@ -707,65 +698,26 @@ export default function HomeExperience({
                 <p>
                   {authMode === "register"
                     ? "Tạo tài khoản để khám phá hệ sinh thái chuyển đổi số dành cho doanh nghiệp."
-                    : "Nhập thông tin tài khoản để tiếp tục vào không gian làm việc của bạn."}
+                    : "Bạn sẽ được chuyển đến trang đăng nhập an toàn của DigiX."}
                 </p>
-                <form onSubmit={submitAuth}>
-                  {authMode === "register" && (
-                    <label>
-                      Họ và tên
-                      <input
-                        required
-                        name="fullName"
-                        autoComplete="name"
-                        placeholder="Nguyễn Văn A"
-                      />
-                    </label>
-                  )}
-                  <label>
-                    Email
-                    <input
-                      required
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      placeholder="email@congty.vn"
-                    />
-                  </label>
-                  <label>
-                    Mật khẩu
-                    <input
-                      required
-                      name="password"
-                      type="password"
-                      minLength={8}
-                      autoComplete={authMode === "register" ? "new-password" : "current-password"}
-                      placeholder="Tối thiểu 8 ký tự"
-                    />
-                  </label>
-                  {authMode === "register" && (
-                    <label>
-                      Xác nhận mật khẩu
-                      <input
-                        required
-                        name="confirmPassword"
-                        type="password"
-                        minLength={8}
-                        autoComplete="new-password"
-                        placeholder="Nhập lại mật khẩu"
-                      />
-                    </label>
-                  )}
-                  {authMode === "login" && (
-                    <button className="forgot-password" type="button">
-                      Quên mật khẩu?
-                    </button>
-                  )}
-                  {formError && <p className="form-error">{formError}</p>}
-                  <button className="primary-button" type="submit">
-                    {authMode === "register" ? "Đăng ký tài khoản" : "Đăng nhập"}{" "}
-                    <Icon name="arrow" size={17} />
-                  </button>
-                </form>
+                    <div style={{ marginTop: 24 }}>
+                      {authMode === "login" ? (
+                        <button
+                          type="button"
+                          className="primary-button"
+                          onClick={() => {
+                            void signIn("keycloak", { callbackUrl: "/dashboard" });
+                          }}
+                        >
+                          Tiếp tục đăng nhập <Icon name="arrow" size={17} />
+                        </button>
+                      ) : (
+                        <p className="form-error">
+                          Tính năng tự đăng ký chưa được bật. Vui lòng liên hệ quản trị viên
+                          để được cấp tài khoản và quyền truy cập doanh nghiệp.
+                        </p>
+                      )}
+                    </div>
                 <p className="auth-switch">
                   {authMode === "register" ? "Đã có tài khoản?" : "Chưa có tài khoản?"}
                   <button
