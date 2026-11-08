@@ -1,34 +1,39 @@
 # DigiX — môi trường phát triển tối thiểu
 
-Lát cắt hiện có: **Next.js → NestJS → PostgreSQL**. Trang Web gọi API từ
-server Next.js; `/health` của API chạy `SELECT 1` để kiểm tra kết nối DB. API
-chạy migration có version trước khi khởi động; schema nền đã có tenant,
-membership/role, application/version, business record, workflow reference,
-metadata tệp và audit với ràng buộc tenant ở PostgreSQL.
+Lát cắt hiện có: **Keycloak/OIDC + Next.js → NestJS → PostgreSQL**. Trang Web
+gọi API từ server Next.js; `/health` của API chạy `SELECT 1` để kiểm tra kết
+nối DB. API chạy migration có version trước khi khởi động; schema nền đã có
+tenant, membership/role, application/version, business record, workflow
+reference, metadata tệp và audit với ràng buộc tenant ở PostgreSQL. Keycloak
+development import realm `digix` cùng client `digix-web` và audience
+`digix-api` từ cấu hình có version trong repo.
 
-Chưa có API nghiệp vụ, tenant guard/RLS, Keycloak, Gateway, kho tệp hoặc
+Chưa có API nghiệp vụ, tích hợp JWT/tenant guard/RLS, Gateway, kho tệp hoặc
 workflow engine. Đây **không phải** bằng chứng đã hoàn tất GĐ0 hay MVP theo đề
-thi. Xem [ERD và quy tắc database](docs/database-schema.md).
+thi. Xem [ERD và quy tắc database](docs/database-schema.md) và
+[hướng dẫn Keycloak](infra/keycloak/README.md).
 
 ## Yêu cầu
 
 - Docker Engine đang chạy và Docker Compose v2 (lệnh `docker compose`).
-- Có thể tải image Node 24 và PostgreSQL 17 từ registry, cũng như npm packages
-  trong lần build đầu. Dự trù vài GB dung lượng trống; cổng 3000/3001 rảnh.
+- Có thể tải image Node 24, PostgreSQL 17 và Keycloak 26.8.2 từ registry, cũng
+  như npm packages trong lần build đầu. Dự trù vài GB dung lượng trống; cổng
+  3000/3001/8080 rảnh.
 - Nếu chạy app ngoài container: Node.js 24 và npm (mỗi app có `package-lock.json`).
 
 ## Chạy từ bản clone sạch
 
 ```sh
 cp .env.example .env
-# Sửa POSTGRES_PASSWORD trong .env thành mật khẩu riêng cho máy của bạn.
+# Thay các giá trị password mẫu trong .env bằng mật khẩu riêng cho máy của bạn.
 docker compose up --build --wait
 ```
 
 - Web: <http://localhost:3000> — phải hiện `API and database: connected`.
 - API: <http://localhost:3001/health> — trả `{"status":"ok","database":"ok"}`.
+- Keycloak: <http://localhost:8080> — realm development là `digix`.
 - DB chỉ mở trong mạng Compose (không công bố cổng 5432 ra máy host).
-- Đổi `WEB_PORT`/`API_PORT` trong `.env` nếu cổng host bị chiếm.
+- Đổi `WEB_PORT`/`API_PORT`/`KEYCLOAK_PORT` trong `.env` nếu cổng host bị chiếm.
 
 Kiểm tra DB trực tiếp mà không cần cài `psql` trên máy:
 
@@ -73,7 +78,8 @@ cd ../web && npm ci && npm run build && npm run lint
 ```text
 apps/api/          NestJS; health, migration và schema verification
 apps/web/          Next.js; trang chính gọi API bằng API_INTERNAL_URL nội bộ
-compose.yaml       DB, API, Web + healthcheck/depends_on
+infra/keycloak/    Realm OIDC development có version và hướng dẫn kiểm chứng
+compose.yaml       DB, Keycloak, API, Web + healthcheck/depends_on
 .env.example       Chỉ là ví dụ; .env thật được git bỏ qua
 docs/              SRS, roadmap, ERD và tài liệu thiết kế
 ```
