@@ -7,6 +7,13 @@ import { AppModule } from './../src/app.module';
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
 
+  beforeAll(() => {
+    process.env.OIDC_ISSUER = 'http://localhost:8080/realms/digix';
+    process.env.OIDC_AUDIENCE = 'digix-api';
+    process.env.OIDC_JWKS_URI =
+      'http://localhost:8080/realms/digix/protocol/openid-connect/certs';
+  });
+
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],

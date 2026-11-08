@@ -1,8 +1,9 @@
 # DigiX API
 
 NestJS API cho DigiX. Lát cắt hiện tại cung cấp health check PostgreSQL,
-versioned database migrations và công cụ kiểm chứng tenant isolation. API nghiệp
-vụ, xác thực, workflow và Builder chưa được triển khai.
+versioned database migrations, công cụ kiểm chứng tenant isolation và xác thực
+access token OIDC bằng issuer/audience/JWKS. API nghiệp vụ, tenant
+membership/role authorization, workflow và Builder chưa được triển khai.
 
 ## Chạy bằng Docker Compose
 
@@ -16,6 +17,36 @@ docker compose up --build --wait
 
 Compose chạy migration trước khi khởi động API. API chỉ healthy sau khi kết nối
 PostgreSQL và migration thành công.
+
+## OIDC access-token validation
+
+API cần ba biến môi trường:
+
+```env
+OIDC_ISSUER=http://localhost:8080/realms/digix
+OIDC_AUDIENCE=digix-api
+OIDC_JWKS_URI=http://keycloak:8080/realms/digix/protocol/openid-connect/certs
+```
+
+`OIDC_ISSUER` phải khớp chính xác claim `iss` trong token. `OIDC_JWKS_URI` là
+địa chỉ nội bộ mà container API dùng để lấy public keys; hai địa chỉ khác host
+là có chủ đích. Token chỉ được chấp nhận khi:
+
+- chữ ký hợp lệ với key hiện hành trong JWKS;
+- thuật toán là `RS256`;
+- `iss` và `aud` khớp cấu hình;
+- có `sub`, `iat`, `exp` và token chưa hết hạn.
+
+Global auth guard bảo vệ mọi endpoint trừ endpoint được đánh dấu `@Public()`.
+Hiện `/` và `/health` là public để phục vụ smoke test và health probe. Guard gắn
+identity đã xác minh vào request dưới dạng `authenticatedIdentity`, gồm
+`issuer`, `subject` và profile claim an toàn. API không dùng `tenant_id`, role
+hoặc permission trong JWT để quyết định quyền; checkpoint tenant context sẽ
+resolve cặp `(iss, sub)` sang membership/role hiện hành trong PostgreSQL.
+
+Request thiếu token trả `401 AUTHENTICATION_REQUIRED`; Bearer token sai hoặc
+hết hạn trả `401 INVALID_ACCESS_TOKEN`. Chi tiết lỗi JOSE không được trả cho
+client.
 
 ## Scripts
 
