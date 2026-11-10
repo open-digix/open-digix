@@ -1,0 +1,35 @@
+name: Auto-assign issues
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign issue to a maintainer
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const usernames = (process.env.ASSIGNEES || '')
+              .split(',')
+              .map((username) => username.trim().replace(/^@/, ''))
+              .filter(Boolean);
+
+            if (usernames.length === 0) {
+              core.warning('Set the repository variable AUTO_ASSIGN_USERS to one or more GitHub usernames.');
+              return;
+            }
+
+            const assignee = usernames[Math.floor(Math.random() * usernames.length)];
+            await github.rest.issues.addAssignees({
+              ...context.repo,
+              issue_number: context.issue.number,
+              assignees: [assignee],
+            });
+        env:
+          ASSIGNEES: ${{ vars.AUTO_ASSIGN_USERS }}
