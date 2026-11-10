@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DigiX Lab — Logo concepts</title>
+  <style>
+    :root{color-scheme:light;--navy:#112b45;--teal:#0d9488;--paper:#f6f8fa}
+    *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--navy);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.6}
+    main{max-width:1160px;margin:auto;padding:64px 28px}header{max-width:800px;margin-bottom:52px}.eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);font-weight:700}
+    h1{font-size:clamp(32px,6vw,64px);line-height:1.1;letter-spacing:-.05em;margin:18px 0}h2{font-size:26px;letter-spacing:-.03em;margin:0}p{margin:12px 0;color:#526577}a{color:var(--teal)}
+    article{border-top:1px solid #d8e1e8;padding-top:30px;margin-bottom:64px}.heading{display:flex;justify-content:space-between;gap:20px;align-items:center}.tag{font-size:12px;background:#ddf3ee;padding:6px 12px;border-radius:30px;white-space:nowrap}
+    .description{max-width:760px;margin-bottom:24px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.panel{background:white;border:1px solid #e0e7ed;border-radius:18px;padding:28px;min-width:0}.dark{background:var(--navy);color:white;border-color:var(--navy)}
+    .wordmark{display:block;width:100%;height:200px;object-fit:contain}.label{font-size:11px;text-transform:uppercase;letter-spacing:.14em;opacity:.65}.sizes{display:flex;gap:24px;align-items:flex-end;flex-wrap:wrap;padding-top:24px}.size{text-align:center;font-size:11px;color:#526577}.size img{display:block;margin:0 auto 10px;image-rendering:auto}.variants{display:flex;gap:24px;align-items:center;margin-top:20px}.variants img{width:80px;height:80px}.swatches{display:flex;gap:16px;flex-wrap:wrap}.swatch{display:flex;gap:10px;align-items:center;font-size:13px}.chip{height:24px;width:24px;border-radius:6px}.note{font-size:13px}footer{border-top:1px solid #d8e1e8;padding-top:24px}
+    @media(max-width:650px){main{padding:36px 18px}.grid{grid-template-columns:1fr}.heading{align-items:flex-start;flex-direction:column}.panel{padding:20px}.wordmark{height:160px}}
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">DigiX Lab / Brand exploration / 01</div>
+    <h1>Một lõi chung.<br>Nhiều cách vận hành.</h1>
+    <p>Ba hướng logo cho nền tảng giúp doanh nghiệp tự thiết kế và vận hành hệ thống số. Tập trung vào tính lắp ghép, quy trình rõ ràng và quyền chủ động của con người.</p>
+    <p class="note">Đề xuất để lựa chọn, chưa phải nhận diện được phê duyệt. SVG tự chứa, chữ dạng path, không tải font hay tài nguyên Internet. <a href="README.md">Ý nghĩa &amp; hướng dẫn sử dụng ↗</a></p>
+  </header>
+  <div id="concepts"></div>
+  <footer>
+    <div class="swatches"><span class="swatch"><i class="chip" style="background:#112b45"></i>Navy · #112B45</span><span class="swatch"><i class="chip" style="background:#0d9488"></i>Teal · #0D9488</span><span class="swatch"><i class="chip" style="background:#2dd4bf"></i>Dark accent · #2DD4BF</span></div>
+    <p class="note">SVG gốc + PNG trong export/. A là hướng đề xuất ưu tiên; chưa áp dụng vào app. Kiểm tra tính tương đồng nhãn hiệu trước khi công bố.</p>
+  </footer>
+</main>
+<script>
+  const concepts = [
+    ['a', 'Modular X', 'Bốn khối, một hệ thống', 'Bốn mô-đun gợi H–P–D–I cùng tạo thành X quanh khoảng âm ở tâm. Một khối màu teal biểu đạt khả năng thay đổi thành phần mà không xây lại nền tảng. Gọn, rõ, phù hợp nhận diện chính.', 'Đề xuất ưu tiên'],
+    ['b', 'Flow D', 'Từ mô tả đến vận hành', 'Chữ D mở kết hợp đường đi và mũi tên: đưa công việc rời rạc vào một luồng có cấu trúc. Nhấn mạnh workflow và hành trình chuyển đổi số, thay vì hình tượng AI tự điều hành.', 'Workflow-first'],
+    ['c', 'Open Layers', 'Kiến trúc mở, mở rộng có trật tự', 'Ba lớp gợi lõi dịch vụ, không gian làm việc và hệ sinh thái mô-đun. Khe tách lớp giữ ranh giới rõ ràng; khoảng mở hình thoi gợi giao diện kết nối. Hướng nhận diện thiên về nền tảng.', 'Platform-first']
+  ];
+  document.getElementById('concepts').innerHTML = concepts.map(([id,name,subtitle,description,tag]) => `
+    <article>
+      <div class="heading"><h2>${id.toUpperCase()} / ${name}</h2><span class="tag">${tag}</span></div>
+      <div class="description"><strong>${subtitle}</strong><p>${description}</p></div>
+      <div class="grid">
+        <div class="panel"><div class="label">Primary / light</div><img class="wordmark" src="digix-logo-wordmark-${id}.svg" alt="DigiX Lab — ${name}, nền sáng"></div>
+        <div class="panel dark"><div class="label">Reversed / dark</div><img class="wordmark" src="digix-logo-wordmark-${id}-dark.svg" alt="DigiX Lab — ${name}, nền tối"></div>
+        <div class="panel"><div class="label">Kiểm tra kích thước / px</div><div class="sizes">${[128,48,32,24,16].map(size=>`<div class="size"><img src="digix-logo-icon-${id}.svg" width="${size}" height="${size}" alt="${name} ${size}px">${size}</div>`).join('')}</div></div>
+        <div class="panel"><div class="label">Màu / một màu / tải xuống</div><div class="variants"><img src="digix-logo-icon-${id}.svg" alt="${name} màu"><img src="digix-logo-icon-${id}-mono.svg" alt="${name} đơn sắc"></div><p class="note"><a href="digix-logo-icon-${id}.svg" download>SVG icon</a> · <a href="digix-logo-wordmark-${id}.svg" download>SVG wordmark</a> · <a href="export/icon-${id}-1024.png" download>PNG 1024</a></p></div>
+      </div>
+    </article>`).join('');
+</script>
+</body>
+</html>
