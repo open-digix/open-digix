@@ -1,17 +1,26 @@
 ---
 author: DigiX Team
-date: 31/10/2026
-title: DigiX --- Roadmap triển khai dự án hướng tới vòng thi quốc gia (đề xuất cập nhật)
+date: 10/11/2026
+title: DigiX Lab --- Roadmap triển khai theo SRS v2.4 (đề xuất chờ duyệt)
 ---
 
-# DIGIX --- ROADMAP TRIỂN KHAI DỰ ÁN
+# DIGIX LAB --- ROADMAP TRIỂN KHAI DỰ ÁN
 
-## Hướng tới vòng thi quốc gia \| 31/10/2026 -- 10/12/2026
+## Hướng tới vòng thi quốc gia \| 10/11/2026 -- 10/12/2026
 
-**Trạng thái (05/11/2026):** Bản kế hoạch đề xuất để An, Dũng, Tú review;
+**Căn cứ:** [SRS DigiX Lab v2.4](SRS%20DigiX%20Lab%20-%20%C4%90%E1%BA%B7c%20t%E1%BA%A3%20y%C3%AAu%20c%E1%BA%A7u%20ph%E1%BA%A7n%20m%E1%BB%81m.md),
+đặc biệt FR-CORE, FR-BLD, FR-WRK, FR-L3, FR-AI và mục 5–6. SRS DigiX
+v1.5 chỉ là bản kế thừa để đối chiếu, không còn lấy mua sắm làm sản phẩm
+định nghĩa toàn bộ nền tảng. Mức A/B/C là cam kết **đề xuất của DigiX**,
+không phải danh sách bắt buộc của đề thi.
+
+**Trạng thái (10/11/2026):** Đã đồng bộ nội dung kế hoạch với SRS v2.4;
+bản kế hoạch vẫn là đề xuất để An, Dũng, Tú review;
 chưa có biên bản phê duyệt của cả đội. Mốc đã qua là kế hoạch, không phải
 bằng chứng đã hoàn tất. Người yêu cầu đồng ý định hướng trong SRS **không
 thay thế** việc cả đội phê duyệt phạm vi, người phụ trách, nguồn lực và lịch.
+M1 (09/11) đã quá hạn đề xuất: cần kiểm chứng và ghi lại ngày đạt thực tế
+hoặc điều chỉnh lịch sau khi họp; không hồi tố.
 
 **Mục tiêu đề xuất:** Hoàn tất tính năng trước **03/12/2026**, dành 04–06/12
 cho kiểm thử, đóng gói, phát hành và gửi bài **trước 17:00 06/12/2026**.
@@ -32,11 +41,21 @@ cho kiểm thử, đóng gói, phát hành và gửi bài **trước 17:00 06/12
     tenant/hai luồng, Tầng 3 và agent là mục tiêu DigiX tự chọn; bảy lớp
     là kiến trúc tham chiếu, không phải bảy stack bắt buộc. Chứng minh
     bốn nguyên lý §4 bằng bằng chứng cụ thể.
--   Thứ tự: lõi tenant/quyền/workflow → builder tối thiểu → xuất bản/chạy
-    ứng dụng → mua sắm A và nghỉ phép B → kiểm thử cách ly → agent nội
-    bộ (nếu đủ điều kiện) → phần nâng cao. Nếu phải giảm phạm vi, vẫn
+-   Sản phẩm cần kiểm chứng là **khả năng tạo và vận hành ứng dụng khác
+    nhau cho hai doanh nghiệp trên cùng lõi**, không phải một app mua sắm
+    viết cứng. Thứ tự ưu tiên: lõi tenant/quyền/workflow → builder tối
+    thiểu (nhập mô tả, chuẩn hóa, chỉnh tay) → chạy thử/xuất bản ứng dụng
+    → mua sắm A và nghỉ phép B → kiểm thử cách ly/phiên bản → agent nội
+    bộ → phần nâng cao. Có thể chuẩn bị fixture mua sắm song song với
+    builder nhưng không đánh dấu E2E là sản phẩm Lab khi chưa chạy qua
+    luồng xuất bản. Nếu phải giảm phạm vi, vẫn
     giữ lõi + một app Tầng 2 chạy thật; cập nhật SRS và trình bày trung
     thực, không tuyên bố đã đạt mục tiêu hai tenant khi chưa kiểm chứng.
+-   FR-AI-01..06 được SRS v2.4 xếp **A** cho lát cắt DigiX Lab, dù không
+    thuộc ngưỡng tối thiểu của đề. Chỉ bật trợ lý sau khi kiểm thử quyền,
+    nguồn, thu hồi và máy/license; nếu chưa đạt, I hiện “chưa có nguồn/AI
+    không khả dụng”, H/P/D vẫn chạy, ghi rõ các FR-AI chưa đạt và trình
+    cả đội quyết định điều chỉnh SRS/phạm vi. Không tự coi AI là hoàn tất.
 -   Sau 03/12 không phát triển tính năng mới; tuần cuối dành cho ổn
     định, kiểm thử, đóng gói và luyện demo.
 
@@ -54,22 +73,26 @@ cho kiểm thử, đóng gói, phát hành và gửi bài **trước 17:00 06/12
                                                  workflow dựng từ source;
                                                  smoke test trên máy chung.
 
-  M2 --- App mua sắm Tầng 2 E2E         16/11       Tạo/gửi/duyệt/từ chối,
-                                                 phiên bản trạng thái, audit;
-                                                 UI gọi API qua Gateway.
+  M2 --- Builder tối thiểu              16/11       Nhập mô tả gốc, ánh xạ
+                                                 về nguồn, chuẩn hóa/chỉnh
+                                                 tay; schema và validator;
+                                                 fixture mua sắm ở bản nháp.
 
-  M3 --- Builder tối thiểu              23/11       Schema/validator/compiler,
-                                                 review và publish có quyền;
-                                                 app chạy từ định nghĩa,
-                                                 không viết cứng luồng B.
+  M3 --- Xuất bản và chạy app A          23/11       Preview/test, compiler,
+                                                 review/publish có quyền;
+                                                 app mua sắm chạy E2E từ
+                                                 định nghĩa qua Gateway,
+                                                 workflow và audit.
 
   M4 --- Hai tenant và kiểm thử âm       27/11       Mua sắm A, nghỉ phép B
                                                  (TC-LEAVE-01..07), TC-TEN-01/02;
-                                                 chứng cứ UI/API/tệp/workflow.
+                                                 v1/v2 giữ hồ sơ cũ; chứng
+                                                 cứ UI/API/tệp/workflow.
 
   M4b --- Hồi quy/tích hợp              30/11       Chạy lại từ môi trường
                                                  sạch; chốt blocker, quyền,
-                                                 backup/restore và phạm vi AI.
+                                                 backup/restore và AI go/no-go
+                                                 theo FR-AI/TC-AI.
 
   M5 --- Feature freeze                 03/12       Không còn blocker bảo mật
                                                  hay nghiệp vụ cốt lõi; RC,
@@ -92,14 +115,22 @@ cho kiểm thử, đóng gói, phát hành và gửi bài **trước 17:00 06/12
 
 ## Luồng demo cốt lõi
 
-**SSO → tenant A: mua sắm, duyệt/từ chối → builder xuất bản ứng dụng nghỉ
-phép cho tenant B → nhân viên B gửi, manager/HR B duyệt theo nhánh →
-dashboard/truy vết; thử truy cập chéo tenant và bị từ chối.**
+**SSO → tenant A nhập mô tả, chuẩn hóa/chỉnh tay và xuất bản mẫu mua sắm
+v1 → tạo/gửi/duyệt/từ chối → tenant B nhập mô tả nghỉ phép, cấu hình
+nhánh, chạy thử và xuất bản v1 từ cùng builder → nhân viên B gửi,
+manager/HR B duyệt → xuất bản v2, chứng minh hồ sơ v1 còn theo v1 →
+dashboard truy về nguồn; thử truy cập chéo tenant và bị từ chối.**
 
-Agent/RAG nội bộ là mục tiêu sau khi hai luồng và quyền ổn định, chỉ
+Trong **từng ứng dụng sau xuất bản** phải thể hiện H (vai trò/việc), P
+(bước và trạng thái workflow), D (hồ sơ/chỉ số có nguồn), I (trợ lý theo
+ngữ cảnh hoặc trạng thái không khả dụng). Không trình bày builder như thể
+đó đã là trải nghiệm vận hành của ứng dụng.
+
+Agent/RAG nội bộ là lát cắt A cần lập kế hoạch sau khi hai luồng và quyền ổn định, chỉ
 được demo nếu kiểm quyền nguồn khi thu hồi, cô lập app/tenant, tài nguyên
 và giấy phép đã được thử thật; không được có quyền phê duyệt/xuất bản.
-Nếu chưa đạt, ghi trạng thái I chưa có nguồn, không giả vờ có AI hoạt động.
+Nếu chưa đạt, ghi trạng thái I chưa có nguồn, liệt kê FR-AI chưa đạt và
+xin quyết định phạm vi, không giả vờ có AI hoạt động.
 
 ------------------------------------------------------------------------
 
