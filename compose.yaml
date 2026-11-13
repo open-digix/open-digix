@@ -165,10 +165,16 @@ services:
       S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-true}
       STORAGE_UPLOAD_MAX_BYTES: ${STORAGE_UPLOAD_MAX_BYTES:-10485760}
       STORAGE_UPLOAD_ALLOWED_CONTENT_TYPES: ${STORAGE_UPLOAD_ALLOWED_CONTENT_TYPES:-application/pdf,image/jpeg,image/png,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet}
+      WORKFLOW_BASE_URL: ${WORKFLOW_BASE_URL:-http://workflow-engine:8080/flowable-rest}
+      WORKFLOW_USERNAME: ${FLOWABLE_REST_ADMIN_USER:-rest-admin}
+      WORKFLOW_PASSWORD: ${FLOWABLE_REST_ADMIN_PASSWORD:?Set FLOWABLE_REST_ADMIN_PASSWORD in .env}
+      WORKFLOW_REQUEST_TIMEOUT_MS: ${WORKFLOW_REQUEST_TIMEOUT_MS:-5000}
     depends_on:
       db:
         condition: service_healthy
       object-storage:
+        condition: service_healthy
+      workflow-engine:
         condition: service_healthy
     healthcheck:
       test:
