@@ -1,4 +1,6 @@
 import {
+  DeleteObjectCommand,
+  type DeleteObjectCommandOutput,
   GetObjectCommand,
   type GetObjectCommandOutput,
   PutObjectCommand,
@@ -161,5 +163,48 @@ describe('StorageObjectService.getObject', () => {
     send.mockRejectedValueOnce(downloadFailure);
 
     await expect(service.getObject('file-1')).rejects.toBe(downloadFailure);
+  });
+});
+
+describe('StorageObjectService.deleteObject', () => {
+  type SendDeleteObject = (
+    command: DeleteObjectCommand,
+  ) => Promise<DeleteObjectCommandOutput>;
+
+  const config = {
+    bucket: 'digix-files',
+    client: {},
+  } as StorageConfig;
+  let send: jest.MockedFunction<SendDeleteObject>;
+  let service: StorageObjectService;
+
+  beforeEach(() => {
+    send = jest.fn(
+      (command: DeleteObjectCommand): Promise<DeleteObjectCommandOutput> => {
+        void command;
+        return Promise.resolve({ $metadata: {} });
+      },
+    );
+    service = new StorageObjectService({ send } as unknown as S3Client, config);
+  });
+
+  it('deletes an object from the configured bucket', async () => {
+    await expect(
+      service.deleteObject('tenants/tenant-1/files/file-1'),
+    ).resolves.toBeUndefined();
+
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send.mock.calls[0][0]).toBeInstanceOf(DeleteObjectCommand);
+    expect(send.mock.calls[0][0].input).toEqual({
+      Bucket: 'digix-files',
+      Key: 'tenants/tenant-1/files/file-1',
+    });
+  });
+
+  it('does not hide storage deletion failures', async () => {
+    const deletionFailure = new Error('delete failed');
+    send.mockRejectedValueOnce(deletionFailure);
+
+    await expect(service.deleteObject('file-1')).rejects.toBe(deletionFailure);
   });
 });

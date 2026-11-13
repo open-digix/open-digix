@@ -1,4 +1,5 @@
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   type GetObjectCommandOutput,
   PutObjectCommand,
@@ -80,5 +81,14 @@ export class StorageObjectService {
       lastModified: result.LastModified,
       versionId: result.VersionId,
     };
+  }
+
+  async deleteObject(key: string): Promise<void> {
+    await this.client.send(
+      new DeleteObjectCommand({
+        Bucket: this.config.bucket,
+        Key: key,
+      }),
+    );
   }
 }
