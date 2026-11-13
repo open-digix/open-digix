@@ -1,0 +1,35 @@
+# Only published API paths are reachable through the gateway.
+routes:
+  - id: digix-health
+    uri: /health
+    methods: [GET]
+    upstream:
+      type: roundrobin
+      nodes:
+        "api:3000": 1
+  - id: digix-api-v1
+    uri: /v1/*
+    plugins:
+      openid-connect:
+        client_id: digix-api
+        client_secret: "${{GATEWAY_OIDC_CLIENT_SECRET}}"
+        discovery: http://keycloak:8080/realms/digix/.well-known/openid-configuration
+        bearer_only: true
+        use_jwks: true
+        token_signing_alg_values_expected: RS256
+        set_access_token_header: false
+        set_userinfo_header: false
+        claim_validator:
+          audience:
+            required: true
+            match_with_client_id: true
+      limit-req:
+        rate: 10
+        burst: 20
+        key: remote_addr
+        rejected_code: 429
+    upstream:
+      type: roundrobin
+      nodes:
+        "api:3000": 1
+#END

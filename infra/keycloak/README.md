@@ -34,6 +34,9 @@ Các địa chỉ mặc định:
 - Discovery: <http://localhost:8080/realms/digix/.well-known/openid-configuration>
 - JWKS từ máy host: <http://localhost:8080/realms/digix/protocol/openid-connect/certs>
 - JWKS từ container API: `http://keycloak:8080/realms/digix/protocol/openid-connect/certs`
+- Discovery từ container Gateway/API vẫn công bố issuer `localhost:8080`, nhưng
+  `jwks_uri` backchannel trỏ `keycloak:8080` nhờ `KC_HOSTNAME_BACKCHANNEL_DYNAMIC`.
+  Điều này cho phép APISIX xác minh JWT bằng JWKS mà không thay issuer công khai.
 
 Realm development mặc định cho phép redirect và web origin tại
 `http://localhost:3000`. Nếu đổi `WEB_PORT`, phải cập nhật đồng thời cấu hình
