@@ -8,6 +8,8 @@ describe('loadStorageConfig', () => {
     S3_ACCESS_KEY_ID: 'digix-local',
     S3_SECRET_ACCESS_KEY: 'local-secret',
     S3_FORCE_PATH_STYLE: 'true',
+    STORAGE_UPLOAD_MAX_BYTES: '10485760',
+    STORAGE_UPLOAD_ALLOWED_CONTENT_TYPES: 'application/pdf,image/png',
   };
 
   it('loads an explicit S3-compatible storage configuration', () => {
@@ -21,6 +23,10 @@ describe('loadStorageConfig', () => {
           accessKeyId: 'digix-local',
           secretAccessKey: 'local-secret',
         },
+      },
+      upload: {
+        maxBytes: 10485760,
+        allowedContentTypes: ['application/pdf', 'image/png'],
       },
     });
   });
@@ -41,6 +47,8 @@ describe('loadStorageConfig', () => {
     'S3_ACCESS_KEY_ID',
     'S3_SECRET_ACCESS_KEY',
     'S3_FORCE_PATH_STYLE',
+    'STORAGE_UPLOAD_MAX_BYTES',
+    'STORAGE_UPLOAD_ALLOWED_CONTENT_TYPES',
   ])('fails fast when %s is missing', (name) => {
     const environment = { ...validEnvironment };
     delete environment[name];
@@ -111,4 +119,49 @@ describe('loadStorageConfig', () => {
       'S3_SECRET_ACCESS_KEY must not contain leading or trailing whitespace',
     );
   });
+
+  it.each(['0', '-1', '1.5', 'ten-megabytes'])(
+    'rejects invalid upload size %s',
+    (value) => {
+      expect(() =>
+        loadStorageConfig({
+          ...validEnvironment,
+          STORAGE_UPLOAD_MAX_BYTES: value,
+        }),
+      ).toThrow('STORAGE_UPLOAD_MAX_BYTES must be a positive integer');
+    },
+  );
+
+  it('rejects an upload size outside the JavaScript safe integer range', () => {
+    expect(() =>
+      loadStorageConfig({
+        ...validEnvironment,
+        STORAGE_UPLOAD_MAX_BYTES: '9007199254740992',
+      }),
+    ).toThrow('STORAGE_UPLOAD_MAX_BYTES must be a safe integer');
+  });
+
+  it('normalizes and removes duplicate allowed content types', () => {
+    expect(
+      loadStorageConfig({
+        ...validEnvironment,
+        STORAGE_UPLOAD_ALLOWED_CONTENT_TYPES:
+          'application/pdf, IMAGE/PNG,application/pdf',
+      }).upload.allowedContentTypes,
+    ).toEqual(['application/pdf', 'image/png']);
+  });
+
+  it.each(['application/pdf,,image/png', 'pdf', 'text/plain; charset=utf-8'])(
+    'rejects an invalid content type list %s',
+    (value) => {
+      expect(() =>
+        loadStorageConfig({
+          ...validEnvironment,
+          STORAGE_UPLOAD_ALLOWED_CONTENT_TYPES: value,
+        }),
+      ).toThrow(
+        'STORAGE_UPLOAD_ALLOWED_CONTENT_TYPES must be a comma-separated list of MIME types',
+      );
+    },
+  );
 });

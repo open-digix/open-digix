@@ -12,6 +12,7 @@ import {
   StoredFileService,
   type UploadPendingFileInput,
 } from './stored-file.service';
+import type { StorageConfig } from './storage.config';
 
 describe('StoredFileService', () => {
   const tenantId = '11111111-1111-4111-8111-111111111111';
@@ -20,11 +21,19 @@ describe('StoredFileService', () => {
     tenantId,
     recordId: '33333333-3333-4333-8333-333333333333',
     originalName: 'invoice.txt',
-    contentType: 'text/plain',
+    contentType: 'application/pdf',
     body: new TextEncoder().encode('abc'),
     createdByMembershipId: membershipId,
   };
   const createdAt = new Date('2026-11-14T00:00:00.000Z');
+  const config: StorageConfig = {
+    bucket: 'digix-files',
+    client: {},
+    upload: {
+      maxBytes: 10,
+      allowedContentTypes: ['application/pdf'],
+    },
+  };
   let putObject: jest.MockedFunction<StorageObjectService['putObject']>;
   let deleteObject: jest.MockedFunction<StorageObjectService['deleteObject']>;
   let createPending: jest.MockedFunction<StoredFileRepository['createPending']>;
@@ -58,6 +67,7 @@ describe('StoredFileService', () => {
     service = new StoredFileService(
       { putObject, deleteObject } as unknown as StorageObjectService,
       { createPending } as unknown as StoredFileRepository,
+      config,
     );
   });
 
@@ -102,6 +112,48 @@ describe('StoredFileService', () => {
     await expect(service.uploadPending(input)).rejects.toBe(uploadError);
     expect(createPending).not.toHaveBeenCalled();
     expect(deleteObject).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['an empty file', { ...input, body: new Uint8Array() }, 'EMPTY_FILE', 400],
+    [
+      'a file over the configured size limit',
+      { ...input, body: new Uint8Array(11) },
+      'FILE_TOO_LARGE',
+      413,
+    ],
+    [
+      'a disallowed content type',
+      { ...input, contentType: 'application/x-msdownload' },
+      'UNSUPPORTED_FILE_TYPE',
+      415,
+    ],
+  ])(
+    'rejects %s before storage access',
+    async (_name, invalidInput, code, status) => {
+      try {
+        await service.uploadPending(invalidInput);
+        throw new Error('Expected uploadPending to reject the file');
+      } catch (error) {
+        expect(error).toMatchObject({
+          response: { error: { code } },
+          status,
+        });
+      }
+
+      expect(putObject).not.toHaveBeenCalled();
+      expect(createPending).not.toHaveBeenCalled();
+    },
+  );
+
+  it('normalizes an allowed content type before storage', async () => {
+    await service.uploadPending({
+      ...input,
+      contentType: ' Application/PDF ',
+    });
+
+    expect(putObject.mock.calls[0][0].contentType).toBe('application/pdf');
+    expect(createPending.mock.calls[0][0].contentType).toBe('application/pdf');
   });
 
   it('deletes the uploaded object when metadata persistence fails', async () => {

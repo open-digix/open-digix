@@ -3,6 +3,10 @@ import type { S3ClientConfig } from '@aws-sdk/client-s3';
 export interface StorageConfig {
   bucket: string;
   client: S3ClientConfig;
+  upload: {
+    maxBytes: number;
+    allowedContentTypes: readonly string[];
+  };
 }
 
 function required(environment: NodeJS.ProcessEnv, name: string): string {
@@ -68,6 +72,33 @@ function boolean(environment: NodeJS.ProcessEnv, name: string): boolean {
   throw new Error(`${name} must be true or false`);
 }
 
+function positiveInteger(value: string, name: string): number {
+  if (!/^[1-9]\d*$/.test(value)) {
+    throw new Error(`${name} must be a positive integer`);
+  }
+
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed)) {
+    throw new Error(`${name} must be a safe integer`);
+  }
+
+  return parsed;
+}
+
+function contentTypes(value: string): readonly string[] {
+  const mimePattern =
+    /^[a-z0-9][a-z0-9!#$&^_.+-]*\/[a-z0-9][a-z0-9!#$&^_.+-]*$/;
+  const values = value.split(',').map((item) => item.trim().toLowerCase());
+
+  if (values.some((item) => !mimePattern.test(item))) {
+    throw new Error(
+      'STORAGE_UPLOAD_ALLOWED_CONTENT_TYPES must be a comma-separated list of MIME types',
+    );
+  }
+
+  return [...new Set(values)];
+}
+
 export function loadStorageConfig(
   environment: NodeJS.ProcessEnv = process.env,
 ): StorageConfig {
@@ -81,6 +112,15 @@ export function loadStorageConfig(
         accessKeyId: required(environment, 'S3_ACCESS_KEY_ID'),
         secretAccessKey: required(environment, 'S3_SECRET_ACCESS_KEY'),
       },
+    },
+    upload: {
+      maxBytes: positiveInteger(
+        required(environment, 'STORAGE_UPLOAD_MAX_BYTES'),
+        'STORAGE_UPLOAD_MAX_BYTES',
+      ),
+      allowedContentTypes: contentTypes(
+        required(environment, 'STORAGE_UPLOAD_ALLOWED_CONTENT_TYPES'),
+      ),
     },
   };
 }
