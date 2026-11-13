@@ -11,6 +11,7 @@ export interface WorkflowRequestOptions {
   query?: URLSearchParams;
   json?: unknown;
   form?: FormData;
+  responseType?: 'json' | 'empty';
 }
 
 export class WorkflowRequestError extends Error {
@@ -130,7 +131,7 @@ export class WorkflowClient {
       );
     }
 
-    if (response.status === 204) {
+    if (response.status === 204 || options.responseType === 'empty') {
       return undefined as T;
     }
 

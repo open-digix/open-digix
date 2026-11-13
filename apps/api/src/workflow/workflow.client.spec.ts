@@ -179,6 +179,18 @@ describe('WorkflowClient', () => {
     await expect(client.request('/service/test')).resolves.toBeUndefined();
   });
 
+  it('supports an explicitly empty HTTP 200 response', async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 200 }));
+
+    await expect(
+      client.request('/service/runtime/tasks/task-1', {
+        method: 'POST',
+        json: { action: 'complete' },
+        responseType: 'empty',
+      }),
+    ).resolves.toBeUndefined();
+  });
+
   it('rejects an invalid successful JSON response', async () => {
     fetchMock.mockResolvedValueOnce(new Response('not-json', { status: 200 }));
 
