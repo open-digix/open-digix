@@ -4,6 +4,7 @@ import { loadWorkflowConfig } from './workflow.config';
 import { WORKFLOW_CONFIG } from './workflow.constants';
 import { WorkflowDeploymentService } from './workflow-deployment.service';
 import { WorkflowRuntimeService } from './workflow-runtime.service';
+import { WorkflowTaskService } from './workflow-task.service';
 
 @Module({
   providers: [
@@ -14,12 +15,14 @@ import { WorkflowRuntimeService } from './workflow-runtime.service';
     WorkflowClient,
     WorkflowDeploymentService,
     WorkflowRuntimeService,
+    WorkflowTaskService,
   ],
   exports: [
     WORKFLOW_CONFIG,
     WorkflowClient,
     WorkflowDeploymentService,
     WorkflowRuntimeService,
+    WorkflowTaskService,
   ],
 })
 export class WorkflowModule {}
