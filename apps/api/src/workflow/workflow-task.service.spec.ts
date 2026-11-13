@@ -1,4 +1,4 @@
-import { ForbiddenException } from '@nestjs/common';
+import { ConflictException, ForbiddenException } from '@nestjs/common';
 import type { WorkflowClient, WorkflowRequestOptions } from './workflow.client';
 import { WorkflowTaskService } from './workflow-task.service';
 
@@ -89,5 +89,116 @@ describe('WorkflowTaskService', () => {
       status: 200,
       retryable: false,
     });
+  });
+
+  it('completes a task assigned directly to the actor', async () => {
+    request.mockResolvedValueOnce({ ...flowableTask, assignee: 'user-7' });
+    request.mockResolvedValueOnce(undefined);
+
+    await expect(
+      service.complete({
+        tenantId: 'tenant-beta',
+        taskId: 'task-44',
+        actorId: 'user-7',
+        candidateGroups: [],
+        variables: { manager_decision: 'approved' },
+      }),
+    ).resolves.toBeUndefined();
+
+    expect(request).toHaveBeenNthCalledWith(
+      2,
+      '/service/runtime/tasks/task-44',
+      {
+        method: 'POST',
+        json: {
+          action: 'complete',
+          variables: [{ name: 'manager_decision', value: 'approved' }],
+        },
+        responseType: 'empty',
+      },
+    );
+  });
+
+  it('completes an unassigned task for a matching candidate group', async () => {
+    request
+      .mockResolvedValueOnce(flowableTask)
+      .mockResolvedValueOnce([
+        { user: null, group: 'tenant-beta:manager', type: 'candidate' },
+      ])
+      .mockResolvedValueOnce(undefined);
+
+    await expect(
+      service.complete({
+        tenantId: 'tenant-beta',
+        taskId: 'task-44',
+        actorId: 'user-7',
+        candidateGroups: ['tenant-beta:manager'],
+      }),
+    ).resolves.toBeUndefined();
+
+    expect(request).toHaveBeenNthCalledWith(
+      2,
+      '/service/runtime/tasks/task-44/identitylinks',
+    );
+    expect(request).toHaveBeenCalledTimes(3);
+  });
+
+  it('blocks an actor when the task is assigned to another user', async () => {
+    request.mockResolvedValueOnce({ ...flowableTask, assignee: 'user-8' });
+
+    await expect(
+      service.complete({
+        tenantId: 'tenant-beta',
+        taskId: 'task-44',
+        actorId: 'user-7',
+        candidateGroups: [],
+      }),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(request).toHaveBeenCalledTimes(1);
+  });
+
+  it('blocks an actor without a matching candidate identity link', async () => {
+    request
+      .mockResolvedValueOnce(flowableTask)
+      .mockResolvedValueOnce([
+        { user: null, group: 'tenant-beta:hr', type: 'candidate' },
+      ]);
+
+    await expect(
+      service.complete({
+        tenantId: 'tenant-beta',
+        taskId: 'task-44',
+        actorId: 'user-7',
+        candidateGroups: ['tenant-beta:manager'],
+      }),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(request).toHaveBeenCalledTimes(2);
+  });
+
+  it('blocks a suspended task', async () => {
+    request.mockResolvedValueOnce({ ...flowableTask, suspended: true });
+
+    await expect(
+      service.complete({
+        tenantId: 'tenant-beta',
+        taskId: 'task-44',
+        actorId: 'user-7',
+        candidateGroups: ['tenant-beta:manager'],
+      }),
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(request).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects invalid completion variables before contacting Flowable', async () => {
+    await expect(
+      service.complete({
+        tenantId: 'tenant-beta',
+        taskId: 'task-44',
+        actorId: 'user-7',
+        candidateGroups: [],
+        variables: { tenantId: 'tenant-alpha' },
+      }),
+    ).rejects.toThrow('Invalid workflow variable name');
+    expect(request).not.toHaveBeenCalled();
   });
 });

@@ -1,11 +1,23 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { WorkflowClient, WorkflowRequestError } from './workflow.client';
+import type { WorkflowVariableValue } from './workflow-runtime.service';
 
 const IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$/;
+const VARIABLE_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]{0,127}$/;
 
 export interface GetWorkflowTaskInput {
   tenantId: string;
   taskId: string;
+}
+
+export interface CompleteWorkflowTaskInput extends GetWorkflowTaskInput {
+  actorId: string;
+  candidateGroups: readonly string[];
+  variables?: Readonly<Record<string, WorkflowVariableValue>>;
 }
 
 export interface WorkflowTask {
@@ -30,6 +42,12 @@ interface FlowableTaskResponse {
   tenantId?: unknown;
   suspended?: unknown;
   createTime?: unknown;
+}
+
+interface FlowableIdentityLink {
+  user?: unknown;
+  group?: unknown;
+  type?: unknown;
 }
 
 function validateIdentifier(value: string, field: string): void {
@@ -71,6 +89,36 @@ function nullableString(
     );
   }
   return value;
+}
+
+function identityValue(value: unknown, field: string): string | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new WorkflowRequestError(
+      `Workflow identity link has an invalid ${field}`,
+      'invalid_response',
+      200,
+      false,
+    );
+  }
+  return value;
+}
+
+function validateCompletionInput(input: CompleteWorkflowTaskInput): void {
+  validateIdentifier(input.actorId, 'actorId');
+  for (const group of input.candidateGroups) {
+    validateIdentifier(group, 'candidateGroup');
+  }
+  for (const [name, value] of Object.entries(input.variables ?? {})) {
+    if (!VARIABLE_NAME_PATTERN.test(name) || name === 'tenantId') {
+      throw new Error(`Invalid workflow variable name: ${name}`);
+    }
+    if (typeof value === 'number' && !Number.isFinite(value)) {
+      throw new Error(`Workflow variable ${name} must be a finite number`);
+    }
+  }
 }
 
 @Injectable()
@@ -123,5 +171,86 @@ export class WorkflowTaskService {
     }
 
     return task;
+  }
+
+  async complete(input: CompleteWorkflowTaskInput): Promise<void> {
+    validateCompletionInput(input);
+    const task = await this.get(input);
+
+    if (task.suspended) {
+      throw new ConflictException({
+        error: {
+          code: 'WORKFLOW_TASK_SUSPENDED',
+          message: 'The workflow task is suspended',
+        },
+      });
+    }
+
+    if (task.assignee !== null) {
+      if (task.assignee !== input.actorId) {
+        throw new ForbiddenException({
+          error: {
+            code: 'WORKFLOW_TASK_NOT_ASSIGNED',
+            message: 'The workflow task is assigned to another user',
+          },
+        });
+      }
+    } else {
+      const links = await this.client.request<FlowableIdentityLink[]>(
+        `/service/runtime/tasks/${encodeURIComponent(input.taskId)}/identitylinks`,
+      );
+      if (!Array.isArray(links)) {
+        throw new WorkflowRequestError(
+          'Workflow identity link response is not an array',
+          'invalid_response',
+          200,
+          false,
+        );
+      }
+
+      const candidateGroups = new Set(input.candidateGroups);
+      const eligible = links.some((link) => {
+        if (typeof link !== 'object' || link === null) {
+          throw new WorkflowRequestError(
+            'Workflow identity link response contains an invalid item',
+            'invalid_response',
+            200,
+            false,
+          );
+        }
+        if (link.type !== 'candidate') {
+          return false;
+        }
+        const user = identityValue(link.user, 'user');
+        const group = identityValue(link.group, 'group');
+        return (
+          user === input.actorId ||
+          (group !== null && candidateGroups.has(group))
+        );
+      });
+
+      if (!eligible) {
+        throw new ForbiddenException({
+          error: {
+            code: 'WORKFLOW_TASK_NOT_CANDIDATE',
+            message: 'The user is not a candidate for this workflow task',
+          },
+        });
+      }
+    }
+
+    await this.client.request<void>(
+      `/service/runtime/tasks/${encodeURIComponent(input.taskId)}`,
+      {
+        method: 'POST',
+        json: {
+          action: 'complete',
+          variables: Object.entries(input.variables ?? {}).map(
+            ([name, value]) => ({ name, value }),
+          ),
+        },
+        responseType: 'empty',
+      },
+    );
   }
 }
