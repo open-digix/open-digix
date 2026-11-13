@@ -1,4 +1,9 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  GetObjectCommand,
+  type GetObjectCommandOutput,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { Inject, Injectable } from '@nestjs/common';
 import { S3_CLIENT, STORAGE_CONFIG } from './storage.constants';
 import type { StorageConfig } from './storage.config';
@@ -12,6 +17,18 @@ export interface PutStorageObjectInput {
 export interface PutStorageObjectResult {
   key: string;
   etag?: string;
+  versionId?: string;
+}
+
+export type StorageObjectBody = NonNullable<GetObjectCommandOutput['Body']>;
+
+export interface GetStorageObjectResult {
+  key: string;
+  body: StorageObjectBody;
+  contentLength?: number;
+  contentType?: string;
+  etag?: string;
+  lastModified?: Date;
   versionId?: string;
 }
 
@@ -38,6 +55,29 @@ export class StorageObjectService {
     return {
       key: input.key,
       etag: result.ETag,
+      versionId: result.VersionId,
+    };
+  }
+
+  async getObject(key: string): Promise<GetStorageObjectResult> {
+    const result = await this.client.send(
+      new GetObjectCommand({
+        Bucket: this.config.bucket,
+        Key: key,
+      }),
+    );
+
+    if (!result.Body) {
+      throw new Error('Object storage returned a response without a body');
+    }
+
+    return {
+      key,
+      body: result.Body,
+      contentLength: result.ContentLength,
+      contentType: result.ContentType,
+      etag: result.ETag,
+      lastModified: result.LastModified,
       versionId: result.VersionId,
     };
   }
