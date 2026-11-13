@@ -1,102 +1,91 @@
 # DigiX Web
 
-Frontend DigiX dùng Next.js, React, TypeScript và Tailwind CSS. Trong môi trường phát triển local, ứng dụng dùng Auth.js để đăng nhập qua Keycloak và gọi API NestJS để lấy thông tin người dùng.
+Frontend DigiX dùng Next.js, React, TypeScript và Tailwind CSS. Đăng nhập đi qua Auth.js và Keycloak; dashboard gọi `GET /v1/me` qua APISIX Gateway để lấy người dùng và membership từ API NestJS.
 
-Hướng dẫn dưới đây chạy **web trên máy**, còn PostgreSQL, Keycloak, Gateway và API chạy bằng Docker Compose. Cấu hình này chỉ dành cho phát triển local.
+Hướng dẫn chính dưới đây chạy **toàn bộ hệ thống bằng Docker Compose** trên máy local. Không cần cài Node.js để chạy web theo cách này. Cần Docker Desktop, Docker Compose v2, kết nối mạng cho lần tải image/package đầu và các cổng 3000, 3001, 8080 còn trống.
 
-## Yêu cầu
+## Chạy lần đầu trên máy mới
 
-- Node.js 24 và npm.
-- Docker Desktop đang chạy, có Docker Compose v2.
-- Các cổng 3000, 3001 và 8080 khả dụng.
-
-## 1. Chuẩn bị dịch vụ và tài khoản demo
-
-Mở PowerShell tại thư mục gốc repo `open-digix`. Nếu chưa có `.env`, tạo từ file mẫu:
+Mở PowerShell tại **thư mục gốc repo** `open-digix`:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Mở `.env`, thay các mật khẩu mẫu bằng giá trị chỉ dùng cho local và cấu hình các biến `DEMO_*`. Sau đó chạy:
-
-```powershell
-docker compose up -d --build --wait db keycloak api gateway
-docker compose --profile demo run --rm auth-demo-seed
-```
-
-Seed tạo hoặc cập nhật tài khoản synthetic trong Keycloak và gán identity, membership mẫu trong database. Tên đăng nhập và mật khẩu demo lấy từ `DEMO_USER_USERNAME` và `DEMO_USER_PASSWORD` trong `.env`. **Chạy lại seed sẽ đặt lại mật khẩu của tài khoản demo** theo giá trị hiện tại trong file này.
-
-Nếu service `web` của Compose đang chiếm cổng 3000, dừng riêng service đó trước khi chạy web trên máy:
-
-```powershell
-docker compose stop web
-```
-
-Xem thêm [hướng dẫn Keycloak](../../infra/keycloak/README.md) và [README của dự án](../../README.md).
-
-## 2. Cấu hình frontend
-
-Tạo file `apps/web/.env.local` với các biến sau:
+Mở `.env` và thay mọi mật khẩu mẫu bằng giá trị riêng cho máy. Thêm các biến frontend sau nếu file mẫu chưa có:
 
 ```env
 AUTH_SECRET=<chuoi-ngau-nhien-rieng>
 AUTH_URL=http://localhost:3000
 AUTH_KEYCLOAK_ID=digix-web
 AUTH_KEYCLOAK_ISSUER=http://localhost:8080/realms/digix
-API_INTERNAL_URL=http://localhost:3001
+AUTH_KEYCLOAK_INTERNAL_URL=http://keycloak:8080
+AUTH_TRUST_HOST=true
 ```
 
-Tạo giá trị ngẫu nhiên cho `AUTH_SECRET` bằng lệnh sau và chép kết quả vào file:
+`GATEWAY_OIDC_CLIENT_SECRET` cũng phải có giá trị local riêng trong `.env`. Tạo một chuỗi cho từng secret bằng PowerShell:
 
 ```powershell
-node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"
+[Guid]::NewGuid().ToString('N') + [Guid]::NewGuid().ToString('N')
 ```
 
-Client `digix-web` trong cấu hình local là public client. Không commit file `.env`, `.env.local`, mật khẩu, secret hoặc token. Khởi động lại web sau khi thay đổi biến môi trường.
-`API_INTERNAL_URL` trỏ tới APISIX trên cổng `GATEWAY_PORT` (mặc định 3001), không phải NestJS. Nếu web cũng chạy trong Compose, địa chỉ nội bộ được đặt tự động là `http://gateway:9080`.
+Không dùng cùng một giá trị cho các secret. `digix-web` là public client nên không cần `AUTH_KEYCLOAK_SECRET`. Không commit `.env`, `apps/web/.env.local`, mật khẩu hoặc token.
 
-Nếu đổi cổng web hoặc Keycloak, phải cập nhật URL và cấu hình redirect/origin của client Keycloak cho khớp. Realm đã tồn tại trong database sẽ không tự cập nhật khi sửa file import.
-
-## 3. Chạy frontend
-
-Từ thư mục `apps/web`:
+Kiểm tra cấu hình, rồi khởi động tất cả dịch vụ:
 
 ```powershell
-npm ci
-npm run dev
+docker compose config --quiet
+docker compose up --build --wait
 ```
 
-Mở [http://localhost:3000](http://localhost:3000). Các trang chính:
+Web mở tại <http://localhost:3000>; Gateway tại <http://localhost:3001>; Keycloak tại <http://localhost:8080>. Nếu trước đó có `npm run dev` đang dùng cổng 3000, dừng nó bằng `Ctrl+C`. Không chạy hai bản web cùng lúc.
+
+### Tạo tài khoản demo
+
+Nếu cần đăng nhập bằng tài khoản demo, đặt `DEMO_USER_PASSWORD` riêng trong `.env`, rồi chạy **một lần**:
+
+```powershell
+docker compose --profile demo run --rm auth-demo-seed
+```
+
+Tên đăng nhập nằm ở `DEMO_USER_USERNAME` (mặc định trong file mẫu là `dung.demo`); mật khẩu là giá trị vừa đặt trong `DEMO_USER_PASSWORD`. Seed tạo hoặc cập nhật người dùng Keycloak và liên kết identity, membership trong PostgreSQL. Chạy lại seed sẽ đặt lại mật khẩu demo theo `.env`.
+
+## Những lần chạy sau
+
+Khi `.env` và dữ liệu demo đã có, khởi động bằng:
+
+```powershell
+docker compose up --build --wait
+```
+
+Dừng bằng `docker compose down`. Volume giữ dữ liệu khi dừng; tránh `docker compose down -v` nếu không chủ ý xóa dữ liệu local.
+
+## Các trang và luồng đăng nhập
 
 - `/`: trang giới thiệu DigiX.
-- `/login`: hộp thoại đăng nhập.
-- `/register`: thông báo về việc cấp tài khoản; tự đăng ký hiện chưa bật.
-- `/dashboard`: trang tổng quan cần phiên đăng nhập; số liệu đang là dữ liệu mẫu.
-- `/status`: kiểm tra kết nối web, API và database.
+- `/login`: mở giao diện đăng nhập. Nút tiếp tục đưa trình duyệt sang Keycloak.
+- `/register`: thông báo cách xin cấp tài khoản; realm hiện tắt tự đăng ký.
+- `/dashboard`: yêu cầu phiên đăng nhập; gọi `/v1/me` qua Gateway. Các số liệu nghiệp vụ hiện vẫn là dữ liệu mẫu.
+- `/status`: kiểm tra đường đi từ web đến Gateway/API/database.
 
-## 4. Kiểm tra đăng nhập
+Luồng: trình duyệt mở Keycloak tại `localhost:8080` → Keycloak đưa người dùng về callback của Auth.js → server web dùng địa chỉ nội bộ `keycloak:8080` để đổi authorization code lấy token → dashboard gửi access token qua Gateway → API kiểm tra danh tính và membership. `AUTH_KEYCLOAK_ISSUER` phải giữ issuer công khai `localhost:8080`, còn `AUTH_KEYCLOAK_INTERNAL_URL` là địa chỉ chỉ container truy cập.
 
-1. Truy cập trang chủ và chọn **Đăng nhập**. Trang sẽ chuyển sang Keycloak.
-2. Đăng nhập bằng tài khoản demo đã seed. Sau callback, ứng dụng gọi `GET /v1/me` và hiển thị thông tin tài khoản trên dashboard.
-3. Bấm **Đăng xuất**, sau đó truy cập trực tiếp `/dashboard`: ứng dụng phải yêu cầu đăng nhập lại.
-4. Kiểm tra trường hợp chưa đăng nhập bằng cửa sổ trình duyệt ẩn danh.
+Để kiểm tra, đăng nhập bằng tài khoản demo rồi xem tên người dùng và doanh nghiệp trên dashboard. Bấm **Đăng xuất** và mở trực tiếp `/dashboard`: ứng dụng phải yêu cầu đăng nhập lại. Phiên SSO Keycloak có thể còn hiệu lực nên lần đăng nhập kế tiếp có thể không hỏi lại mật khẩu. Access token hiện chưa được tự làm mới.
 
-Phiên Keycloak có thể vẫn còn sau khi đăng xuất khỏi ứng dụng, vì vậy lần đăng nhập tiếp theo có thể không yêu cầu nhập lại mật khẩu. Hiện chưa có tự làm mới access token; khi token không còn hợp lệ cần đăng nhập lại. Một tài khoản Keycloak cũng cần identity và membership tương ứng trong DigiX để API nhận diện và cấp quyền.
+## Kiểm tra và xử lý lỗi
 
-## 5. Kiểm tra mã
-
-Chạy trong `apps/web`:
+Chạy tại gốc repo:
 
 ```powershell
-npm run lint
-npm run build
+docker compose ps
+docker compose logs --tail=100 web keycloak gateway api
 ```
 
-## Xử lý sự cố
+- **Compose báo thiếu biến:** kiểm tra tên biến trong `.env`, đặc biệt `AUTH_SECRET` và `GATEWAY_OIDC_CLIENT_SECRET`; chạy lại `docker compose config --quiet`.
+- **Trang đăng nhập báo lỗi cấu hình:** kiểm tra `http://localhost:3000/api/auth/providers` có trả JSON và xem log service `web`.
+- **`localhost:3000` khác `127.0.0.1:3000`:** có thể còn một `npm run dev` cũ chiếm cổng 3000; dừng tiến trình đó.
+- **Keycloak từ chối redirect:** dùng đúng cổng 3000 hoặc cập nhật redirect URI/web origin của client `digix-web`. Realm đã tồn tại trong database không tự cập nhật khi sửa file import.
+- **Đăng nhập được nhưng API trả 403:** kiểm tra đã chạy seed và dùng đúng tài khoản có membership.
+- **Web báo không kết nối được API:** xem trạng thái `gateway` và `api`, rồi thử `http://localhost:3001/health`.
 
-- **`MissingSecret`:** kiểm tra `AUTH_SECRET` trong `apps/web/.env.local`, lưu file và khởi động lại web.
-- **`/api/auth/providers` trả 404:** kiểm tra route `app/api/auth/[...nextauth]/route.ts` và khởi động lại web.
-- **Keycloak báo redirect URI không hợp lệ:** kiểm tra URL và cấu hình client `digix-web`; xem hướng dẫn Keycloak ở trên.
-- **Không kết nối được API:** kiểm tra `docker compose ps` ở thư mục gốc và mở `http://localhost:3001/health` qua Gateway.
-- **Đăng nhập được nhưng không có quyền:** kiểm tra tài khoản demo đã được seed và có membership đang hoạt động.
+Để kiểm tra mã nguồn riêng, chạy `npm ci`, `npm run lint` và `npm run build` trong `apps/web`. Xem thêm [README dự án](../../README.md) và [hướng dẫn Keycloak](../../infra/keycloak/README.md).
