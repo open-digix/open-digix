@@ -165,6 +165,12 @@ services:
     build: ./apps/web
     environment:
       API_INTERNAL_URL: http://gateway:9080
+      AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in .env}
+      AUTH_URL: ${AUTH_URL:-http://localhost:3000}
+      AUTH_KEYCLOAK_ID: ${AUTH_KEYCLOAK_ID:-digix-web}
+      AUTH_KEYCLOAK_ISSUER: ${AUTH_KEYCLOAK_ISSUER:-http://localhost:8080/realms/digix}
+      AUTH_KEYCLOAK_INTERNAL_URL: ${AUTH_KEYCLOAK_INTERNAL_URL:-http://keycloak:8080}
+      AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-true}
     ports:
       - "127.0.0.1:${WEB_PORT:-3000}:3000"
     depends_on:
