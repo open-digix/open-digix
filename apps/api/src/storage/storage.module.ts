@@ -4,6 +4,7 @@ import { StorageBucketInitializer } from './storage-bucket.initializer';
 import { loadStorageConfig, type StorageConfig } from './storage.config';
 import { S3_CLIENT, STORAGE_CONFIG } from './storage.constants';
 import { StorageObjectService } from './storage-object.service';
+import { StoredFileRepository } from './stored-file.repository';
 
 @Module({
   providers: [
@@ -18,8 +19,14 @@ import { StorageObjectService } from './storage-object.service';
     },
     StorageBucketInitializer,
     StorageObjectService,
+    StoredFileRepository,
   ],
-  exports: [S3_CLIENT, STORAGE_CONFIG, StorageObjectService],
+  exports: [
+    S3_CLIENT,
+    STORAGE_CONFIG,
+    StorageObjectService,
+    StoredFileRepository,
+  ],
 })
 export class StorageModule implements OnApplicationShutdown {
   constructor(@Inject(S3_CLIENT) private readonly client: S3Client) {}
