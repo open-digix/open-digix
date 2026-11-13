@@ -1,9 +1,12 @@
 # DigiX API
 
 NestJS API cho DigiX. Lát cắt hiện tại cung cấp health check PostgreSQL,
-versioned database migrations, công cụ kiểm chứng tenant isolation và xác thực
-access token OIDC bằng issuer/audience/JWKS. API nghiệp vụ, tenant
-membership/role authorization, workflow và Builder chưa được triển khai.
+versioned database migrations, kiểm chứng tenant isolation, xác thực access token
+OIDC bằng issuer/audience/JWKS, tenant membership/role guards, `GET /v1/me` và
+upload tệp tenant-scoped vào kho S3-compatible. API cũng có lớp tích hợp Flowable
+để deploy definition, khởi chạy process, đọc và hoàn tất user task có kiểm tra
+tenant/người thực hiện. API nghiệp vụ đầu-cuối, Builder và các endpoint workflow
+công khai chưa được triển khai.
 
 ## Chạy bằng Docker Compose
 
@@ -11,12 +14,13 @@ Cách tái lập được khuyến nghị nằm ở README thư mục gốc:
 
 ```sh
 cp .env.example .env
-# Đặt POSTGRES_PASSWORD riêng cho máy local.
+# Thay toàn bộ password/secret mẫu bằng giá trị riêng cho máy local.
 docker compose up --build --wait
 ```
 
 Compose chạy migration trước khi khởi động API. API chỉ healthy sau khi kết nối
-PostgreSQL và migration thành công.
+PostgreSQL và migration thành công. Compose cũng chờ SeaweedFS và Flowable healthy
+trước khi khởi động API.
 
 ## OIDC access-token validation
 
@@ -41,8 +45,9 @@ Global auth guard bảo vệ mọi endpoint trừ endpoint được đánh dấu
 Hiện `/` và `/health` là public để phục vụ smoke test và health probe. Guard gắn
 identity đã xác minh vào request dưới dạng `authenticatedIdentity`, gồm
 `issuer`, `subject` và profile claim an toàn. API không dùng `tenant_id`, role
-hoặc permission trong JWT để quyết định quyền; checkpoint tenant context sẽ
-resolve cặp `(iss, sub)` sang membership/role hiện hành trong PostgreSQL.
+hoặc permission trong JWT để quyết định quyền. Tenant context resolve cặp
+`(iss, sub)` sang user, membership và role hiện hành trong PostgreSQL ở mỗi
+request cần tenant.
 
 Request thiếu token trả `401 AUTHENTICATION_REQUIRED`; Bearer token sai hoặc
 hết hạn trả `401 INVALID_ACCESS_TOKEN`. Chi tiết lỗi JOSE không được trả cho
@@ -184,6 +189,34 @@ Nếu bước DB lỗi, object vừa upload được xóa để rollback.
 download có quyền, kiểm tra chữ ký nội dung và quét mã độc chưa thuộc checkpoint
 này.
 
+## Flowable workflow foundation
+
+`WorkflowModule` kết nối Flowable REST bằng tài khoản dịch vụ chỉ nằm phía server:
+
+```env
+WORKFLOW_BASE_URL=http://workflow-engine:8080/flowable-rest
+WORKFLOW_USERNAME=rest-admin
+WORKFLOW_PASSWORD=<local-service-password>
+WORKFLOW_REQUEST_TIMEOUT_MS=5000
+```
+
+Các service hiện có:
+
+- `WorkflowDeploymentService`: deploy BPMN 2.0 do backend sinh, gắn deployment với
+  `tenantId`;
+- `WorkflowRuntimeService`: kiểm tra definition thuộc đúng tenant, chưa suspended,
+  rồi mới khởi chạy process với `businessKey` và biến `tenantId` bắt buộc;
+- `WorkflowTaskService`: đọc task theo tenant và chỉ hoàn tất khi actor là assignee
+  hoặc thuộc user/group candidate hợp lệ;
+- `WorkflowClient`: đặt timeout, Basic auth phía server, chuẩn hóa lỗi HTTP và kiểm
+  tra response từ Flowable.
+
+Các lớp này là adapter nội bộ để API nghiệp vụ gọi; hiện không có controller cho
+phép client gọi thẳng deploy/start/complete. Client không được gửi credential
+Flowable hoặc tự chọn tenant để bỏ qua tenant context của API. Workflow engine giữ
+trạng thái process; PostgreSQL DigiX giữ dữ liệu nghiệp vụ và các tham chiếu cần
+thiết để truy vấn/audit.
+
 ## Seed dữ liệu xác thực demo
 
 Sau khi điền các biến `DEMO_*` trong `.env`, có thể tạo một user Keycloak
@@ -221,6 +254,17 @@ Lệnh tương ứng trong production image:
 node dist/database/migrate.js
 node dist/database/verify-schema.js
 ```
+
+Sau khi toàn bộ Compose stack healthy, kiểm tra DB, SeaweedFS và Flowable bằng
+production build trong container API:
+
+```sh
+docker compose exec -T api npm run smoke:m1:core
+```
+
+Smoke runner tạo object và workflow có định danh ngẫu nhiên, kiểm tra
+deploy/start/read/complete rồi cleanup dữ liệu thử. Kết quả thành công kết thúc
+bằng `PASS M1 core smoke test`; secret không được in ra log.
 
 ## Migration workflow
 
@@ -260,6 +304,10 @@ Xem ERD, mô tả bảng và quy tắc tenant isolation tại
 - Verification xác nhận 13 bảng bắt buộc.
 - Sáu liên kết chéo tenant bị PostgreSQL từ chối.
 - Dữ liệu verification được rollback hoàn toàn.
+- Upload service ghi/đọc/xóa object qua S3 API của SeaweedFS.
+- Workflow adapter deploy, start, đọc và hoàn tất task trên Flowable REST.
+- Unit test hiện tại kiểm tra auth, tenant/role guards, storage và workflow adapter.
 
-Các kết quả trên chỉ chứng minh database foundation, không chứng minh MVP
-đầu-cuối đã hoàn thành.
+Các kết quả trên chứng minh foundation phía API, không chứng minh luồng nghiệp vụ
+hoặc MVP đầu-cuối đã hoàn thành. M1 chỉ được đánh dấu đạt sau khi smoke thêm
+SSO/Gateway trên máy chung và có người thứ hai setup độc lập từ bản clone sạch.
