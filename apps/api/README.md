@@ -136,6 +136,54 @@ Các lỗi bổ sung:
 - `400 TENANT_CONTEXT_REQUIRED`: endpoint tenant-scoped thiếu `X-Tenant-Id`.
 - `403 ROLE_REQUIRED`: active membership không có một trong các role yêu cầu.
 
+## `POST /v1/files`
+
+Endpoint tải một tệp vào tenant đang được chọn. Request bắt buộc có access token,
+`X-Tenant-Id` của active membership và đúng một multipart field tên `file`:
+
+```http
+POST /v1/files
+Authorization: Bearer <access-token>
+X-Tenant-Id: <tenant-uuid>
+Content-Type: multipart/form-data; boundary=...
+
+file=<binary>
+```
+
+Tenant và membership dùng để ghi metadata được lấy từ context đã được guard xác
+minh; API không nhận `tenantId` hoặc `createdByMembershipId` từ multipart body.
+Response `201 Created` không để lộ storage key nội bộ:
+
+```json
+{
+  "id": "33333333-3333-4333-8333-333333333333",
+  "recordId": null,
+  "originalName": "invoice.pdf",
+  "contentType": "application/pdf",
+  "sizeBytes": 245760,
+  "checksumSha256": "64-character-lowercase-hex",
+  "scanStatus": "pending",
+  "createdAt": "2026-11-14T00:00:00.000Z"
+}
+```
+
+Các lỗi riêng của endpoint:
+
+- `400 FILE_REQUIRED`: thiếu multipart field `file`.
+- `400 EMPTY_FILE`: file không có nội dung.
+- `400 INVALID_MULTIPART_UPLOAD`: sai field hoặc cấu trúc multipart.
+- `413 FILE_TOO_LARGE`: vượt `STORAGE_UPLOAD_MAX_BYTES`.
+- `415 UNSUPPORTED_FILE_TYPE`: MIME không thuộc
+  `STORAGE_UPLOAD_ALLOWED_CONTENT_TYPES`.
+
+Multer áp giới hạn dung lượng trước khi chuyển buffer vào service. Service tự tính
+kích thước và SHA-256, upload nội dung vào SeaweedFS rồi lưu metadata PostgreSQL.
+Nếu bước DB lỗi, object vừa upload được xóa để rollback.
+
+`pending` chỉ có nghĩa file đã được tiếp nhận, không có nghĩa file an toàn. Endpoint
+download có quyền, kiểm tra chữ ký nội dung và quét mã độc chưa thuộc checkpoint
+này.
+
 ## Seed dữ liệu xác thực demo
 
 Sau khi điền các biến `DEMO_*` trong `.env`, có thể tạo một user Keycloak

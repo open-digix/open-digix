@@ -4,10 +4,13 @@ import { StorageBucketInitializer } from './storage-bucket.initializer';
 import { loadStorageConfig, type StorageConfig } from './storage.config';
 import { S3_CLIENT, STORAGE_CONFIG } from './storage.constants';
 import { StorageObjectService } from './storage-object.service';
+import { StoredFileController } from './stored-file.controller';
 import { StoredFileRepository } from './stored-file.repository';
 import { StoredFileService } from './stored-file.service';
+import { StoredFileUploadInterceptor } from './stored-file-upload.interceptor';
 
 @Module({
+  controllers: [StoredFileController],
   providers: [
     {
       provide: STORAGE_CONFIG,
@@ -22,6 +25,7 @@ import { StoredFileService } from './stored-file.service';
     StorageObjectService,
     StoredFileRepository,
     StoredFileService,
+    StoredFileUploadInterceptor,
   ],
   exports: [
     S3_CLIENT,
