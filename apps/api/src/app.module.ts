@@ -10,9 +10,10 @@ import { HealthService } from './health.service';
 import { IdentityModule } from './identity/identity.module';
 import { RolesGuard } from './identity/roles.guard';
 import { TenantContextGuard } from './identity/tenant-context.guard';
+import { StorageModule } from './storage/storage.module';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, IdentityModule],
+  imports: [DatabaseModule, AuthModule, IdentityModule, StorageModule],
   controllers: [AppController, HealthController],
   providers: [
     AppService,
