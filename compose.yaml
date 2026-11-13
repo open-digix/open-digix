@@ -65,6 +65,29 @@ services:
       start_period: 30s
     restart: unless-stopped
 
+  object-storage:
+    image: chrislusf/seaweedfs:4.53
+    command: ["mini", "-dir=/data", "-ip.bind=0.0.0.0"]
+    environment:
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:?Set S3_ACCESS_KEY_ID in .env}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:?Set S3_SECRET_ACCESS_KEY in .env}
+    ports:
+      - "127.0.0.1:${S3_PORT:-8333}:8333"
+    volumes:
+      - object_storage_data:/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          curl --fail --silent --show-error http://127.0.0.1:9333/cluster/healthz >/dev/null &&
+          code=$$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:8333/) &&
+          { [ "$$code" = "200" ] || [ "$$code" = "403" ]; }
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 15s
+    restart: unless-stopped
+
   api:
     build: ./apps/api
     command:
@@ -193,3 +216,4 @@ services:
 volumes:
   postgres_data:
   keycloak_postgres_data:
+  object_storage_data:
