@@ -2,7 +2,7 @@
 
 Frontend DigiX dùng Next.js, React, TypeScript và Tailwind CSS. Trong môi trường phát triển local, ứng dụng dùng Auth.js để đăng nhập qua Keycloak và gọi API NestJS để lấy thông tin người dùng.
 
-Hướng dẫn dưới đây chạy **web trên máy**, còn PostgreSQL, Keycloak và API chạy bằng Docker Compose. Cấu hình này chỉ dành cho phát triển local.
+Hướng dẫn dưới đây chạy **web trên máy**, còn PostgreSQL, Keycloak, Gateway và API chạy bằng Docker Compose. Cấu hình này chỉ dành cho phát triển local.
 
 ## Yêu cầu
 
@@ -21,7 +21,7 @@ Copy-Item .env.example .env
 Mở `.env`, thay các mật khẩu mẫu bằng giá trị chỉ dùng cho local và cấu hình các biến `DEMO_*`. Sau đó chạy:
 
 ```powershell
-docker compose up -d --build --wait db keycloak api
+docker compose up -d --build --wait db keycloak api gateway
 docker compose --profile demo run --rm auth-demo-seed
 ```
 
@@ -54,6 +54,7 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'
 ```
 
 Client `digix-web` trong cấu hình local là public client. Không commit file `.env`, `.env.local`, mật khẩu, secret hoặc token. Khởi động lại web sau khi thay đổi biến môi trường.
+`API_INTERNAL_URL` trỏ tới APISIX trên cổng `GATEWAY_PORT` (mặc định 3001), không phải NestJS. Nếu web cũng chạy trong Compose, địa chỉ nội bộ được đặt tự động là `http://gateway:9080`.
 
 Nếu đổi cổng web hoặc Keycloak, phải cập nhật URL và cấu hình redirect/origin của client Keycloak cho khớp. Realm đã tồn tại trong database sẽ không tự cập nhật khi sửa file import.
 
@@ -97,5 +98,5 @@ npm run build
 - **`MissingSecret`:** kiểm tra `AUTH_SECRET` trong `apps/web/.env.local`, lưu file và khởi động lại web.
 - **`/api/auth/providers` trả 404:** kiểm tra route `app/api/auth/[...nextauth]/route.ts` và khởi động lại web.
 - **Keycloak báo redirect URI không hợp lệ:** kiểm tra URL và cấu hình client `digix-web`; xem hướng dẫn Keycloak ở trên.
-- **Không kết nối được API:** kiểm tra `docker compose ps` ở thư mục gốc và mở `http://localhost:3001/health`.
+- **Không kết nối được API:** kiểm tra `docker compose ps` ở thư mục gốc và mở `http://localhost:3001/health` qua Gateway.
 - **Đăng nhập được nhưng không có quyền:** kiểm tra tài khoản demo đã được seed và có membership đang hoạt động.
