@@ -65,6 +65,84 @@ services:
       start_period: 30s
     restart: unless-stopped
 
+  workflow-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${FLOWABLE_DB_USER:-flowable}
+      POSTGRES_DB: ${FLOWABLE_DB_NAME:-flowable}
+      POSTGRES_PASSWORD: ${FLOWABLE_DB_PASSWORD:?Set FLOWABLE_DB_PASSWORD in .env}
+    volumes:
+      - workflow_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  workflow-engine:
+    image: flowable/flowable-rest:8.0.0
+    environment:
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_DATASOURCE_URL: jdbc:postgresql://workflow-db:5432/${FLOWABLE_DB_NAME:-flowable}
+      SPRING_DATASOURCE_USERNAME: ${FLOWABLE_DB_USER:-flowable}
+      SPRING_DATASOURCE_PASSWORD: ${FLOWABLE_DB_PASSWORD:?Set FLOWABLE_DB_PASSWORD in .env}
+      FLOWABLE_DATABASE_SCHEMA_UPDATE: "true"
+      FLOWABLE_ASYNC_EXECUTOR_ACTIVATE: "true"
+      FLOWABLE_HISTORY_LEVEL: audit
+      FLOWABLE_REST_APP_CREATE_DEMO_DEFINITIONS: "false"
+      FLOWABLE_REST_APP_SWAGGER_DOCS_ENABLED: "true"
+      FLOWABLE_REST_APP_AUTHENTICATION_MODE: verify-privilege
+      FLOWABLE_REST_APP_ADMIN_USER_ID: ${FLOWABLE_REST_ADMIN_USER:-rest-admin}
+      FLOWABLE_REST_APP_ADMIN_PASSWORD: ${FLOWABLE_REST_ADMIN_PASSWORD:?Set FLOWABLE_REST_ADMIN_PASSWORD in .env}
+      FLOWABLE_REST_APP_ADMIN_FIRST_NAME: DigiX
+      FLOWABLE_REST_APP_ADMIN_LAST_NAME: Workflow
+      REST_VARIABLES_ALLOW_SERIALIZABLE: "false"
+    ports:
+      - "127.0.0.1:${FLOWABLE_PORT:-8082}:8080"
+    depends_on:
+      workflow-db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          authorization=$$(printf '%s' "$$FLOWABLE_REST_APP_ADMIN_USER_ID:$$FLOWABLE_REST_APP_ADMIN_PASSWORD" | base64 -w 0) &&
+          wget --quiet --spider --header "Authorization: Basic $$authorization"
+          http://127.0.0.1:8080/flowable-rest/actuator/health
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 45s
+    restart: unless-stopped
+
+  object-storage:
+    image: chrislusf/seaweedfs:4.53
+    command: ["mini", "-dir=/data", "-ip.bind=0.0.0.0"]
+    environment:
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:?Set S3_ACCESS_KEY_ID in .env}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:?Set S3_SECRET_ACCESS_KEY in .env}
+      WEED_ADMIN_USER: ${SEAWEEDFS_ADMIN_USER:-admin}
+      WEED_ADMIN_PASSWORD: ${SEAWEEDFS_ADMIN_PASSWORD:?Set SEAWEEDFS_ADMIN_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:${S3_PORT:-8333}:8333"
+      - "127.0.0.1:${SEAWEEDFS_ADMIN_PORT:-12535}:12535"
+    volumes:
+      - object_storage_data:/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          curl --fail --silent --show-error http://127.0.0.1:9333/cluster/healthz >/dev/null &&
+          code=$$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:8333/) &&
+          { [ "$$code" = "200" ] || [ "$$code" = "403" ]; } &&
+          curl --fail --silent --show-error http://127.0.0.1:12535/login >/dev/null
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 15s
+    restart: unless-stopped
+
   api:
     build: ./apps/api
     command:
@@ -79,8 +157,24 @@ services:
       OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:8080/realms/digix}
       OIDC_AUDIENCE: ${OIDC_AUDIENCE:-digix-api}
       OIDC_JWKS_URI: ${OIDC_JWKS_URI:-http://keycloak:8080/realms/digix/protocol/openid-connect/certs}
+      S3_ENDPOINT: ${S3_ENDPOINT:-http://object-storage:8333}
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_BUCKET: ${S3_BUCKET:-digix-files}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:?Set S3_ACCESS_KEY_ID in .env}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:?Set S3_SECRET_ACCESS_KEY in .env}
+      S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-true}
+      STORAGE_UPLOAD_MAX_BYTES: ${STORAGE_UPLOAD_MAX_BYTES:-10485760}
+      STORAGE_UPLOAD_ALLOWED_CONTENT_TYPES: ${STORAGE_UPLOAD_ALLOWED_CONTENT_TYPES:-application/pdf,image/jpeg,image/png,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet}
+      WORKFLOW_BASE_URL: ${WORKFLOW_BASE_URL:-http://workflow-engine:8080/flowable-rest}
+      WORKFLOW_USERNAME: ${FLOWABLE_REST_ADMIN_USER:-rest-admin}
+      WORKFLOW_PASSWORD: ${FLOWABLE_REST_ADMIN_PASSWORD:?Set FLOWABLE_REST_ADMIN_PASSWORD in .env}
+      WORKFLOW_REQUEST_TIMEOUT_MS: ${WORKFLOW_REQUEST_TIMEOUT_MS:-5000}
     depends_on:
       db:
+        condition: service_healthy
+      object-storage:
+        condition: service_healthy
+      workflow-engine:
         condition: service_healthy
     healthcheck:
       test:
@@ -193,3 +287,5 @@ services:
 volumes:
   postgres_data:
   keycloak_postgres_data:
+  workflow_postgres_data:
+  object_storage_data:
