@@ -1,9 +1,5 @@
-import HomeExperience from "./components/HomeExperience";
+import LandingExperience from "./components/LandingExperience";
 
 export default function HomePage() {
-  return (
-    <div className="figma-home">
-      <HomeExperience />
-    </div>
-  );
+  return <LandingExperience />;
 }

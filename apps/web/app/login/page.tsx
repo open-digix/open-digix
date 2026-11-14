@@ -1,9 +1,5 @@
-import HomeExperience from "../components/HomeExperience";
+import LandingExperience from "../components/LandingExperience";
 
 export default function LoginPage() {
-  return (
-    <div className="figma-home">
-      <HomeExperience initialAuth="login" />
-    </div>
-  );
+  return <LandingExperience initialAuth="login" />;
 }
