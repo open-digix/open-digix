@@ -48,7 +48,7 @@ thứ tự triển khai hoặc mô tả một database.
 - `digix-logo-adaptive-foreground.svg`: foreground A nền trong suốt.
   Đây là tài sản nguồn SVG, chưa phải bộ Android VectorDrawable.
 - `export/`: PNG biểu tượng 48/192/512/1024px, wordmark 1560px, foreground/maskable.
-- `generate.py`: nguồn dựng hình; chạy `python docs/branding/generate.py`
+- `generate.py`: nguồn dựng hình; chạy `python docs/assets/branding/generate.py`
   từ gốc repo; cần `rsvg-convert` của librsvg. Sửa nguồn rồi tái tạo SVG/PNG.
 
 **Màu:** navy `#112B45`, teal `#0D9488`; trên nền tối dùng trắng và teal

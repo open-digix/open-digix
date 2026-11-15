@@ -295,7 +295,7 @@ src/database/
 ```
 
 Xem ERD, mô tả bảng và quy tắc tenant isolation tại
-[`docs/database-schema.md`](../../docs/database-schema.md).
+[`docs/engineering/architecture/database-schema.md`](../../docs/engineering/architecture/database-schema.md).
 
 ## Trạng thái kiểm chứng
 

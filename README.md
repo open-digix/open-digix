@@ -15,7 +15,7 @@ identity sang tenant và kiểm tra membership/role từ PostgreSQL. API hiện 
 tích hợp Flowable để deploy, khởi chạy, đọc và hoàn tất user task có kiểm quyền.
 Workflow foundation chưa được công bố thành API nghiệp vụ đầu-cuối; RLS, Builder
 và ứng dụng được xuất bản cũng chưa hoàn tất. Vì vậy lát cắt này **không phải**
-bằng chứng MVP theo đề thi. Xem [ERD và quy tắc database](docs/database-schema.md),
+bằng chứng MVP theo đề thi. Xem [ERD và quy tắc database](docs/engineering/architecture/database-schema.md),
 [API README](apps/api/README.md) và [hướng dẫn Keycloak](infra/keycloak/README.md).
 
 ## Yêu cầu
@@ -129,7 +129,7 @@ infra/apisix/      APISIX standalone, chỉ định tuyến /health và /v1/*
 infra/keycloak/    Realm OIDC development có version và hướng dẫn kiểm chứng
 compose.yaml       Toàn bộ dịch vụ local + healthcheck/depends_on
 .env.example       Chỉ là ví dụ; .env thật được git bỏ qua
-docs/              SRS, roadmap, ERD và tài liệu thiết kế
+docs/              Mục lục tài liệu và tài liệu dự án (xem docs/README.md)
 ```
 
 Không đưa secret thật vào `.env.example`, source, ảnh log hoặc commit. Cấu

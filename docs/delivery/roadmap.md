@@ -8,7 +8,7 @@ title: DigiX Lab --- Roadmap triển khai theo SRS v2.4 (đề xuất chờ duy�
 
 ## Hướng tới vòng thi quốc gia \| 11/11/2026 -- 10/12/2026
 
-**Căn cứ:** [SRS DigiX Lab v2.4](SRS%20DigiX%20Lab%20-%20%C4%90%E1%BA%B7c%20t%E1%BA%A3%20y%C3%AAu%20c%E1%BA%A7u%20ph%E1%BA%A7n%20m%E1%BB%81m.md),
+**Căn cứ:** [SRS DigiX Lab v2.4](../product/requirements/SRS%20DigiX%20Lab%20-%20%C4%90%E1%BA%B7c%20t%E1%BA%A3%20y%C3%AAu%20c%E1%BA%A7u%20ph%E1%BA%A7n%20m%E1%BB%81m.md),
 đặc biệt FR-CORE, FR-BLD, FR-WRK, FR-L3, FR-AI và mục 5–6. SRS DigiX
 v1.5 chỉ là bản kế thừa để đối chiếu, không còn lấy mua sắm làm sản phẩm
 định nghĩa toàn bộ nền tảng. Mức A/B/C là cam kết **đề xuất của DigiX**,
@@ -25,7 +25,7 @@ hoặc điều chỉnh lịch sau khi họp; không hồi tố.
 **Mục tiêu đề xuất:** Hoàn tất tính năng trước **03/12/2026**, dành 04–06/12
 cho kiểm thử, đóng gói, phát hành và gửi bài **trước 17:00 06/12/2026**.
 
-> Theo [đối chiếu đề chính thức](OLP%202026%20-%20%C4%90%E1%BB%91i%20chi%E1%BA%BFu%20%C4%91%E1%BB%81%20ch%C3%ADnh%20th%E1%BB%A9c.md):
+> Theo [đối chiếu đề chính thức](../competition/OLP%202026%20-%20%C4%90%E1%BB%91i%20chi%E1%BA%BFu%20%C4%91%E1%BB%81%20ch%C3%ADnh%20th%E1%BB%A9c.md):
 > hạn gửi bài 17:00 06/12, chấm repo/PoF dự kiến 07–09/12 và chung kết
 > 10/12/2026 (15 phút tổng trình bày). An theo dõi thông báo BTC; lịch
 > nội bộ phải điều chỉnh nếu thông báo mới thay đổi hạn.
@@ -138,9 +138,13 @@ xin quyết định phạm vi, không giả vờ có AI hoạt động.
 
 ## GĐ0 · Chốt thiết kế --- 31/10--02/11
 
-**Phụ trách:** Cả đội
+**Phụ trách tài liệu GĐ0 (cập nhật 14/11):** An tự soạn và tổng hợp toàn bộ
+đầu ra GĐ0, gồm kiến trúc, ERD, API contract, luồng người dùng, backlog và
+biên bản. Dũng/Tú có thể góp ý, nhưng không được giao việc viết GĐ0; cả ba
+vẫn phải tự xác nhận các quyết định chung. Phân công **triển khai** GĐ1–GĐ6
+ở dưới không thay đổi bởi việc chuyển owner tài liệu này.
 
-**Trạng thái:** Mốc dự kiến đã qua; [GĐ0](GD0.md) vẫn là bản chuẩn bị
+**Trạng thái:** Mốc dự kiến đã qua; [GĐ0](planning/GD0.md) vẫn là bản chuẩn bị
 họp, chưa có chứng cứ họp/chốt. Cần họp bù, rà lại các hạn 09/11 và
 16/11 rồi ghi biên bản trước khi coi phạm vi, phân công hay máy chủ đã
 được duyệt.
@@ -217,7 +221,7 @@ Chưa coi TC-PUB-02 (v1/v2 đang chạy) đạt cho tới khi thử ở GĐ4. Kh
 -   Trước **27/11**: tenant A mua sắm; tenant B nghỉ phép dựng từ JSON v1
     qua luồng nhập/chỉnh/preview/publish của builder, không có controller/flow
     nghỉ phép viết cứng. Chạy
-    [TC-LEAVE-01..07](DigiX%20Lab%20-%20Thi%E1%BA%BFt%20k%E1%BA%BF%20builder%20v%C3%A0%20nghi%E1%BB%87m%20thu%20ngh%E1%BB%89%20ph%C3%A9p.md),
+    [TC-LEAVE-01..07](../engineering/builder/DigiX%20Lab%20-%20Thi%E1%BA%BFt%20k%E1%BA%BF%20builder%20v%C3%A0%20nghi%E1%BB%87m%20thu%20ngh%E1%BB%89%20ph%C3%A9p.md),
     TC-TEN-01/02, cả nhánh dưới/đúng 3 ngày và thử manager A đọc B.
 -   Xuất bản v2 sau thay đổi điều kiện của ít nhất một app; hồ sơ v1 đang
     chạy giữ v1, hồ sơ mới theo v2, tenant kia không bị ảnh hưởng;
