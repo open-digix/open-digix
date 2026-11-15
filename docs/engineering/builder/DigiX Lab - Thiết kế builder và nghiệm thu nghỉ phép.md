@@ -1,10 +1,10 @@
 # DigiX Lab — thiết kế builder v1 và kế hoạch nghiệm thu
 
-**Trạng thái:** đề xuất kỹ thuật để cả đội duyệt, **chưa triển khai/chưa chạy thử thật** (05/11/2026). Phạm vi sản phẩm theo [SRS DigiX Lab v2.2](SRS%20DigiX%20Lab%20-%20%C4%90%E1%BA%B7c%20t%E1%BA%A3%20y%C3%AAu%20c%E1%BA%A7u%20ph%E1%BA%A7n%20m%E1%BB%81m.md). Đây là thiết kế một lát cắt, không phải đặc tả đầy đủ cho mọi quy trình.
+**Trạng thái:** đề xuất kỹ thuật để cả đội duyệt, **chưa triển khai/chưa chạy thử thật** (05/11/2026). Phạm vi sản phẩm theo [SRS DigiX Lab v2.2](../../product/requirements/SRS%20DigiX%20Lab%20-%20%C4%90%E1%BA%B7c%20t%E1%BA%A3%20y%C3%AAu%20c%E1%BA%A7u%20ph%E1%BA%A7n%20m%E1%BB%81m.md). Đây là thiết kế một lát cắt, không phải đặc tả đầy đủ cho mọi quy trình.
 
 ## 1. Hợp đồng ứng dụng v1
 
-- JSON Schema Draft 2020-12: [`schema/digix-app-v1.schema.json`](schema/digix-app-v1.schema.json). Mẫu **nghỉ phép được cấu hình**: [`fixtures/leave-app-v1.json`](fixtures/leave-app-v1.json). Ca dữ liệu giả: [`fixtures/leave-cases.json`](fixtures/leave-cases.json).
+- JSON Schema Draft 2020-12: [`schema/digix-app-v1.schema.json`](../../reference/schema/digix-app-v1.schema.json). Mẫu **nghỉ phép được cấu hình**: [`fixtures/leave-app-v1.json`](../../examples/leave-app-v1.json). Ca dữ liệu giả: [`fixtures/leave-cases.json`](../../examples/leave-cases.json).
 - Định danh của định nghĩa: `(tenantId, appId, version)`; bản nháp được phép sửa, bản đã xuất bản bất biến. `schemaVersion` dành cho phiên bản **định dạng**, `version` dành cho phiên bản **ứng dụng**. Mọi hồ sơ lưu ba định danh này và mã phiên thực thi workflow.
 - `roles` và `fields` cấu hình vai trò, biểu mẫu/dữ liệu; `steps` có `start`, `task`, `gateway`, `end`; `transitions` nối các bước. `task.role` chỉ rõ ai xử lý; `decisionField` là trường chỉ người được giao việc mới được ghi; `endState` là kết quả. `when.all` là các so sánh AND có kiểu, chỉ hỗ trợ `eq`, `lt`, `gte` trong v1, **không nhận biểu thức/script tùy ý từ tenant**.
 - Mẫu UI Tầng 2 dựng từ định nghĩa: danh sách, biểu mẫu, chi tiết, hộp việc, dashboard và trạng thái trợ lý. Mô-đun Tầng 3 (nếu có) đăng ký nghiệp vụ/tích hợp qua API; không tự tạo identity, Gateway hay DB riêng. Ứng dụng nghỉ phép có thể chạy chỉ bằng cấu hình và lõi chung, không cần connector riêng.

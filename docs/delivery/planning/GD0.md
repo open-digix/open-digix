@@ -1,7 +1,8 @@
 # GĐ0 — Hồ sơ khởi động, thiết kế nền và phân công (bản đề xuất)
 
 > **Trạng thái (05/11/2026):** Đã soạn hồ sơ **đề xuất** GĐ0 để cả đội review; chưa có họp/biên bản, phê duyệt, máy chạy thử hay bằng chứng triển khai. Mốc GĐ0 cũ 31/10–02/11 đã qua, **không** suy ra hoàn tất. Người yêu cầu đồng ý định hướng **không thay thế phê duyệt của An, Dũng, Tú**.  
-> **Nguồn:** [SRS DigiX](SRS%20DigiX%20-%20%C4%90%E1%BA%B7c%20t%E1%BA%A3%20y%C3%AAu%20c%E1%BA%A7u%20ph%E1%BA%A7n%20m%E1%BB%81m.md), [roadmap](digix-roadmap.md), [đối chiếu đề/thể lệ](OLP%202026%20-%20%C4%90%E1%BB%91i%20chi%E1%BA%BFu%20%C4%91%E1%BB%81%20ch%C3%ADnh%20th%E1%BB%A9c.md), [thiết kế builder](DigiX%20Lab%20-%20Thi%E1%BA%BFt%20k%E1%BA%BF%20builder%20v%C3%A0%20nghi%E1%BB%87m%20thu%20ngh%E1%BB%89%20ph%C3%A9p.md), [thiết kế AI](DigiX%20Lab%20-%20Thi%E1%BA%BFt%20k%E1%BA%BF%20AI%20n%E1%BB%99i%20b%E1%BB%99%20v%C3%A0%20v%C3%B2ng%20%C4%91%E1%BB%9Di%20d%E1%BB%AF%20li%E1%BB%87u.md).  
+> **Cập nhật lịch (13/11/2026):** Người dùng cho biết hôm qua (12/11) chưa thể họp và dự kiến họp online **15:30 hôm nay, 13/11/2026**. Chưa có biên bản hay xác nhận quyết định của cả đội trong tài liệu; GĐ0 vẫn **chưa hoàn tất**. Ghi giờ họp thực tế, thành phần tham dự và quyết định sau khi cuộc họp diễn ra; không hồi tố các mốc cũ. Tài liệu chuẩn bị và [checklist GĐ0](GD0-checklist.md) là đầu vào, không phải bằng chứng đã họp.
+> **Nguồn:** [SRS DigiX](../../product/requirements/SRS%20DigiX%20-%20%C4%90%E1%BA%B7c%20t%E1%BA%A3%20y%C3%AAu%20c%E1%BA%A7u%20ph%E1%BA%A7n%20m%E1%BB%81m.md), [roadmap](../roadmap.md), [đối chiếu đề/thể lệ](../../competition/OLP%202026%20-%20%C4%90%E1%BB%91i%20chi%E1%BA%BFu%20%C4%91%E1%BB%81%20ch%C3%ADnh%20th%E1%BB%A9c.md), [thiết kế builder](../../engineering/builder/DigiX%20Lab%20-%20Thi%E1%BA%BFt%20k%E1%BA%BF%20builder%20v%C3%A0%20nghi%E1%BB%87m%20thu%20ngh%E1%BB%89%20ph%C3%A9p.md), [thiết kế AI](../../engineering/ai/DigiX%20Lab%20-%20Thi%E1%BA%BFt%20k%E1%BA%BF%20AI%20n%E1%BB%99i%20b%E1%BB%99%20v%C3%A0%20v%C3%B2ng%20%C4%91%E1%BB%9Di%20d%E1%BB%AF%20li%E1%BB%87u.md).  
 > **Phạm vi tài liệu:** Có định hướng và khung đầu ra GĐ0, không phải ERD/API contract triển khai đã duyệt; những việc cần chạy thật, đo hoặc xác minh được đánh dấu rõ.
 
 ## 1. Tuyên bố khởi động
@@ -44,20 +45,20 @@
 
 ## 4. Phân công chuẩn bị đầu ra GĐ0
 
-Phân công dưới đây **bám theo roadmap §03, đề xuất để cả đội duyệt**. “Owner” chịu trách nhiệm tập hợp và cập nhật tài liệu; reviewer phản biện, không mặc nhiên xác nhận đã review.
+**Cập nhật 14/11/2026 theo yêu cầu của An:** An là **owner duy nhất của việc soạn, rà soát nguồn, cập nhật và tổng hợp toàn bộ tài liệu/biên bản GĐ0**, gồm cả các phần kỹ thuật và Q1–Q9. An có thể hỏi Dũng/Tú để kiểm tra tính đúng, nhưng không giao họ việc viết tài liệu GĐ0. Reviewer chỉ phản hồi/xác nhận; quyền quyết định phạm vi và xác nhận của cả đội **không chuyển sang An**. Phân công lập trình, kiểm thử và phát hành ở các giai đoạn sau trong roadmap **không đổi** bởi cập nhật này.
 
 | Đầu việc / đầu ra | Owner đề xuất | Review chéo | Điều kiện chuyển sang “đã chốt” |
 | --- | --- | --- | --- |
 | Kiến trúc, ranh giới SSO/Gateway/API, triển khai và quyết định công nghệ | An | Dũng, Tú | Có sơ đồ luồng dữ liệu và quyết định kỹ thuật, cả đội xác nhận. |
-| ERD, ràng buộc tenant, trạng thái nghiệp vụ và migration dự kiến | Dũng | An, Tú | Có quan hệ/khóa/ràng buộc và đối chiếu luồng mua sắm. |
-| API contract, lỗi và phân quyền từng endpoint | Dũng | Tú (UI), An (Gateway/auth) | Request/response và lỗi mẫu khớp ERD và luồng UI. |
-| Luồng người dùng, mockup, tiêu chí nghiệm thu cho màn hình | Tú | Dũng (nghiệp vụ), An (quyền) | Có luồng thường/luồng lỗi, đúng vai trò và kịch bản demo. |
-| Definition of Done và backlog/issue tracker | An điều phối | Dũng, Tú | Mỗi issue có owner, mức ưu tiên, tiêu chí nghiệm thu và cách kiểm thử. |
+| ERD, ràng buộc tenant, trạng thái nghiệp vụ và migration dự kiến | An | Dũng (phản hồi kỹ thuật), Tú (luồng UI) | Có quan hệ/khóa/ràng buộc và đối chiếu luồng mua sắm. |
+| API contract, lỗi và phân quyền từng endpoint | An | Dũng (API/dữ liệu), Tú (UI) | Request/response và lỗi mẫu khớp ERD và luồng UI. |
+| Luồng người dùng, mockup, tiêu chí nghiệm thu cho màn hình | An | Tú (UX), Dũng (nghiệp vụ) | Có luồng thường/luồng lỗi, đúng vai trò và kịch bản demo. |
+| Definition of Done và backlog/issue tracker | An | Dũng, Tú | Mỗi issue triển khai có owner, mức ưu tiên, tiêu chí nghiệm thu và cách kiểm thử. |
 | Quy tắc nhánh, PR/review, môi trường dev chung và hướng dẫn dựng máy mới | An | Dũng (DB/migration), Tú (frontend) | Có hướng dẫn chạy được; kết quả thử của **ít nhất hai thành viên khác** được ghi nhận, chưa đánh dấu đạt trước khi thử. |
-| Seed/fixture và reset dữ liệu synthetic | Dũng | Tú (demo), An (cấu hình/secret) | Có kịch bản thường, rỗng, biên, phân quyền; lệnh chạy lặp lại được. |
+| Tài liệu seed/fixture và cách reset dữ liệu synthetic | An | Dũng (dữ liệu/seed), Tú (demo) | Có kịch bản thường, rỗng, biên, phân quyền; lệnh chạy lặp lại được. |
 | Ma trận ngưỡng đề §3, bốn nguyên lý §4, phần tự chọn và bằng chứng | An tổng hợp | Dũng (API/dữ liệu), Tú (UI/demo) | Không gọi bảy stack tham chiếu là bắt buộc; có test/bằng chứng cần thu, giới hạn chưa làm và rủi ro. |
 | Danh mục thành phần/giấy phép | An | Dũng, Tú | Xác minh phiên bản, nguồn giấy phép, nghĩa vụ; các mục chưa rõ có phương án thay thế. |
-| Schema trung gian, validator/compiler Flowable, quyền publish và fixture nghỉ phép | Dũng | An (quyền/deploy), Tú (UI) | Bám thiết kế builder; nêu rõ trường hợp chưa test thật và liên kết TC-LEAVE-01..07. |
+| Tài liệu schema trung gian, validator/compiler Flowable, quyền publish và fixture nghỉ phép | An | Dũng (backend), Tú (UI) | Bám thiết kế builder; nêu rõ trường hợp chưa test thật và liên kết TC-LEAVE-01..07. |
 | Máy dev/demo, số đo tải, báo giá/trần chi và kịch bản AI bật/tắt | An | Dũng (DB/workflow/AI), Tú (UI/demo) | Có kiểm kê/nguồn chi/người duyệt và biên bản; không mặc định máy/GPU đã được cấp. |
 
 **Quy ước lưu trữ:** `docs/` là nơi lưu tài liệu GĐ0; tài liệu này là bản khởi động. Có thể thêm sơ đồ, contract, checklist và biên bản riêng trong `docs/` khi được chuẩn bị. Quy tắc đóng góp có thể đặt tại `CONTRIBUTING.md` ở gốc repo; tài liệu này **không thay thế** tracker hoặc quy trình review đã triển khai.
@@ -66,15 +67,17 @@ Phân công dưới đây **bám theo roadmap §03, đề xuất để cả đ�
 
 | ID | Câu hỏi cần trả lời | Người đề xuất xác minh | Đầu ra bị ảnh hưởng |
 | --- | --- | --- | --- |
-| Q1 | SME mục tiêu thuộc loại hình nào, quy mô bao nhiêu người/bộ phận, quy trình mua sắm hiện tại ra sao? Có ví dụ ẩn danh để kiểm chứng hai vấn đề đã nêu không? | Tú + Dũng | Luồng người dùng, dữ liệu mẫu, tiêu chí nghiệm thu |
-| Q2 | “Môi trường chuẩn hóa” cụ thể đo bằng gì ở demo: một lần đăng nhập, API có contract, dựng môi trường từ source, hay khả năng thay connector? | An + cả đội | Kiến trúc, tiêu chí Done |
-| Q3 | Bốn nguyên lý §4 sẽ có bằng chứng nào, phần nào còn thiếu? Builder/hai tenant và AI ưu tiên ra sao; bảy lớp tham chiếu nào chỉ mô tả hoặc để sau? | Cả đội | Phạm vi, backlog, SRS cập nhật |
-| Q4 | Chọn ORM/query builder và cách cưỡng chế tenant ở lớp dữ liệu nào? Workflow tích hợp Flowable và quản lý trạng thái thất bại ra sao? | Dũng + An | ERD, kiến trúc, API |
-| Q5 | Quy mô nguồn lực/máy dev, runtime, hệ điều hành hỗ trợ và tài khoản thử theo vai trò là gì? Ai là hai người thử setup độc lập? | An + Tú + Dũng | Môi trường chung, hướng dẫn cài, seed |
+| Q1 | SME mục tiêu thuộc loại hình nào, quy mô bao nhiêu người/bộ phận, quy trình mua sắm hiện tại ra sao? Có ví dụ ẩn danh để kiểm chứng hai vấn đề đã nêu không? | An (tổng hợp, lấy phản hồi) | Luồng người dùng, dữ liệu mẫu, tiêu chí nghiệm thu |
+| Q2 | “Môi trường chuẩn hóa” cụ thể đo bằng gì ở demo: một lần đăng nhập, API có contract, dựng môi trường từ source, hay khả năng thay connector? | An | Kiến trúc, tiêu chí Done |
+| Q3 | Bốn nguyên lý §4 sẽ có bằng chứng nào, phần nào còn thiếu? Builder/hai tenant và AI ưu tiên ra sao; bảy lớp tham chiếu nào chỉ mô tả hoặc để sau? | An (tổng hợp, trình đội quyết định) | Phạm vi, backlog, SRS cập nhật |
+| Q4 | Chọn ORM/query builder và cách cưỡng chế tenant ở lớp dữ liệu nào? Workflow tích hợp Flowable và quản lý trạng thái thất bại ra sao? | An (soạn phương án, xin phản hồi kỹ thuật) | ERD, kiến trúc, API |
+| Q5 | Quy mô nguồn lực/máy dev, runtime, hệ điều hành hỗ trợ và tài khoản thử theo vai trò là gì? Ai là hai người thử setup độc lập? | An (lập kế hoạch, tìm người thử) | Môi trường chung, hướng dẫn cài, seed |
 | Q6 | Đã đối chiếu đề/thể lệ trong tài liệu nguồn; BTC có thông báo mới không? License **đúng phiên bản** của các thành phần, model/trọng số và repo phát hành đã được kiểm chứng chưa? | An | Phạm vi, phát hành nguồn mở |
-| Q7 | Dùng công cụ nào làm tracker, quyền quản trị repo thuộc ai, hạn phản hồi review và cách xử lý blocker ra sao? | An + cả đội | Backlog, quy trình cộng tác |
-| Q8 | Máy dev/demo nào có thật, tài nguyên, báo giá, trần ngân sách, nguồn chi, người duyệt chi và phương án không AI là gì? | An + Dũng + Tú | Môi trường, kế hoạch AI, lịch |
-| Q9 | Ai chứng kiến và lưu bằng chứng kiểm thử hai tenant 27/11, ai ký go/no-go freeze 03/12 và người gửi bài trước 17:00 06/12? | An + cả đội | Test report, release, nộp bài |
+| Q7 | Dùng công cụ nào làm tracker, quyền quản trị repo thuộc ai, hạn phản hồi review và cách xử lý blocker ra sao? | An (đề xuất, xin đội duyệt) | Backlog, quy trình cộng tác |
+| Q8 | Máy dev/demo nào có thật, tài nguyên, báo giá, trần ngân sách, nguồn chi, người duyệt chi và phương án không AI là gì? | An (kiểm kê, xin phê duyệt chi) | Môi trường, kế hoạch AI, lịch |
+| Q9 | Ai chứng kiến và lưu bằng chứng kiểm thử hai tenant 27/11, ai ký go/no-go freeze 03/12 và người gửi bài trước 17:00 06/12? | An (lập lịch, xin người nhận việc) | Test report, release, nộp bài |
+
+**Cập nhật Q1 (13/11/2026):** Người dùng thông báo **cả đội đồng ý với phương án Q1** trong [bảng mẫu trả lời](GD0-mau-tra-loi-Q1-Q9.md). Đây là xác nhận cấp nhóm do người dùng cung cấp; chưa có giờ họp, biên bản hoặc phản hồi riêng của An, Dũng, Tú để ghi thay. Chi tiết ngành/quy mô SME và ví dụ quy trình ẩn danh vẫn cần bổ sung trước khi đóng Q1 hoàn toàn. Các Q2–Q9 chưa được xác nhận qua cập nhật này.
 
 **Cách ghi quyết định sau họp:** với mỗi câu hỏi, lưu **quyết định**, **lý do**, **người xác nhận**, **ngày**, **tài liệu/issue cần cập nhật**. Nếu chưa thống nhất, giữ trạng thái “mở” và ấn định người/hạn xử lý; không đổi giả định thành sự thật.
 
@@ -85,10 +88,10 @@ Phân công dưới đây **bám theo roadmap §03, đề xuất để cả đ�
 | Đầu ra thiết kế GĐ0 cần hoàn thiện | Nội dung tối thiểu và phép kiểm | Owner / reviewer đề xuất | Trạng thái |
 | --- | --- | --- | --- |
 | Sơ đồ triển khai + luồng tin cậy | Actor/token → Gateway → API → DB/tệp/engine; secrets, điểm kiểm tra tenant, sự kiện/audit; sơ đồ mạng và trust boundary | An / Dũng, Tú | Chưa có sơ đồ/đo thử |
-| ERD + migration bản đầu | `tenants`, `users`/identity mapping, memberships/roles, `(tenant_id, app_id, version)` của ứng dụng, hồ sơ có tenant + pinned definition, task/audit, metadata tệp; khóa ngoại cùng tenant, khóa duy nhất, trạng thái, chính sách xóa | Dũng / An, Tú | Danh sách thực thể đề xuất, chưa có ERD/migration |
-| API contract v1 | `/v1/me`, danh sách/tạo/gửi/đọc hồ sơ theo tenant, builder draft/validate/test/publish, task/inbox, upload/download có quyền, dashboard; request/response mẫu, 400/401/403/404/409, phân trang, idempotency và quyền theo vai trò | Dũng / Tú (UI), An (Gateway) | Chưa có OpenAPI hay endpoint chạy thật |
-| Quy trình publish và chạy | JSON Schema v1 + kiểm tra ngữ nghĩa → compiler BPMN → deploy → chỉ công bố sau deploy thành công; pin version/definition vào hồ sơ; lỗi giữa DB/engine cần đối soát + idempotency; không cho UI tự chọn definition ID | Dũng / An, Tú | [Bản thiết kế](DigiX%20Lab%20-%20Thi%E1%BA%BFt%20k%E1%BA%BF%20builder%20v%C3%A0%20nghi%E1%BB%87m%20thu%20ngh%E1%BB%89%20ph%C3%A9p.md), chưa chạy thật |
-| Bảo mật và dữ liệu | API rút `tenant_id` từ danh tính đã xác thực, không tin client; guard/RLS cần chọn sau Q4; ACL ở metadata tệp + URL ngắn hạn; audit thay quyền/publish/duyệt/truy cập bị từ chối; kiểm dịch tệp cần kế hoạch test | An + Dũng / Tú | Nguyên tắc đề xuất, chưa chứng minh |
+| ERD + migration bản đầu | `tenants`, `users`/identity mapping, memberships/roles, `(tenant_id, app_id, version)` của ứng dụng, hồ sơ có tenant + pinned definition, task/audit, metadata tệp; khóa ngoại cùng tenant, khóa duy nhất, trạng thái, chính sách xóa | An / Dũng (phản hồi DB), Tú (UI) | Đối chiếu [ERD/schema đã có](../../engineering/architecture/database-schema.md) với code; chưa coi toàn bộ nghiệp vụ đã triển khai |
+| API contract v1 | `/v1/me`, danh sách/tạo/gửi/đọc hồ sơ theo tenant, builder draft/validate/test/publish, task/inbox, upload/download có quyền, dashboard; request/response mẫu, 400/401/403/404/409, phân trang, idempotency và quyền theo vai trò | An / Dũng (API), Tú (UI) | Chưa có OpenAPI hay endpoint nghiệp vụ chạy thật |
+| Quy trình publish và chạy | JSON Schema v1 + kiểm tra ngữ nghĩa → compiler BPMN → deploy → chỉ công bố sau deploy thành công; pin version/definition vào hồ sơ; lỗi giữa DB/engine cần đối soát + idempotency; không cho UI tự chọn definition ID | An / Dũng (workflow), Tú (UI) | [Bản thiết kế](../../engineering/builder/DigiX%20Lab%20-%20Thi%E1%BA%BFt%20k%E1%BA%BF%20builder%20v%C3%A0%20nghi%E1%BB%87m%20thu%20ngh%E1%BB%89%20ph%C3%A9p.md), chưa chạy thật |
+| Bảo mật và dữ liệu | API rút `tenant_id` từ danh tính đã xác thực, không tin client; guard/RLS cần chọn sau Q4; ACL ở metadata tệp + URL ngắn hạn; audit thay quyền/publish/duyệt/truy cập bị từ chối; kiểm dịch tệp cần kế hoạch test | An / Dũng (API), Tú (UI) | Nguyên tắc đề xuất, chưa chứng minh |
 
 **Tiêu chí đóng thiết kế:** mỗi sơ đồ/bảng/schema có phiên bản, tác giả, reviewer, trường hợp âm và liên kết SRS/issue; một mô tả trong tài liệu không được đánh dấu “đã vận hành”. Quyết định ORM, RLS/lớp guard và outbox/đối soát vẫn thuộc Q4, không ngầm chọn công nghệ chưa review.
 
@@ -104,25 +107,25 @@ Phân công dưới đây **bám theo roadmap §03, đề xuất để cả đ�
 | P0 · trước 17:00 06/12 | LICENSE OSI-approved, README build từ source, changelog/tracker, release có phiên bản **trước email nộp**, bằng chứng gửi | An / Dũng (build), Tú (demo) | Cần xác minh license/đề; chưa nộp |
 | P2 · chỉ sau cổng lõi/quyền | Agent nội bộ theo ngữ cảnh, connector/portal, bảy lớp nâng cao; thử giấy phép/tài nguyên, thu hồi quyền AI với worker dừng rồi mới bật | Dũng (đầu ra AI) / An (máy/license), Tú (UI) | Chưa cam kết làm; nếu thiếu điều kiện phải ghi rõ giới hạn |
 
-**Bốn nguyên lý Đề §4:** (1) vòng đời/tốc độ dữ liệu: ghi nhận xử lý nền không chặn giao dịch, cần đo; (2) IT/OT: chưa có OT thật, dữ liệu mô phỏng phải gắn nhãn và nêu khoảng trống; (3) nguồn gốc/chất lượng: dashboard truy về hồ sơ, validation và bằng chứng lỗi dữ liệu; (4) Zero-Trust/GitOps/kiểm dịch: test truy cập trái quyền, cấu hình/pipeline có phiên bản, thử tệp không an toàn nếu triển khai quét. An tổng hợp bảng chứng cứ, Dũng/Tú review; **không** đánh dấu nguyên lý nào đã đạt khi chỉ có mô tả. Đối chiếu chi tiết từng lớp ở [tài liệu đề](OLP%202026%20-%20%C4%90%E1%BB%91i%20chi%E1%BA%BFu%20%C4%91%E1%BB%81%20ch%C3%ADnh%20th%E1%BB%A9c.md).
+**Bốn nguyên lý Đề §4:** (1) vòng đời/tốc độ dữ liệu: ghi nhận xử lý nền không chặn giao dịch, cần đo; (2) IT/OT: chưa có OT thật, dữ liệu mô phỏng phải gắn nhãn và nêu khoảng trống; (3) nguồn gốc/chất lượng: dashboard truy về hồ sơ, validation và bằng chứng lỗi dữ liệu; (4) Zero-Trust/GitOps/kiểm dịch: test truy cập trái quyền, cấu hình/pipeline có phiên bản, thử tệp không an toàn nếu triển khai quét. An tổng hợp bảng chứng cứ, Dũng/Tú review; **không** đánh dấu nguyên lý nào đã đạt khi chỉ có mô tả. Đối chiếu chi tiết từng lớp ở [tài liệu đề](../../competition/OLP%202026%20-%20%C4%90%E1%BB%91i%20chi%E1%BA%BFu%20%C4%91%E1%BB%81%20ch%C3%ADnh%20th%E1%BB%A9c.md).
 
 ## 8. Cộng tác, môi trường và tài nguyên cần xác minh
 
 - **Tracker chưa chọn:** An tạo backlog khi cả đội thống nhất công cụ/quyền quản trị. Mỗi issue: ID, mức P0/P1/P2, owner + reviewer khác người, phụ thuộc, hạn, tiêu chí nghiệm thu, test âm, liên kết PR/bằng chứng và trạng thái `đề xuất → nhận việc → review → đã nghiệm thu`. Hạn phản hồi review và người xử lý blocker chốt ở Q7; không lập issue giả rồi đánh dấu xong.
 - **Tích hợp:** nhánh theo issue, PR có cách test; auth/tenant/schema cần reviewer khác. Dũng + Tú thống nhất OpenAPI/fixture trước UI; An review đường đi Gateway và secret. Không merge khi build/test lỗi; thay đổi sát freeze cần regression. DoD: chạy trên môi trường chung, test quyền/validation/trạng thái, PR review, tài liệu và bằng chứng; hai người khác thử hướng dẫn setup độc lập trước khi gọi là tái lập được.
-- **Máy và ngân sách:** theo [roadmap §03a](digix-roadmap.md), dự trù tham chiếu máy dev 8 vCPU, 16–32 GiB RAM, SSD ≥100 GiB **chưa kiểm kê**, không phải yêu cầu đã duyệt. An ghi cấu hình máy có sẵn, nơi chạy, cách cấp TLS/secret, chi phí máy/hosting/tên miền/backup và hai báo giá nếu phải thuê; Dũng đo DB/engine, Tú thử UI. Model AI/GPU chỉ chọn sau đo tải, license và thử thu hồi quyền; chưa có trần chi, nguồn chi hay người duyệt thì **không** mua/thuê.
-- **Seed và test account:** Dũng chuẩn bị dữ liệu synthetic tenant A/B và reset lặp lại; Tú xác nhận vai trò/nhánh `days = 3`; An kiểm secret, tài khoản chéo tenant và môi trường demo. Không đưa mật khẩu/tokens vào repo hoặc ghi rằng fixture hiện có đồng nghĩa seed đã chạy.
+- **Máy và ngân sách:** theo [roadmap §03a](../roadmap.md), dự trù tham chiếu máy dev 8 vCPU, 16–32 GiB RAM, SSD ≥100 GiB **chưa kiểm kê**, không phải yêu cầu đã duyệt. An ghi cấu hình máy có sẵn, nơi chạy, cách cấp TLS/secret, chi phí máy/hosting/tên miền/backup và hai báo giá nếu phải thuê; Dũng đo DB/engine, Tú thử UI. Model AI/GPU chỉ chọn sau đo tải, license và thử thu hồi quyền; chưa có trần chi, nguồn chi hay người duyệt thì **không** mua/thuê.
+- **Seed và test account trong hồ sơ GĐ0:** An tự viết kế hoạch dữ liệu synthetic tenant A/B, vai trò, nhánh `days = 3`, cách reset, kiểm secret và phép thử chéo tenant; mời Dũng/Tú phản hồi nếu cần. Owner viết seed/chạy test ở giai đoạn triển khai vẫn do đội chốt riêng; kế hoạch GĐ0 không chứng minh seed đã chạy. Không đưa mật khẩu/tokens vào repo.
 - **Giấy phép:** An lập SBOM/danh mục tên, phiên bản, URL giấy phép và nghĩa vụ của Keycloak, APISIX, Flowable, kho tệp S3, PostgreSQL, Next.js, NestJS, pgvector (nếu dùng), model/trọng số (nếu bật); Dũng/Tú review khả năng thay thế. Chỉ phát hành khi kiểm tương thích giấy phép, LICENSE OSI-approved, repo và release đúng hạn; chưa có bảng kiểm tra hoàn tất.
 
 ## 9. Biên bản và cổng kết thúc GĐ0 (điền sau họp thật)
 
-- **Ngày/giờ, địa điểm hoặc liên kết:** Chưa ghi.
+- **Lịch dự kiến:** Họp online 15:30 ngày 13/11/2026 (theo người dùng; link, múi giờ và người tham dự chưa ghi tại đây). **Ngày/giờ họp thực tế, địa điểm hoặc liên kết:** Chưa ghi.
 - **Tham dự/vắng mặt:** Chưa ghi.
 - **Người điều phối, người ghi biên bản:** Chưa xác nhận.
 - **Mục tiêu và nhóm người dùng được xác nhận/chỉnh sửa:** Chưa xác nhận.
 - **Các quyết định (kèm lý do và người đồng ý):** Chưa ghi.
-- **Câu hỏi chưa giải quyết (ID Q1–Q9, owner, hạn):** Người xác minh đề xuất ở §5; hạn trả lời thực tế chưa được giao.
-- **Đầu việc tiếp theo (đầu ra, owner, reviewer, hạn, liên kết issue):** Chưa gán hạn/issue.
+- **Câu hỏi chưa giải quyết (ID Q1–Q9, owner, hạn):** An tổng hợp/xác minh và ghi các phương án còn mở; hạn thực tế chưa được chốt.
+- **Đầu việc tiếp theo (đầu ra, owner, reviewer, hạn, liên kết issue):** An nhận toàn bộ phần viết tài liệu GĐ0; owner triển khai và hạn/issue giai đoạn sau vẫn cần đội chốt.
 - **Thời điểm kiểm tra lại và nơi lưu bằng chứng:** Chưa chốt.
 
 | Quyết định phải ghi trong biên bản | Phương án đang đề xuất | Người xác nhận bắt buộc | Ngày chốt thực tế / bằng chứng |
@@ -134,4 +137,4 @@ Phân công dưới đây **bám theo roadmap §03, đề xuất để cả đ�
 
 **Cách chốt:** An gửi biên bản/đường dẫn cho Dũng và Tú; mỗi người ghi rõ “đồng ý” hoặc nội dung cần sửa, kèm ngày giờ và liên kết có thể truy lại. Chỉ chuyển từng quyết định sang **đã chốt** sau khi có đủ ba xác nhận; người tổng hợp không ký thay. Nếu có bất đồng, ghi phương án, người xử lý, hạn trả lời, không bỏ trống rồi mặc nhiên chấp thuận. Ngày biên soạn 05/11 hoặc đồng ý định hướng từ người yêu cầu **không** phải ngày chốt của đội.
 
-**Cổng kết thúc GĐ0:** (1) mục tiêu/SME và ví dụ cho hai vấn đề được cả đội xác nhận; (2) phạm vi §3/§4 và mức tự chọn được chốt, thay đổi phản ánh vào SRS/roadmap; (3) mỗi đầu ra §4 có owner/reviewer nhận việc và hạn, Q1–Q9 được trả lời hoặc có người/hạn; (4) sơ đồ/ERD/contract/DoD có bản để review, máy/chi phí được kiểm kê hoặc ghi rủi ro; (5) biên bản ghi đủ người xác nhận, ngày chốt và bằng chứng. **Hiện tại: chưa đạt cổng kết thúc**; tài liệu hoàn thiện ở mức kế hoạch, không có bằng chứng họp, máy chạy hay phê duyệt cả đội.
+**Cổng kết thúc GĐ0:** (1) mục tiêu/SME và ví dụ cho hai vấn đề được cả đội xác nhận; (2) phạm vi §3/§4 và mức tự chọn được chốt, thay đổi phản ánh vào SRS/roadmap; (3) An hoàn thiện mọi đầu ra tài liệu §4, lấy phản hồi chuyên môn cần thiết; Q1–Q9 được trả lời hoặc còn mở với An theo dõi/hạn, còn các issue **triển khai** có owner/reviewer/hạn riêng do đội thống nhất; (4) sơ đồ/ERD/contract/DoD có bản để review, máy/chi phí được kiểm kê hoặc ghi rủi ro; (5) biên bản ghi đủ người xác nhận, ngày chốt và bằng chứng. **Hiện tại: chưa đạt cổng kết thúc**; việc An nhận tài liệu không thay thế bằng chứng thực nghiệm hay phê duyệt của cả đội.
