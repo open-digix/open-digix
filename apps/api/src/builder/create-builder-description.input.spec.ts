@@ -8,6 +8,7 @@ describe('parseCreateBuilderDescriptionBody', () => {
     expect(
       parseCreateBuilderDescriptionBody({
         inputNotes: '  Employee enters an amount.  ',
+        roleNotes: 'Employee, Manager',
         stepNotes: 'Manager reviews the request.',
         branchNotes: 'Approve or reject.',
         outputNotes: 'Return the final state.',
@@ -17,6 +18,7 @@ describe('parseCreateBuilderDescriptionBody', () => {
     ).toEqual({
       sections: {
         inputs: 'Employee enters an amount.',
+        roles: 'Employee, Manager',
         steps: 'Manager reviews the request.',
         branches: 'Approve or reject.',
         outputs: 'Return the final state.',

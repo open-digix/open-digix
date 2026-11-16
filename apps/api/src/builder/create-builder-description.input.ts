@@ -6,6 +6,7 @@ const UUID_PATTERN =
 const MAX_NOTE_LENGTH = 10_000;
 const NOTE_FIELDS = [
   ['inputNotes', 'inputs'],
+  ['roleNotes', 'roles'],
   ['stepNotes', 'steps'],
   ['branchNotes', 'branches'],
   ['outputNotes', 'outputs'],
