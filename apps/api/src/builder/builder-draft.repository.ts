@@ -10,6 +10,13 @@ import type {
 } from './builder.types';
 import type { BuilderSourceRevisionRecord } from './builder-source.repository';
 
+export class BuilderVersionConflictError extends Error {
+  constructor() {
+    super('Draft lock version conflict');
+    this.name = 'BuilderVersionConflictError';
+  }
+}
+
 export interface ApplicationVersionRecord {
   readonly applicationId: string;
   readonly appKey: string;
@@ -20,6 +27,24 @@ export interface ApplicationVersionRecord {
   readonly versionStatus: string;
   readonly lockVersion: number;
   readonly currentRevisionId: string | null;
+}
+
+export interface DraftDetailsRecord {
+  readonly applicationId: string;
+  readonly appKey: string;
+  readonly appName: string;
+  readonly appStatus: string;
+  readonly versionId: string;
+  readonly version: number;
+  readonly versionStatus: string;
+  readonly lockVersion: number;
+  readonly revisionId: string | null;
+  readonly revisionNo: number | null;
+  readonly snapshotChecksum: string;
+  readonly definition: BuilderApplicationDefinitionV1 | Record<string, unknown>;
+  readonly sourceMappings: readonly BuilderSourceMapping[];
+  readonly openIssues: readonly BuilderOpenIssue[];
+  readonly createdAt: Date | null;
 }
 
 export interface SaveNormalizedDraftInput {
@@ -43,6 +68,19 @@ export interface SavedNormalizedDraftResult {
   readonly createdAt: Date;
 }
 
+export interface UpdateDraftRevisionInput {
+  readonly tenantId: string;
+  readonly applicationId: string;
+  readonly applicationVersionId: string;
+  readonly version: number;
+  readonly lockVersion: number;
+  readonly definition: BuilderApplicationDefinitionV1;
+  readonly sourceMappings: readonly BuilderSourceMapping[];
+  readonly openIssues: readonly BuilderOpenIssue[];
+  readonly snapshotChecksum: string;
+  readonly createdByMembershipId: string;
+}
+
 interface ApplicationVersionRow extends QueryResultRow {
   application_id: string;
   app_key: string;
@@ -53,6 +91,25 @@ interface ApplicationVersionRow extends QueryResultRow {
   version_status: string;
   lock_version: number;
   current_revision_id: string | null;
+}
+
+interface DraftDetailsRow extends QueryResultRow {
+  application_id: string;
+  app_key: string;
+  app_name: string;
+  app_status: string;
+  version_id: string;
+  version: number;
+  version_status: string;
+  lock_version: number;
+  version_definition: BuilderApplicationDefinitionV1 | Record<string, unknown>;
+  version_definition_checksum: string;
+  revision_id: string | null;
+  revision_no: number | null;
+  revision_definition: BuilderApplicationDefinitionV1 | null;
+  design_metadata: BuilderDesignMetadata | null;
+  snapshot_checksum: string | null;
+  revision_created_at: Date | null;
 }
 
 interface SourceRevisionRow extends QueryResultRow {
@@ -80,6 +137,35 @@ const FIND_APPLICATION_VERSION_QUERY = `
   FROM applications a
   JOIN application_versions v
     ON v.tenant_id = a.tenant_id AND v.application_id = a.id
+  WHERE a.tenant_id = $1 AND a.id = $2 AND v.version = $3
+`;
+
+const FIND_DRAFT_DETAILS_QUERY = `
+  SELECT
+    a.id AS application_id,
+    a.app_key,
+    a.name AS app_name,
+    a.status AS app_status,
+    v.id AS version_id,
+    v.version,
+    v.status AS version_status,
+    v.lock_version,
+    v.definition AS version_definition,
+    v.definition_checksum AS version_definition_checksum,
+    r.id AS revision_id,
+    r.revision_no,
+    r.definition AS revision_definition,
+    r.design_metadata,
+    r.snapshot_checksum,
+    r.created_at AS revision_created_at
+  FROM applications a
+  JOIN application_versions v
+    ON v.tenant_id = a.tenant_id AND v.application_id = a.id
+  LEFT JOIN builder_draft_revisions r
+    ON r.tenant_id = v.tenant_id
+   AND r.application_id = v.application_id
+   AND r.application_version_id = v.id
+   AND r.id = v.current_revision_id
   WHERE a.tenant_id = $1 AND a.id = $2 AND v.version = $3
 `;
 
@@ -198,6 +284,45 @@ export class BuilderDraftRepository {
     };
   }
 
+  async findDraftDetails(
+    tenantId: string,
+    applicationId: string,
+    version: number,
+  ): Promise<DraftDetailsRecord | undefined> {
+    const result = await this.pool.query<DraftDetailsRow>(
+      FIND_DRAFT_DETAILS_QUERY,
+      [tenantId, applicationId, version],
+    );
+    const row = result.rows[0];
+    if (!row) return undefined;
+
+    const definition = row.revision_definition ?? row.version_definition ?? {};
+    const snapshotChecksum =
+      row.snapshot_checksum ?? row.version_definition_checksum;
+    const metadata = row.design_metadata ?? {
+      sourceMappings: [],
+      openIssues: [],
+    };
+
+    return {
+      applicationId: row.application_id,
+      appKey: row.app_key,
+      appName: row.app_name,
+      appStatus: row.app_status,
+      versionId: row.version_id,
+      version: row.version,
+      versionStatus: row.version_status,
+      lockVersion: row.lock_version,
+      revisionId: row.revision_id,
+      revisionNo: row.revision_no,
+      snapshotChecksum,
+      definition,
+      sourceMappings: metadata.sourceMappings ?? [],
+      openIssues: metadata.openIssues ?? [],
+      createdAt: row.revision_created_at,
+    };
+  }
+
   async findSourceRevision(
     tenantId: string,
     applicationId: string,
@@ -280,6 +405,97 @@ export class BuilderDraftRepository {
         createdRevision.id,
         input.sourceRevisionId,
       ]);
+
+      const updateVerRes = await client.query<{ lock_version: number }>(
+        UPDATE_APPLICATION_VERSION_QUERY,
+        [
+          input.tenantId,
+          input.applicationId,
+          input.applicationVersionId,
+          createdRevision.id,
+          JSON.stringify(input.definition),
+          input.snapshotChecksum,
+        ],
+      );
+      const updatedLockVersion = updateVerRes.rows[0]?.lock_version;
+      if (updatedLockVersion === undefined) {
+        throw new Error(
+          'Failed to update application version with new draft revision',
+        );
+      }
+
+      await client.query(UPDATE_APPLICATION_QUERY, [
+        input.tenantId,
+        input.applicationId,
+      ]);
+
+      await client.query('COMMIT');
+
+      return {
+        revisionId: createdRevision.id,
+        revisionNo: createdRevision.revision_no,
+        lockVersion: updatedLockVersion,
+        snapshotChecksum: input.snapshotChecksum,
+        createdAt: createdRevision.created_at,
+      };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async updateDraftRevision(
+    input: UpdateDraftRevisionInput,
+  ): Promise<SavedNormalizedDraftResult> {
+    const client = await this.pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      const lockRes = await client.query<{ lock_version: number }>(
+        LOCK_VERSION_QUERY,
+        [input.tenantId, input.applicationId, input.applicationVersionId],
+      );
+      const currentLock = lockRes.rows[0]?.lock_version;
+      if (currentLock === undefined) {
+        throw new Error('Application version not found during lock');
+      }
+
+      if (currentLock !== input.lockVersion) {
+        throw new BuilderVersionConflictError();
+      }
+
+      const revRes = await client.query<{ next_rev: number }>(
+        GET_NEXT_REVISION_NO_QUERY,
+        [input.tenantId, input.applicationId, input.applicationVersionId],
+      );
+      const revisionNo = revRes.rows[0]?.next_rev ?? 1;
+
+      const designMetadata: BuilderDesignMetadata = {
+        sourceMappings: input.sourceMappings,
+        openIssues: input.openIssues,
+      };
+
+      const insertRes = await client.query<{
+        id: string;
+        revision_no: number;
+        created_at: Date;
+      }>(INSERT_DRAFT_REVISION_QUERY, [
+        input.tenantId,
+        input.applicationId,
+        input.applicationVersionId,
+        revisionNo,
+        JSON.stringify(input.definition),
+        JSON.stringify(designMetadata),
+        input.snapshotChecksum,
+        input.createdByMembershipId,
+      ]);
+      const createdRevision = insertRes.rows[0];
+      if (!createdRevision) {
+        throw new Error('Failed to insert builder draft revision');
+      }
 
       const updateVerRes = await client.query<{ lock_version: number }>(
         UPDATE_APPLICATION_VERSION_QUERY,

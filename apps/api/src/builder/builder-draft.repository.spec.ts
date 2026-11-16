@@ -1,5 +1,8 @@
 import type { Pool } from 'pg';
-import { BuilderDraftRepository } from './builder-draft.repository';
+import {
+  BuilderDraftRepository,
+  BuilderVersionConflictError,
+} from './builder-draft.repository';
 import type { BuilderApplicationDefinitionV1 } from './builder.types';
 
 describe('BuilderDraftRepository', () => {
@@ -103,6 +106,58 @@ describe('BuilderDraftRepository', () => {
     });
   });
 
+  describe('findDraftDetails', () => {
+    it('returns draft details with revision when revision exists', async () => {
+      poolQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            application_id: applicationId,
+            app_key: 'test_app',
+            app_name: 'Test App',
+            app_status: 'draft',
+            version_id: versionId,
+            version: 1,
+            version_status: 'draft',
+            lock_version: 2,
+            version_definition: {},
+            version_definition_checksum: 'a'.repeat(64),
+            revision_id: draftRevisionId,
+            revision_no: 1,
+            revision_definition: dummyDefinition,
+            design_metadata: { sourceMappings: [], openIssues: [] },
+            snapshot_checksum: 'b'.repeat(64),
+            revision_created_at: createdAt,
+          },
+        ],
+      });
+
+      const res = await repository.findDraftDetails(tenantId, applicationId, 1);
+      expect(res).toEqual({
+        applicationId,
+        appKey: 'test_app',
+        appName: 'Test App',
+        appStatus: 'draft',
+        versionId,
+        version: 1,
+        versionStatus: 'draft',
+        lockVersion: 2,
+        revisionId: draftRevisionId,
+        revisionNo: 1,
+        snapshotChecksum: 'b'.repeat(64),
+        definition: dummyDefinition,
+        sourceMappings: [],
+        openIssues: [],
+        createdAt,
+      });
+    });
+
+    it('returns undefined when draft is not found', async () => {
+      poolQuery.mockResolvedValueOnce({ rows: [] });
+      const res = await repository.findDraftDetails(tenantId, applicationId, 1);
+      expect(res).toBeUndefined();
+    });
+  });
+
   describe('findSourceRevision', () => {
     it('returns latest source revision when sourceRevisionId is not specified', async () => {
       poolQuery.mockResolvedValueOnce({
@@ -114,7 +169,11 @@ describe('BuilderDraftRepository', () => {
             revision_no: 2,
             sections: { inputs: 'Input notes' },
             segments: [
-              { id: 'inputs_1', section: 'inputs', text: 'Input notes' },
+              {
+                id: 'inputs_1',
+                section: 'inputs' as const,
+                text: 'Input notes',
+              },
             ],
             created_by_membership_id: createdByMembershipId,
             created_at: createdAt,
@@ -222,6 +281,73 @@ describe('BuilderDraftRepository', () => {
           createdByMembershipId,
         }),
       ).rejects.toThrow('Lock error');
+
+      expect(clientQuery).toHaveBeenCalledWith('ROLLBACK');
+      expect(clientRelease).toHaveBeenCalled();
+    });
+  });
+
+  describe('updateDraftRevision', () => {
+    it('persists new revision and increments lockVersion when lock matches', async () => {
+      clientQuery
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce({ rows: [{ lock_version: 2 }] })
+        .mockResolvedValueOnce({ rows: [{ next_rev: 3 }] })
+        .mockResolvedValueOnce({
+          rows: [
+            {
+              id: draftRevisionId,
+              revision_no: 3,
+              created_at: createdAt,
+            },
+          ],
+        })
+        .mockResolvedValueOnce({ rows: [{ lock_version: 3 }] })
+        .mockResolvedValueOnce({ rows: [] })
+        .mockResolvedValueOnce(undefined);
+
+      const res = await repository.updateDraftRevision({
+        tenantId,
+        applicationId,
+        applicationVersionId: versionId,
+        version: 1,
+        lockVersion: 2,
+        definition: dummyDefinition,
+        sourceMappings: [],
+        openIssues: [],
+        snapshotChecksum: 'c'.repeat(64),
+        createdByMembershipId,
+      });
+
+      expect(res).toEqual({
+        revisionId: draftRevisionId,
+        revisionNo: 3,
+        lockVersion: 3,
+        snapshotChecksum: 'c'.repeat(64),
+        createdAt,
+      });
+      expect(clientRelease).toHaveBeenCalled();
+    });
+
+    it('throws BuilderVersionConflictError when lockVersion does not match', async () => {
+      clientQuery
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce({ rows: [{ lock_version: 5 }] });
+
+      await expect(
+        repository.updateDraftRevision({
+          tenantId,
+          applicationId,
+          applicationVersionId: versionId,
+          version: 1,
+          lockVersion: 2,
+          definition: dummyDefinition,
+          sourceMappings: [],
+          openIssues: [],
+          snapshotChecksum: 'c'.repeat(64),
+          createdByMembershipId,
+        }),
+      ).rejects.toBeInstanceOf(BuilderVersionConflictError);
 
       expect(clientQuery).toHaveBeenCalledWith('ROLLBACK');
       expect(clientRelease).toHaveBeenCalled();
