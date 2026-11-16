@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
 } from '@nestjs/common';
 import type { TenantContext } from '../identity/identity.types';
@@ -20,6 +22,7 @@ import {
   parseDraftVersion,
   parseNormalizeDraftBody,
 } from './normalize-draft.input';
+import { parsePatchDraftBody } from './patch-draft.input';
 
 export interface NormalizedDraftResponse {
   readonly revisionId: string;
@@ -32,9 +35,62 @@ export interface NormalizedDraftResponse {
   readonly createdAt: string;
 }
 
+export interface DraftDetailsResponse {
+  readonly appId: string;
+  readonly version: number;
+  readonly status: string;
+  readonly lockVersion: number;
+  readonly revisionId: string | null;
+  readonly revisionNo: number | null;
+  readonly snapshotChecksum: string;
+  readonly definition: BuilderApplicationDefinitionV1 | Record<string, unknown>;
+  readonly sourceMappings: readonly BuilderSourceMapping[];
+  readonly openIssues: readonly BuilderOpenIssue[];
+  readonly createdAt: string | null;
+}
+
+export interface PatchedDraftResponse {
+  readonly revisionId: string;
+  readonly revisionNo: number;
+  readonly lockVersion: number;
+  readonly snapshotChecksum: string;
+  readonly createdAt: string;
+}
+
 @Controller('v1/apps')
 export class BuilderDraftController {
   constructor(private readonly draftService: BuilderDraftService) {}
+
+  @Get(':appId/drafts/:version')
+  @RequireRoles('designer', 'publisher', 'tenant_admin')
+  async get(
+    @Param('appId') appId: string,
+    @Param('version') versionParam: string,
+    @CurrentTenantContext() context: TenantContext,
+  ): Promise<DraftDetailsResponse> {
+    const applicationId = parseApplicationId(appId);
+    const version = parseDraftVersion(versionParam);
+
+    const draft = await this.draftService.getDraft(
+      context.membership.tenant.id,
+      applicationId,
+      version,
+    );
+
+    return {
+      appId: draft.applicationId,
+      version: draft.version,
+      status: draft.versionStatus,
+      lockVersion: draft.lockVersion,
+      revisionId: draft.revisionId,
+      revisionNo: draft.revisionNo,
+      snapshotChecksum: draft.snapshotChecksum,
+      definition: draft.definition,
+      sourceMappings: draft.sourceMappings,
+      openIssues: draft.openIssues,
+      createdAt: draft.createdAt ? draft.createdAt.toISOString() : null,
+    };
+  }
 
   @Post(':appId/drafts/:version/normalize')
   @HttpCode(HttpStatus.OK)
@@ -67,6 +123,37 @@ export class BuilderDraftController {
       sourceMappings: result.sourceMappings,
       openIssues: result.openIssues,
       createdAt: result.createdAt.toISOString(),
+    };
+  }
+
+  @Patch(':appId/drafts/:version')
+  @RequireRoles('designer', 'tenant_admin')
+  async patch(
+    @Param('appId') appId: string,
+    @Param('version') versionParam: string,
+    @Body() body: unknown,
+    @CurrentTenantContext() context: TenantContext,
+  ): Promise<PatchedDraftResponse> {
+    const applicationId = parseApplicationId(appId);
+    const version = parseDraftVersion(versionParam);
+    const input = parsePatchDraftBody(body);
+
+    const res = await this.draftService.patchDraft({
+      tenantId: context.membership.tenant.id,
+      applicationId,
+      version,
+      lockVersion: input.lockVersion,
+      definition: input.definition,
+      designMetadata: input.designMetadata,
+      createdByMembershipId: context.membership.id,
+    });
+
+    return {
+      revisionId: res.revisionId,
+      revisionNo: res.revisionNo,
+      lockVersion: res.lockVersion,
+      snapshotChecksum: res.snapshotChecksum,
+      createdAt: res.createdAt.toISOString(),
     };
   }
 }

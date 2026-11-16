@@ -1,6 +1,13 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { BuilderDraftService } from './builder-draft.service';
-import type { BuilderDraftRepository } from './builder-draft.repository';
+import {
+  BuilderVersionConflictError,
+  type BuilderDraftRepository,
+} from './builder-draft.repository';
 
 describe('BuilderDraftService', () => {
   const tenantId = '11111111-1111-4111-8111-111111111111';
@@ -68,8 +75,10 @@ describe('BuilderDraftService', () => {
 
   let repository: {
     findApplicationVersion: jest.Mock;
+    findDraftDetails: jest.Mock;
     findSourceRevision: jest.Mock;
     saveNormalizedDraft: jest.Mock;
+    updateDraftRevision: jest.Mock;
   };
   let normalizer: {
     normalize: jest.Mock;
@@ -79,12 +88,36 @@ describe('BuilderDraftService', () => {
   beforeEach(() => {
     repository = {
       findApplicationVersion: jest.fn().mockResolvedValue(appVersionRecord),
+      findDraftDetails: jest.fn().mockResolvedValue({
+        applicationId,
+        appKey: 'laptop_request',
+        appName: 'Laptop Request',
+        appStatus: 'draft',
+        versionId,
+        version: 1,
+        versionStatus: 'draft',
+        lockVersion: 1,
+        revisionId: '66666666-6666-4666-8666-666666666666',
+        revisionNo: 1,
+        snapshotChecksum: 'a'.repeat(64),
+        definition: normalizedResult.definition,
+        sourceMappings: [],
+        openIssues: [],
+        createdAt,
+      }),
       findSourceRevision: jest.fn().mockResolvedValue(sourceRevisionRecord),
       saveNormalizedDraft: jest.fn().mockResolvedValue({
         revisionId: '66666666-6666-4666-8666-666666666666',
         revisionNo: 1,
         lockVersion: 2,
         snapshotChecksum: 'a'.repeat(64),
+        createdAt,
+      }),
+      updateDraftRevision: jest.fn().mockResolvedValue({
+        revisionId: '77777777-7777-4777-8777-777777777777',
+        revisionNo: 2,
+        lockVersion: 2,
+        snapshotChecksum: 'b'.repeat(64),
         createdAt,
       }),
     };
@@ -97,100 +130,185 @@ describe('BuilderDraftService', () => {
     );
   });
 
-  it('normalizes draft and persists draft revision successfully', async () => {
-    const res = await service.normalizeDraft({
-      tenantId,
-      tenantSlug,
-      applicationId,
-      version: 1,
-      createdByMembershipId,
-    });
-
-    expect(repository.findApplicationVersion).toHaveBeenCalledWith(
-      tenantId,
-      applicationId,
-      1,
-    );
-    expect(repository.findSourceRevision).toHaveBeenCalledWith(
-      tenantId,
-      applicationId,
-      undefined,
-    );
-    expect(normalizer.normalize).toHaveBeenCalledWith({
-      appId: appVersionRecord.appKey,
-      tenantId: tenantSlug,
-      version: 1,
-      name: appVersionRecord.appName,
-      sourceRevisionId: sourceRevisionRecord.id,
-      sections: sourceRevisionRecord.sections,
-      segments: sourceRevisionRecord.segments,
-    });
-    expect(repository.saveNormalizedDraft).toHaveBeenCalledWith(
-      expect.objectContaining({
+  describe('getDraft', () => {
+    it('returns draft details when draft exists', async () => {
+      const res = await service.getDraft(tenantId, applicationId, 1);
+      expect(res.applicationId).toBe(applicationId);
+      expect(res.version).toBe(1);
+      expect(repository.findDraftDetails).toHaveBeenCalledWith(
         tenantId,
         applicationId,
-        applicationVersionId: versionId,
+        1,
+      );
+    });
+
+    it('throws NotFoundException when draft does not exist', async () => {
+      repository.findDraftDetails.mockResolvedValueOnce(undefined);
+      await expect(
+        service.getDraft(tenantId, applicationId, 1),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('normalizeDraft', () => {
+    it('normalizes draft and persists draft revision successfully', async () => {
+      const res = await service.normalizeDraft({
+        tenantId,
+        tenantSlug,
+        applicationId,
         version: 1,
-        sourceRevisionId,
+        createdByMembershipId,
+      });
+
+      expect(repository.findApplicationVersion).toHaveBeenCalledWith(
+        tenantId,
+        applicationId,
+        1,
+      );
+      expect(repository.findSourceRevision).toHaveBeenCalledWith(
+        tenantId,
+        applicationId,
+        undefined,
+      );
+      expect(normalizer.normalize).toHaveBeenCalledWith({
+        appId: appVersionRecord.appKey,
+        tenantId: tenantSlug,
+        version: 1,
+        name: appVersionRecord.appName,
+        sourceRevisionId: sourceRevisionRecord.id,
+        sections: sourceRevisionRecord.sections,
+        segments: sourceRevisionRecord.segments,
+      });
+      expect(repository.saveNormalizedDraft).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tenantId,
+          applicationId,
+          applicationVersionId: versionId,
+          version: 1,
+          sourceRevisionId,
+          definition: normalizedResult.definition,
+          sourceMappings: normalizedResult.sourceMappings,
+          openIssues: normalizedResult.openIssues,
+        }),
+      );
+      expect(res).toEqual({
+        revisionId: '66666666-6666-4666-8666-666666666666',
+        revisionNo: 1,
+        lockVersion: 2,
+        snapshotChecksum: 'a'.repeat(64),
         definition: normalizedResult.definition,
         sourceMappings: normalizedResult.sourceMappings,
         openIssues: normalizedResult.openIssues,
-      }),
-    );
-    expect(res).toEqual({
-      revisionId: '66666666-6666-4666-8666-666666666666',
-      revisionNo: 1,
-      lockVersion: 2,
-      snapshotChecksum: 'a'.repeat(64),
-      definition: normalizedResult.definition,
-      sourceMappings: normalizedResult.sourceMappings,
-      openIssues: normalizedResult.openIssues,
-      createdAt,
+        createdAt,
+      });
+    });
+
+    it('throws NotFoundException when application or version does not exist', async () => {
+      repository.findApplicationVersion.mockResolvedValueOnce(undefined);
+
+      await expect(
+        service.normalizeDraft({
+          tenantId,
+          tenantSlug,
+          applicationId,
+          version: 1,
+          createdByMembershipId,
+        }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('throws BadRequestException when application is not in draft status', async () => {
+      repository.findApplicationVersion.mockResolvedValueOnce({
+        ...appVersionRecord,
+        versionStatus: 'published',
+      });
+
+      await expect(
+        service.normalizeDraft({
+          tenantId,
+          tenantSlug,
+          applicationId,
+          version: 1,
+          createdByMembershipId,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('throws BadRequestException when no source revision exists', async () => {
+      repository.findSourceRevision.mockResolvedValueOnce(undefined);
+
+      await expect(
+        service.normalizeDraft({
+          tenantId,
+          tenantSlug,
+          applicationId,
+          version: 1,
+          createdByMembershipId,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 
-  it('throws NotFoundException when application or version does not exist', async () => {
-    repository.findApplicationVersion.mockResolvedValueOnce(undefined);
-
-    await expect(
-      service.normalizeDraft({
+  describe('patchDraft', () => {
+    it('updates draft revision when lock matches', async () => {
+      const res = await service.patchDraft({
         tenantId,
-        tenantSlug,
         applicationId,
         version: 1,
+        lockVersion: 1,
         createdByMembershipId,
-      }),
-    ).rejects.toBeInstanceOf(NotFoundException);
-  });
+        definition: normalizedResult.definition,
+      });
 
-  it('throws BadRequestException when application is not in draft status', async () => {
-    repository.findApplicationVersion.mockResolvedValueOnce({
-      ...appVersionRecord,
-      versionStatus: 'published',
+      expect(repository.updateDraftRevision).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tenantId,
+          applicationId,
+          applicationVersionId: versionId,
+          version: 1,
+          lockVersion: 1,
+          definition: normalizedResult.definition,
+        }),
+      );
+      expect(res).toEqual({
+        revisionId: '77777777-7777-4777-8777-777777777777',
+        revisionNo: 2,
+        lockVersion: 2,
+        snapshotChecksum: 'b'.repeat(64),
+        createdAt,
+      });
     });
 
-    await expect(
-      service.normalizeDraft({
-        tenantId,
-        tenantSlug,
-        applicationId,
-        version: 1,
-        createdByMembershipId,
-      }),
-    ).rejects.toBeInstanceOf(BadRequestException);
-  });
+    it('throws ConflictException on version conflict', async () => {
+      repository.updateDraftRevision.mockRejectedValueOnce(
+        new BuilderVersionConflictError(),
+      );
 
-  it('throws BadRequestException when no source revision exists', async () => {
-    repository.findSourceRevision.mockResolvedValueOnce(undefined);
+      await expect(
+        service.patchDraft({
+          tenantId,
+          applicationId,
+          version: 1,
+          lockVersion: 1,
+          createdByMembershipId,
+          definition: normalizedResult.definition,
+        }),
+      ).rejects.toBeInstanceOf(ConflictException);
+    });
 
-    await expect(
-      service.normalizeDraft({
-        tenantId,
-        tenantSlug,
-        applicationId,
-        version: 1,
-        createdByMembershipId,
-      }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    it('throws NotFoundException when app does not exist', async () => {
+      repository.findApplicationVersion.mockResolvedValueOnce(undefined);
+
+      await expect(
+        service.patchDraft({
+          tenantId,
+          applicationId,
+          version: 1,
+          lockVersion: 1,
+          createdByMembershipId,
+          definition: normalizedResult.definition,
+        }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
   });
 });

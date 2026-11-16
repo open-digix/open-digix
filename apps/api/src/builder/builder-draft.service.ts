@@ -1,16 +1,20 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { builderJsonChecksum } from './builder-checksum';
 import {
   BuilderDraftRepository,
+  BuilderVersionConflictError,
+  type DraftDetailsRecord,
   type SavedNormalizedDraftResult,
 } from './builder-draft.repository';
 import { BuilderSourceNormalizer } from './builder-source.normalizer';
 import type {
   BuilderApplicationDefinitionV1,
+  BuilderDesignMetadata,
   BuilderOpenIssue,
   BuilderSourceMapping,
 } from './builder.types';
@@ -22,6 +26,16 @@ export interface NormalizeDraftCommand {
   readonly version: number;
   readonly createdByMembershipId: string;
   readonly sourceRevisionId?: string;
+}
+
+export interface PatchDraftCommand {
+  readonly tenantId: string;
+  readonly applicationId: string;
+  readonly version: number;
+  readonly lockVersion: number;
+  readonly createdByMembershipId: string;
+  readonly definition: BuilderApplicationDefinitionV1;
+  readonly designMetadata?: BuilderDesignMetadata;
 }
 
 export interface NormalizedDraftResult {
@@ -41,6 +55,29 @@ export class BuilderDraftService {
     private readonly repository: BuilderDraftRepository,
     private readonly normalizer: BuilderSourceNormalizer,
   ) {}
+
+  async getDraft(
+    tenantId: string,
+    applicationId: string,
+    version: number,
+  ): Promise<DraftDetailsRecord> {
+    const draft = await this.repository.findDraftDetails(
+      tenantId,
+      applicationId,
+      version,
+    );
+
+    if (!draft) {
+      throw new NotFoundException({
+        error: {
+          code: 'APP_NOT_FOUND',
+          message: 'Application draft was not found in the active tenant.',
+        },
+      });
+    }
+
+    return draft;
+  }
 
   async normalizeDraft(
     command: NormalizeDraftCommand,
@@ -123,5 +160,68 @@ export class BuilderDraftService {
       openIssues: normalized.openIssues,
       createdAt: saved.createdAt,
     };
+  }
+
+  async patchDraft(
+    command: PatchDraftCommand,
+  ): Promise<SavedNormalizedDraftResult> {
+    const appVersion = await this.repository.findApplicationVersion(
+      command.tenantId,
+      command.applicationId,
+      command.version,
+    );
+
+    if (!appVersion) {
+      throw new NotFoundException({
+        error: {
+          code: 'APP_NOT_FOUND',
+          message: 'Application draft was not found in the active tenant.',
+        },
+      });
+    }
+
+    if (
+      appVersion.appStatus !== 'draft' ||
+      appVersion.versionStatus !== 'draft'
+    ) {
+      throw new BadRequestException({
+        error: {
+          code: 'CANNOT_EDIT_NON_DRAFT',
+          message: 'Only draft application versions can be edited.',
+        },
+      });
+    }
+
+    const snapshotChecksum = builderJsonChecksum(command.definition);
+    const metadata = command.designMetadata ?? {
+      sourceMappings: [],
+      openIssues: [],
+    };
+
+    try {
+      return await this.repository.updateDraftRevision({
+        tenantId: command.tenantId,
+        applicationId: command.applicationId,
+        applicationVersionId: appVersion.versionId,
+        version: command.version,
+        lockVersion: command.lockVersion,
+        definition: command.definition,
+        sourceMappings: metadata.sourceMappings ?? [],
+        openIssues: metadata.openIssues ?? [],
+        snapshotChecksum,
+        createdByMembershipId: command.createdByMembershipId,
+      });
+    } catch (error) {
+      if (error instanceof BuilderVersionConflictError) {
+        throw new ConflictException({
+          error: {
+            code: 'VERSION_CONFLICT',
+            message:
+              'The draft has been modified by another change. Please reload.',
+          },
+        });
+      }
+      throw error;
+    }
   }
 }

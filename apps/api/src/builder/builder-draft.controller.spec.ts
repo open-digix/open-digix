@@ -29,11 +29,18 @@ describe('BuilderDraftController', () => {
   const appId = '33333333-3333-4333-8333-333333333333';
   const createdAt = new Date('2026-11-16T12:00:00.000Z');
 
-  const normalizedResult = {
-    revisionId: '44444444-4444-4444-8444-444444444444',
+  const draftDetailsResult = {
+    applicationId: appId,
+    appKey: 'laptop_request',
+    appName: 'Laptop Request',
+    appStatus: 'draft',
+    versionId: '44444444-4444-4444-8444-444444444444',
+    version: 1,
+    versionStatus: 'draft',
+    lockVersion: 1,
+    revisionId: '55555555-5555-4555-8555-555555555555',
     revisionNo: 1,
-    lockVersion: 2,
-    snapshotChecksum: 'b'.repeat(64),
+    snapshotChecksum: 'a'.repeat(64),
     definition: {
       schemaVersion: '1.0' as const,
       appId: 'laptop_request',
@@ -41,80 +48,171 @@ describe('BuilderDraftController', () => {
       version: 1,
       name: 'Laptop Request',
       roles: ['employee'],
-      fields: [{ id: 'device', type: 'string' as const, required: true }],
-      steps: [
-        { id: 'submitted', type: 'start' as const },
-        { id: 'accepted', type: 'end' as const, endState: 'approved' as const },
-        { id: 'declined', type: 'end' as const, endState: 'rejected' as const },
-      ],
-      transitions: [
-        { from: 'submitted', to: 'accepted' },
-        { from: 'submitted', to: 'declined' },
-      ],
+      fields: [],
+      steps: [],
+      transitions: [],
     },
     sourceMappings: [],
     openIssues: [],
     createdAt,
   };
 
+  const normalizedResult = {
+    revisionId: '55555555-5555-4555-8555-555555555555',
+    revisionNo: 1,
+    lockVersion: 2,
+    snapshotChecksum: 'b'.repeat(64),
+    definition: draftDetailsResult.definition,
+    sourceMappings: [],
+    openIssues: [],
+    createdAt,
+  };
+
+  const patchedResult = {
+    revisionId: '66666666-6666-4666-8666-666666666666',
+    revisionNo: 2,
+    lockVersion: 2,
+    snapshotChecksum: 'c'.repeat(64),
+    createdAt,
+  };
+
+  let getDraft: jest.Mock;
   let normalizeDraft: jest.Mock;
+  let patchDraft: jest.Mock;
   let controller: BuilderDraftController;
 
   beforeEach(() => {
+    getDraft = jest.fn().mockResolvedValue(draftDetailsResult);
     normalizeDraft = jest.fn().mockResolvedValue(normalizedResult);
+    patchDraft = jest.fn().mockResolvedValue(patchedResult);
+
     controller = new BuilderDraftController({
+      getDraft,
       normalizeDraft,
+      patchDraft,
     } as unknown as BuilderDraftService);
   });
 
-  it('normalizes draft using verified tenant context', async () => {
-    const response = await controller.normalize(appId, '1', {}, context);
+  describe('GET :appId/drafts/:version', () => {
+    it('returns draft details using verified tenant context', async () => {
+      const response = await controller.get(appId, '1', context);
 
-    expect(normalizeDraft).toHaveBeenCalledWith({
-      tenantId: context.membership.tenant.id,
-      tenantSlug: context.membership.tenant.slug,
-      applicationId: appId,
-      version: 1,
-      createdByMembershipId: context.membership.id,
-      sourceRevisionId: undefined,
+      expect(getDraft).toHaveBeenCalledWith(
+        context.membership.tenant.id,
+        appId,
+        1,
+      );
+      expect(response).toEqual({
+        appId,
+        version: 1,
+        status: 'draft',
+        lockVersion: 1,
+        revisionId: draftDetailsResult.revisionId,
+        revisionNo: 1,
+        snapshotChecksum: draftDetailsResult.snapshotChecksum,
+        definition: draftDetailsResult.definition,
+        sourceMappings: [],
+        openIssues: [],
+        createdAt: createdAt.toISOString(),
+      });
     });
 
-    expect(response).toEqual({
-      revisionId: normalizedResult.revisionId,
-      revisionNo: 1,
-      lockVersion: 2,
-      snapshotChecksum: normalizedResult.snapshotChecksum,
-      definition: normalizedResult.definition,
-      sourceMappings: [],
-      openIssues: [],
-      createdAt: createdAt.toISOString(),
+    it('requires designer, publisher, or tenant_admin roles', () => {
+      const handler = Object.getOwnPropertyDescriptor(
+        BuilderDraftController.prototype,
+        'get',
+      )?.value as object;
+
+      expect(Reflect.getMetadata(REQUIRED_ROLES, handler)).toEqual([
+        'designer',
+        'publisher',
+        'tenant_admin',
+      ]);
+      expect(Reflect.getMetadata(TENANT_CONTEXT_REQUIRED, handler)).toBe(true);
     });
   });
 
-  it('passes sourceRevisionId when provided in request body', async () => {
-    const sourceRevisionId = '55555555-5555-4555-8555-555555555555';
-    await controller.normalize(appId, '1', { sourceRevisionId }, context);
+  describe('POST :appId/drafts/:version/normalize', () => {
+    it('normalizes draft using verified tenant context', async () => {
+      const response = await controller.normalize(appId, '1', {}, context);
 
-    expect(normalizeDraft).toHaveBeenCalledWith({
-      tenantId: context.membership.tenant.id,
-      tenantSlug: context.membership.tenant.slug,
-      applicationId: appId,
-      version: 1,
-      createdByMembershipId: context.membership.id,
-      sourceRevisionId,
+      expect(normalizeDraft).toHaveBeenCalledWith({
+        tenantId: context.membership.tenant.id,
+        tenantSlug: context.membership.tenant.slug,
+        applicationId: appId,
+        version: 1,
+        createdByMembershipId: context.membership.id,
+        sourceRevisionId: undefined,
+      });
+
+      expect(response).toEqual({
+        revisionId: normalizedResult.revisionId,
+        revisionNo: 1,
+        lockVersion: 2,
+        snapshotChecksum: normalizedResult.snapshotChecksum,
+        definition: normalizedResult.definition,
+        sourceMappings: [],
+        openIssues: [],
+        createdAt: createdAt.toISOString(),
+      });
+    });
+
+    it('requires designer or tenant_admin roles', () => {
+      const handler = Object.getOwnPropertyDescriptor(
+        BuilderDraftController.prototype,
+        'normalize',
+      )?.value as object;
+
+      expect(Reflect.getMetadata(REQUIRED_ROLES, handler)).toEqual([
+        'designer',
+        'tenant_admin',
+      ]);
+      expect(Reflect.getMetadata(TENANT_CONTEXT_REQUIRED, handler)).toBe(true);
     });
   });
 
-  it('requires designer or tenant_admin roles and tenant context', () => {
-    const handler = Object.getOwnPropertyDescriptor(
-      BuilderDraftController.prototype,
-      'normalize',
-    )?.value as object;
+  describe('PATCH :appId/drafts/:version', () => {
+    it('patches draft using verified tenant context and lockVersion', async () => {
+      const response = await controller.patch(
+        appId,
+        '1',
+        {
+          lockVersion: 1,
+          definition: draftDetailsResult.definition,
+        },
+        context,
+      );
 
-    expect(Reflect.getMetadata(REQUIRED_ROLES, handler)).toEqual([
-      'designer',
-      'tenant_admin',
-    ]);
-    expect(Reflect.getMetadata(TENANT_CONTEXT_REQUIRED, handler)).toBe(true);
+      expect(patchDraft).toHaveBeenCalledWith({
+        tenantId: context.membership.tenant.id,
+        applicationId: appId,
+        version: 1,
+        lockVersion: 1,
+        definition: draftDetailsResult.definition,
+        designMetadata: undefined,
+        createdByMembershipId: context.membership.id,
+      });
+
+      expect(response).toEqual({
+        revisionId: patchedResult.revisionId,
+        revisionNo: 2,
+        lockVersion: 2,
+        snapshotChecksum: patchedResult.snapshotChecksum,
+        createdAt: createdAt.toISOString(),
+      });
+    });
+
+    it('requires designer or tenant_admin roles (publisher not allowed to edit)', () => {
+      const handler = Object.getOwnPropertyDescriptor(
+        BuilderDraftController.prototype,
+        'patch',
+      )?.value as object;
+
+      expect(Reflect.getMetadata(REQUIRED_ROLES, handler)).toEqual([
+        'designer',
+        'tenant_admin',
+      ]);
+      expect(Reflect.getMetadata(TENANT_CONTEXT_REQUIRED, handler)).toBe(true);
+    });
   });
 });
