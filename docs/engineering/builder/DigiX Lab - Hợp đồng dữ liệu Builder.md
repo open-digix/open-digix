@@ -33,7 +33,10 @@ Tài liệu dùng một ví dụ xuyên suốt: **ứng dụng đề nghị cấ
 
 Người thiết kế nhập mô tả:
 
-> Nhân viên gửi đề nghị cấp laptop. Quản lý có thể đồng ý hoặc từ chối. Nếu quản lý đồng ý và giá dưới 20 triệu đồng thì đề nghị được chấp thuận. Nếu giá từ 20 triệu đồng trở lên thì giám đốc phải duyệt thêm.
+> Nhân viên gửi đề nghị cấp laptop.
+> Quản lý có thể đồng ý hoặc từ chối.
+> Nếu quản lý đồng ý và giá dưới 20 triệu đồng thì đề nghị được chấp thuận.
+> Nếu giá từ 20 triệu đồng trở lên thì giám đốc phải duyệt thêm.
 
 Từ mô tả này, Builder cần giúp người thiết kế tạo:
 
@@ -49,13 +52,13 @@ Từ mô tả này, Builder cần giúp người thiết kế tạo:
 
 Người thiết kế nhập:
 
-| Nội dung | Giá trị demo |
-| --- | --- |
-| Tên ứng dụng | Đề nghị cấp laptop |
-| Mã ứng dụng | `laptop_request` |
-| Mục tiêu | Quản lý việc gửi và duyệt đề nghị cấp laptop |
-| Bộ phận phụ trách | Hành chính |
-| Mô tả nghiệp vụ | Nội dung tại mục 2.1 |
+| Nội dung          | Giá trị demo                                 |
+| ----------------- | -------------------------------------------- |
+| Tên ứng dụng      | Đề nghị cấp laptop                           |
+| Mã ứng dụng       | `laptop_request`                             |
+| Mục tiêu          | Quản lý việc gửi và duyệt đề nghị cấp laptop |
+| Bộ phận phụ trách | Hành chính                                   |
+| Mô tả nghiệp vụ   | Nội dung tại mục 2.1                         |
 
 Builder tạo một dự án ở trạng thái `draft` và giữ nguyên mô tả gốc làm nguồn đối chiếu.
 
@@ -68,11 +71,11 @@ Nguồn: Mô tả nghiệp vụ do người thiết kế nhập
 
 Builder có thể gợi ý vai trò từ mô tả; người thiết kế kiểm tra và xác nhận:
 
-| Mã vai trò | Tên | Trách nhiệm |
-| --- | --- | --- |
-| `employee` | Nhân viên | Tạo đề nghị |
-| `manager` | Quản lý | Duyệt bước đầu |
-| `director` | Giám đốc | Duyệt đề nghị từ 20 triệu đồng trở lên |
+| Mã vai trò | Tên       | Trách nhiệm                            |
+| ---------- | --------- | -------------------------------------- |
+| `employee` | Nhân viên | Tạo đề nghị                            |
+| `manager`  | Quản lý   | Duyệt bước đầu                         |
+| `director` | Giám đốc  | Duyệt đề nghị từ 20 triệu đồng trở lên |
 
 Kết quả màn hình này là danh sách role. Các bước xử lý phía sau chỉ được chọn role có trong danh sách này.
 
@@ -80,18 +83,18 @@ Kết quả màn hình này là danh sách role. Các bước xử lý phía sau
 
 Người thiết kế khai báo thông tin nhân viên phải nhập:
 
-| Mã field | Nhãn hiển thị | Kiểu | Bắt buộc | Người nhập |
-| --- | --- | --- | --- | --- |
-| `device_name` | Tên thiết bị | `string` | Có | `employee` |
-| `estimated_price` | Giá dự kiến | `integer` | Có | `employee` |
-| `reason` | Lý do đề nghị | `string` | Có | `employee` |
-| `needed_date` | Ngày cần sử dụng | `date` | Có | `employee` |
+| Mã field          | Nhãn hiển thị    | Kiểu      | Bắt buộc | Người nhập |
+| ----------------- | ---------------- | --------- | -------- | ---------- |
+| `device_name`     | Tên thiết bị     | `string`  | Có       | `employee` |
+| `estimated_price` | Giá dự kiến      | `integer` | Có       | `employee` |
+| `reason`          | Lý do đề nghị    | `string`  | Có       | `employee` |
+| `needed_date`     | Ngày cần sử dụng | `date`    | Có       | `employee` |
 
 Người thiết kế khai báo thêm các field mà người duyệt sẽ ghi:
 
-| Mã field | Nhãn hiển thị | Kiểu | Lựa chọn | Người ghi |
-| --- | --- | --- | --- | --- |
-| `manager_decision` | Quyết định của quản lý | `enum` | `approved`, `rejected` | `manager` |
+| Mã field            | Nhãn hiển thị           | Kiểu   | Lựa chọn               | Người ghi  |
+| ------------------- | ----------------------- | ------ | ---------------------- | ---------- |
+| `manager_decision`  | Quyết định của quản lý  | `enum` | `approved`, `rejected` | `manager`  |
 | `director_decision` | Quyết định của giám đốc | `enum` | `approved`, `rejected` | `director` |
 
 Các field này sẽ được bước xử lý sử dụng và sẽ trở thành dữ liệu cho điều kiện rẽ nhánh.
@@ -100,15 +103,15 @@ Các field này sẽ được bước xử lý sử dụng và sẽ trở thành
 
 Người thiết kế tạo các điểm trong quy trình:
 
-| Mã bước | Loại | Người xử lý | Dữ liệu sử dụng |
-| --- | --- | --- | --- |
-| `submitted` | Bắt đầu | — | — |
-| `manager_review` | Công việc | `manager` | Xem đề nghị, ghi `manager_decision` |
-| `manager_route` | Rẽ nhánh | — | Đọc `manager_decision` và `estimated_price` |
-| `director_review` | Công việc | `director` | Xem đề nghị, ghi `director_decision` |
-| `director_route` | Rẽ nhánh | — | Đọc `director_decision` |
-| `accepted` | Kết thúc | — | Kết quả `approved` |
-| `declined` | Kết thúc | — | Kết quả `rejected` |
+| Mã bước           | Loại      | Người xử lý | Dữ liệu sử dụng                             |
+| ----------------- | --------- | ----------- | ------------------------------------------- |
+| `submitted`       | Bắt đầu   | —           | —                                           |
+| `manager_review`  | Công việc | `manager`   | Xem đề nghị, ghi `manager_decision`         |
+| `manager_route`   | Rẽ nhánh  | —           | Đọc `manager_decision` và `estimated_price` |
+| `director_review` | Công việc | `director`  | Xem đề nghị, ghi `director_decision`        |
+| `director_route`  | Rẽ nhánh  | —           | Đọc `director_decision`                     |
+| `accepted`        | Kết thúc  | —           | Kết quả `approved`                          |
+| `declined`        | Kết thúc  | —           | Kết quả `rejected`                          |
 
 Ở màn hình này, Builder mới biết quy trình có những điểm nào. Đường nối được tạo ở màn hình tiếp theo.
 
@@ -171,10 +174,10 @@ Builder kiểm tra:
 
 Người thiết kế thử hai bộ dữ liệu:
 
-| Dữ liệu thử | Đường đi mong đợi |
-| --- | --- |
-| Giá 15 triệu, quản lý đồng ý | Kết thúc `approved`, không qua giám đốc |
-| Giá 25 triệu, quản lý đồng ý, giám đốc đồng ý | Qua giám đốc rồi kết thúc `approved` |
+| Dữ liệu thử                                   | Đường đi mong đợi                       |
+| --------------------------------------------- | --------------------------------------- |
+| Giá 15 triệu, quản lý đồng ý                  | Kết thúc `approved`, không qua giám đốc |
+| Giá 25 triệu, quản lý đồng ý, giám đốc đồng ý | Qua giám đốc rồi kết thúc `approved`    |
 
 Nếu đúng, người có quyền mới được xuất bản ứng dụng.
 
@@ -236,14 +239,14 @@ Role + Field + Step + Điều kiện
 
 Kịch bản trên chỉ là ví dụ. Với nghiệp vụ khác, người thiết kế vẫn đi qua sáu bước giống nhau.
 
-| Bước | Câu hỏi người thiết kế trả lời | Kết quả tạo ra | Được dùng tiếp ở đâu? |
-| --- | --- | --- | --- |
-| 1. Ứng dụng | Muốn tạo ứng dụng gì? | App draft và nguồn nghiệp vụ | Là căn cứ cho toàn bộ ứng dụng |
-| 2. Vai trò | Ai tham gia? | Danh sách role | Gán người xử lý cho task |
-| 3. Biểu mẫu | Cần nhập hoặc quyết định dữ liệu gì? | Danh sách field | Task đọc/ghi; điều kiện kiểm tra |
-| 4. Xử lý | Ai làm việc gì? | Danh sách step | Là điểm nguồn/đích của đường nối |
-| 5. Điều kiện | Xử lý xong thì hồ sơ đi đâu? | Danh sách transition | Tạo quy trình từ start tới end |
-| 6. Kiểm tra | Các phần có khớp nhau không? | Validation | Cho phép hoặc chặn chạy thử/xuất bản |
+| Bước         | Câu hỏi người thiết kế trả lời       | Kết quả tạo ra               | Được dùng tiếp ở đâu?                |
+| ------------ | ------------------------------------ | ---------------------------- | ------------------------------------ |
+| 1. Ứng dụng  | Muốn tạo ứng dụng gì?                | App draft và nguồn nghiệp vụ | Là căn cứ cho toàn bộ ứng dụng       |
+| 2. Vai trò   | Ai tham gia?                         | Danh sách role               | Gán người xử lý cho task             |
+| 3. Biểu mẫu  | Cần nhập hoặc quyết định dữ liệu gì? | Danh sách field              | Task đọc/ghi; điều kiện kiểm tra     |
+| 4. Xử lý     | Ai làm việc gì?                      | Danh sách step               | Là điểm nguồn/đích của đường nối     |
+| 5. Điều kiện | Xử lý xong thì hồ sơ đi đâu?         | Danh sách transition         | Tạo quy trình từ start tới end       |
+| 6. Kiểm tra  | Các phần có khớp nhau không?         | Validation                   | Cho phép hoặc chặn chạy thử/xuất bản |
 
 Luồng phụ thuộc luôn là:
 
@@ -356,9 +359,25 @@ Builder Draft
 └── validation          lỗi và cảnh báo
 ```
 
-Phần định nghĩa gồm `roles`, `fields`, `steps` và `transitions` phải phù hợp với [`schema/digix-app-v1.schema.json`](../../reference/schema/digix-app-v1.schema.json).
+**`Builder Draft` không phải JSON theo schema ứng dụng v1.** Nháp là dữ liệu làm việc, có thể chưa đủ bước/trường hoặc còn vấn đề `blocking`. Schema [`digix-app-v1.schema.json`](../../reference/schema/digix-app-v1.schema.json) chỉ áp dụng cho **manifest thực thi** được xuất từ snapshot đã kiểm tra. Không gửi nguyên Draft vào validator của manifest hoặc workflow engine.
 
-Tenant ID, user ID, draft UUID, revision, checksum và thời gian tạo/cập nhật do hệ thống tự điền; người thiết kế không nhập.
+| Dữ liệu trong Draft                                                                   | Đầu ra khi phát hành                                                                                   | Quy tắc ánh xạ                                                                                                                                                                                                                  |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app.code`, `app.name`                                                                | `manifest.appId`, `manifest.name`                                                                      | Mã ứng dụng cố định sau khi tạo; tên hiển thị theo snapshot được review. Mục tiêu, bộ phận và mô tả gốc ở metadata, không nằm trong manifest.                                                                                   |
+| `roles[]` (mã, tên, trách nhiệm, hành động, nguồn)                                    | `manifest.roles[]` là danh sách **mã role**                                                            | Nhãn/trách nhiệm/nguồn ở metadata; quyền thực tế lấy từ membership và phân quyền tenant/app do API kiểm tra, không tin vào mô tả role.                                                                                          |
+| `fields[]` (mã, nhãn, kiểu, bắt buộc, giới hạn, lựa chọn, người nhập/sửa, nguồn)      | `manifest.fields[]` gồm `id`, `type`, `required`, `min`, `max`, `options` theo schema                  | Nhãn/nguồn ở metadata. Quyền ghi không được suy ra chỉ từ nhãn hoặc bảng UI: API kiểm tra quyền tạo hồ sơ; trường `decisionField` chỉ task được giao mới được ghi. Quyền ghi khác cần hợp đồng thực thi riêng trước khi hỗ trợ. |
+| `steps[]` (mã, tên, loại, role, field đọc/ghi, quyết định, tự duyệt, trạng thái cuối) | `manifest.steps[]` gồm `id`, `type`, `role`, `decisionField`, `noSelfApproval`, `endState` theo schema | Tên và chú giải ở metadata; không tự đưa danh sách field đọc/ghi vào manifest vì schema v1 chưa định nghĩa quyền này.                                                                                                           |
+| `transitions[]`                                                                       | `manifest.transitions[]` gồm `from`, `to`, `when.all`                                                  | Chỉ dùng điều kiện/kiểu được schema và semantic validator chấp nhận; mô tả và nguồn của nhánh ở metadata.                                                                                                                       |
+| `sources`, `sourceMappings`, `validation`, vấn đề chưa rõ                             | Không vào manifest                                                                                     | Lưu ở Draft và báo cáo review; chỉ metadata hiển thị/nguồn đã được duyệt mới được chụp vào bản phát hành. Lỗi `blocking` phải được xử lý trước publish.                                                                         |
+| Tenant, người tạo, draft UUID, revision, checksum, thời gian                          | `manifest.tenantId`, `manifest.version`, `manifest.schemaVersion` và bản ghi phát hành                 | API lấy tenant từ membership đã xác minh, tự cấp version; `schemaVersion` là `"1.0"`. Các định danh, checksum và audit còn lại do hệ thống lưu, không cho UI tự quyết.                                                          |
+
+**Quy trình chuyển đổi:** lưu Draft và `lockVersion` → chuẩn hóa, kiểm tra schema manifest và ngữ nghĩa/quyền → preview trên snapshot đã lưu → publisher review đúng snapshot/checksum → API tạo manifest và metadata hiển thị đã duyệt, deploy workflow rồi công bố phiên bản bất biến. Sửa Draft sau review buộc kiểm tra và xác nhận lại. Bản phát hành gắn manifest và metadata bằng cùng định danh `(tenantId, appId, version)`; hồ sơ cũ tiếp tục dùng version đã pin.
+
+Metadata hiển thị của bản phát hành tối thiểu có `roles: { [roleId]: label }`, `fields: { [fieldId]: label }`, `steps: { [stepId]: label }`, gắn với `(tenantId, appId, version)` và tham chiếu đúng các ID của manifest. Publisher phải kiểm tra mọi ID cần hiển thị đều có nhãn không rỗng; metadata không được chứa ID lạ. API trả metadata này cùng manifest cho UI vận hành đúng version, không lấy nhãn từ Draft đang sửa. Đây là hợp đồng metadata **đề xuất**, chưa có JSON Schema/API triển khai riêng.
+
+`definition_checksum` kiểm tra manifest; `snapshotChecksum` bao gồm cả metadata/cấu hình có ảnh hưởng đến hiển thị, phân quyền và vận hành để chặn thay đổi sau review. Nếu thiếu metadata hiển thị đã duyệt, API phải báo lỗi cấu hình thay vì lấy dữ liệu của bản nháp mới nhất. UI chỉ hiển thị trường người gửi được nhập ở biểu mẫu gửi; `decisionField` thuộc task được giao, không cho người gửi nhập. Không dùng metadata hay cờ UI để thay thế guard phân quyền ở API.
+
+Ví dụ cấp laptop: `roles[]` trong Draft có `{ code: "manager", name: "Quản lý" }`; manifest chỉ chứa `"manager"` trong `roles`; tên `Quản lý` nằm ở metadata phát hành theo version. Trường `estimated_price` được xuất thành `{ "id": "estimated_price", "type": "integer", "required": true }`; nhãn `Giá dự kiến` nằm ở metadata cùng version. `manager_review` có `role: "manager"` và `decisionField: "manager_decision"` trong manifest, còn tên bước hiển thị ở metadata.
 
 ---
 
