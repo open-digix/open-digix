@@ -16,6 +16,7 @@ import type {
   BuilderApplicationDefinitionV1,
   BuilderOpenIssue,
   BuilderSourceMapping,
+  BuilderValidationResult,
 } from './builder.types';
 import {
   parseApplicationId,
@@ -155,5 +156,23 @@ export class BuilderDraftController {
       snapshotChecksum: res.snapshotChecksum,
       createdAt: res.createdAt.toISOString(),
     };
+  }
+
+  @Post(':appId/drafts/:version/validate')
+  @HttpCode(HttpStatus.OK)
+  @RequireRoles('designer', 'publisher', 'tenant_admin')
+  async validate(
+    @Param('appId') appId: string,
+    @Param('version') versionParam: string,
+    @CurrentTenantContext() context: TenantContext,
+  ): Promise<BuilderValidationResult> {
+    const applicationId = parseApplicationId(appId);
+    const version = parseDraftVersion(versionParam);
+
+    return this.draftService.validateDraft(
+      context.membership.tenant.id,
+      applicationId,
+      version,
+    );
   }
 }

@@ -8,6 +8,8 @@ import {
   BuilderVersionConflictError,
   type BuilderDraftRepository,
 } from './builder-draft.repository';
+import type { BuilderManifestSchemaValidator } from './builder-manifest-schema.validator';
+import type { BuilderSemanticValidator } from './builder-semantic.validator';
 
 describe('BuilderDraftService', () => {
   const tenantId = '11111111-1111-4111-8111-111111111111';
@@ -83,9 +85,25 @@ describe('BuilderDraftService', () => {
   let normalizer: {
     normalize: jest.Mock;
   };
+  let schemaValidator: {
+    validate: jest.Mock;
+  };
+  let semanticValidator: {
+    validate: jest.Mock;
+  };
   let service: BuilderDraftService;
 
   beforeEach(() => {
+    schemaValidator = {
+      validate: jest.fn().mockReturnValue({
+        valid: true,
+        definition: normalizedResult.definition,
+        issues: [],
+      }),
+    };
+    semanticValidator = {
+      validate: jest.fn().mockReturnValue({ valid: true, issues: [] }),
+    };
     repository = {
       findApplicationVersion: jest.fn().mockResolvedValue(appVersionRecord),
       findDraftDetails: jest.fn().mockResolvedValue({
@@ -127,6 +145,8 @@ describe('BuilderDraftService', () => {
     service = new BuilderDraftService(
       repository as unknown as BuilderDraftRepository,
       normalizer,
+      schemaValidator as unknown as BuilderManifestSchemaValidator,
+      semanticValidator as unknown as BuilderSemanticValidator,
     );
   });
 
@@ -309,6 +329,61 @@ describe('BuilderDraftService', () => {
           definition: normalizedResult.definition,
         }),
       ).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('validateDraft', () => {
+    it('returns valid true when both schema and semantics pass', async () => {
+      const res = await service.validateDraft(tenantId, applicationId, 1);
+      expect(res).toEqual({
+        valid: true,
+        snapshotChecksum: 'a'.repeat(64),
+        issues: [],
+      });
+      expect(schemaValidator.validate).toHaveBeenCalledWith(
+        normalizedResult.definition,
+      );
+      expect(semanticValidator.validate).toHaveBeenCalledWith(
+        normalizedResult.definition,
+      );
+    });
+
+    it('returns valid false when schema fails without running semantic validator', async () => {
+      schemaValidator.validate.mockReturnValueOnce({
+        valid: false,
+        issues: [
+          {
+            severity: 'error',
+            code: 'SCHEMA_VALIDATION_ERROR',
+            path: '/roles',
+            message: 'must not be empty',
+          },
+        ],
+      });
+
+      const res = await service.validateDraft(tenantId, applicationId, 1);
+      expect(res.valid).toBe(false);
+      expect(res.issues).toHaveLength(1);
+      expect(semanticValidator.validate).not.toHaveBeenCalled();
+    });
+
+    it('returns valid false when semantic validator reports issues', async () => {
+      semanticValidator.validate.mockReturnValueOnce({
+        valid: false,
+        issues: [
+          {
+            severity: 'error',
+            code: 'UNKNOWN_TASK_ROLE',
+            path: '/steps/1/role',
+            message: 'Task role does not exist',
+            stepId: 'manager_review',
+          },
+        ],
+      });
+
+      const res = await service.validateDraft(tenantId, applicationId, 1);
+      expect(res.valid).toBe(false);
+      expect(res.issues[0]?.code).toBe('UNKNOWN_TASK_ROLE');
     });
   });
 });

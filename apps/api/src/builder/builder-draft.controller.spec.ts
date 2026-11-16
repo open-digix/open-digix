@@ -79,17 +79,24 @@ describe('BuilderDraftController', () => {
   let getDraft: jest.Mock;
   let normalizeDraft: jest.Mock;
   let patchDraft: jest.Mock;
+  let validateDraft: jest.Mock;
   let controller: BuilderDraftController;
 
   beforeEach(() => {
     getDraft = jest.fn().mockResolvedValue(draftDetailsResult);
     normalizeDraft = jest.fn().mockResolvedValue(normalizedResult);
     patchDraft = jest.fn().mockResolvedValue(patchedResult);
+    validateDraft = jest.fn().mockResolvedValue({
+      valid: true,
+      snapshotChecksum: 'a'.repeat(64),
+      issues: [],
+    });
 
     controller = new BuilderDraftController({
       getDraft,
       normalizeDraft,
       patchDraft,
+      validateDraft,
     } as unknown as BuilderDraftService);
   });
 
@@ -210,6 +217,37 @@ describe('BuilderDraftController', () => {
 
       expect(Reflect.getMetadata(REQUIRED_ROLES, handler)).toEqual([
         'designer',
+        'tenant_admin',
+      ]);
+      expect(Reflect.getMetadata(TENANT_CONTEXT_REQUIRED, handler)).toBe(true);
+    });
+  });
+
+  describe('POST :appId/drafts/:version/validate', () => {
+    it('validates draft using verified tenant context', async () => {
+      const response = await controller.validate(appId, '1', context);
+
+      expect(validateDraft).toHaveBeenCalledWith(
+        context.membership.tenant.id,
+        appId,
+        1,
+      );
+      expect(response).toEqual({
+        valid: true,
+        snapshotChecksum: 'a'.repeat(64),
+        issues: [],
+      });
+    });
+
+    it('requires designer, publisher, or tenant_admin roles', () => {
+      const handler = Object.getOwnPropertyDescriptor(
+        BuilderDraftController.prototype,
+        'validate',
+      )?.value as object;
+
+      expect(Reflect.getMetadata(REQUIRED_ROLES, handler)).toEqual([
+        'designer',
+        'publisher',
         'tenant_admin',
       ]);
       expect(Reflect.getMetadata(TENANT_CONTEXT_REQUIRED, handler)).toBe(true);

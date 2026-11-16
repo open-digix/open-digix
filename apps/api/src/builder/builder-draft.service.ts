@@ -11,12 +11,15 @@ import {
   type DraftDetailsRecord,
   type SavedNormalizedDraftResult,
 } from './builder-draft.repository';
+import { BuilderManifestSchemaValidator } from './builder-manifest-schema.validator';
+import { BuilderSemanticValidator } from './builder-semantic.validator';
 import { BuilderSourceNormalizer } from './builder-source.normalizer';
 import type {
   BuilderApplicationDefinitionV1,
   BuilderDesignMetadata,
   BuilderOpenIssue,
   BuilderSourceMapping,
+  BuilderValidationResult,
 } from './builder.types';
 
 export interface NormalizeDraftCommand {
@@ -54,6 +57,8 @@ export class BuilderDraftService {
   constructor(
     private readonly repository: BuilderDraftRepository,
     private readonly normalizer: BuilderSourceNormalizer,
+    private readonly schemaValidator: BuilderManifestSchemaValidator,
+    private readonly semanticValidator: BuilderSemanticValidator,
   ) {}
 
   async getDraft(
@@ -223,5 +228,32 @@ export class BuilderDraftService {
       }
       throw error;
     }
+  }
+
+  async validateDraft(
+    tenantId: string,
+    applicationId: string,
+    version: number,
+  ): Promise<BuilderValidationResult> {
+    const draft = await this.getDraft(tenantId, applicationId, version);
+    const snapshotChecksum = draft.snapshotChecksum;
+
+    const schemaResult = this.schemaValidator.validate(draft.definition);
+    if (!schemaResult.valid) {
+      return {
+        valid: false,
+        snapshotChecksum,
+        issues: schemaResult.issues,
+      };
+    }
+
+    const semanticResult = this.semanticValidator.validate(
+      schemaResult.definition,
+    );
+    return {
+      valid: semanticResult.valid,
+      snapshotChecksum,
+      issues: semanticResult.issues,
+    };
   }
 }
