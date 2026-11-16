@@ -8,8 +8,6 @@ import {
   BuilderVersionConflictError,
   type BuilderDraftRepository,
 } from './builder-draft.repository';
-import type { BuilderManifestSchemaValidator } from './builder-manifest-schema.validator';
-import type { BuilderSemanticValidator } from './builder-semantic.validator';
 
 describe('BuilderDraftService', () => {
   const tenantId = '11111111-1111-4111-8111-111111111111';
@@ -145,8 +143,8 @@ describe('BuilderDraftService', () => {
     service = new BuilderDraftService(
       repository as unknown as BuilderDraftRepository,
       normalizer,
-      schemaValidator as unknown as BuilderManifestSchemaValidator,
-      semanticValidator as unknown as BuilderSemanticValidator,
+      schemaValidator,
+      semanticValidator,
     );
   });
 
