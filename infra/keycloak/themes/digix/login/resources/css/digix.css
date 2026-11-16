@@ -1,0 +1,132 @@
+:root {
+    --digix-navy: #112b45;
+    --digix-teal: #0d9488;
+    --digix-light: #2dd4bf;
+}
+
+.login-pf body#keycloak-bg {
+    min-height: 100dvh;
+    margin: 0;
+    background:
+        radial-gradient(ellipse at 50% 35%, #236d70 0%, #112b45 55%, #071b2c 100%);
+    font-family: "Be Vietnam Pro", "Segoe UI", Arial, sans-serif;
+}
+
+.pf-v5-c-login {
+    min-height: 100dvh;
+    padding: 24px;
+    display: grid;
+    align-items: center;
+    background: transparent !important;
+}
+
+.pf-v5-c-login__container {
+    width: min(440px, 100%);
+    margin: 0 auto;
+    padding: 0 !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+}
+
+#kc-header {
+    margin: 0 auto 20px;
+}
+
+#kc-header-wrapper {
+    width: 52px;
+    height: 52px;
+    margin: auto;
+    border-radius: 50%;
+    background: #fff url("../img/digix-logo.svg") center / 72% no-repeat;
+    box-shadow: 0 4px 14px #0003;
+    font-size: 0 !important;
+}
+
+.pf-v5-c-login__main {
+    overflow: hidden;
+    border-radius: 24px;
+    background: #fff;
+    color: var(--digix-navy);
+    box-shadow: 0 25px 90px #00182766;
+}
+
+.pf-v5-c-login__main-header {
+    border-top: 0 !important;
+    background: #fff;
+}
+
+.pf-v5-c-login__main-body {
+    background: #fff;
+}
+
+#kc-page-title {
+    color: var(--digix-navy);
+    font-size: clamp(25px, 5vw, 32px);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+}
+
+.pf-v5-c-form__label-text {
+    color: var(--digix-navy);
+}
+
+.pf-v5-c-form-control {
+    border-radius: 10px;
+}
+
+#kc-login {
+    min-height: 48px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--digix-teal) !important;
+    color: #fff !important;
+    font-weight: 600;
+}
+
+#kc-login:hover {
+    background: #0b776f !important;
+}
+
+#kc-login:focus-visible {
+    outline: 3px solid var(--digix-light);
+    outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+    .pf-v5-c-login {
+        padding: 16px;
+    }
+
+    .pf-v5-c-login__main {
+        border-radius: 18px;
+    }
+}
+
+/* Cùng chiều rộng và khoảng đệm với hộp ở /login */
+.pf-v5-c-login__container {
+    width: min(440px, 100%) !important;
+    max-width: 440px;
+    grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.pf-v5-c-login__main {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 38px;
+    border: 1px solid #dce8ed;
+}
+
+.pf-v5-c-login__main-header,
+.pf-v5-c-login__main-body,
+.pf-v5-c-login__main-footer {
+    padding: 0 !important;
+}
+
+.pf-v5-c-login__main-header {
+    margin-bottom: 24px;
+}
+
+@media (max-width: 480px) {
+    .pf-v5-c-login__main {
+        padding: 24px;
+    }
+}
