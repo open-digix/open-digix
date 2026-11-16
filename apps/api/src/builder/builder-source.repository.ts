@@ -16,6 +16,7 @@ export interface CreateBuilderSourceRevisionInput {
   readonly createdByMembershipId: string;
   readonly sections: BuilderSourceSections;
   readonly segments: readonly BuilderSourceSegment[];
+  readonly fileRefs: readonly string[];
 }
 
 export interface BuilderSourceRevisionRecord {
@@ -38,6 +39,13 @@ interface SourceRevisionRow extends QueryResultRow {
   segments: BuilderSourceSegment[];
   created_by_membership_id: string;
   created_at: Date;
+}
+
+export class BuilderSourceFileUnavailableError extends Error {
+  constructor() {
+    super('A source file is unavailable for this tenant');
+    this.name = 'BuilderSourceFileUnavailableError';
+  }
 }
 
 const LOCK_APPLICATION_QUERY = `
@@ -76,6 +84,21 @@ const CREATE_SOURCE_REVISION_QUERY = `
     created_at
 `;
 
+const LINK_SOURCE_FILES_QUERY = `
+  INSERT INTO builder_source_files (
+    tenant_id,
+    application_id,
+    source_revision_id,
+    file_id
+  )
+  SELECT $1, $2, $3, stored_file.id
+  FROM stored_files AS stored_file
+  WHERE stored_file.tenant_id = $1
+    AND stored_file.id = ANY($4::uuid[])
+    AND stored_file.scan_status = 'clean'
+  RETURNING file_id
+`;
+
 @Injectable()
 export class BuilderSourceRepository {
   constructor(@Inject(DATABASE_POOL) private readonly pool: Pool) {}
@@ -97,6 +120,7 @@ export class BuilderSourceRepository {
       }
 
       const revision = await insertRevision(client, input);
+      await linkSourceFiles(client, input, revision.id);
       await client.query('COMMIT');
       return revision;
     } catch (error) {
@@ -105,6 +129,24 @@ export class BuilderSourceRepository {
     } finally {
       client.release();
     }
+  }
+}
+
+async function linkSourceFiles(
+  client: PoolClient,
+  input: CreateBuilderSourceRevisionInput,
+  revisionId: string,
+): Promise<void> {
+  if (input.fileRefs.length === 0) return;
+
+  const result = await client.query(LINK_SOURCE_FILES_QUERY, [
+    input.tenantId,
+    input.applicationId,
+    revisionId,
+    input.fileRefs,
+  ]);
+  if (result.rows.length !== input.fileRefs.length) {
+    throw new BuilderSourceFileUnavailableError();
   }
 }
 

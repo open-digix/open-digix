@@ -23,6 +23,7 @@ describe('BuilderSourceRepository', () => {
         text: 'A manager reviews the request.',
       },
     ],
+    fileRefs: [],
   };
   const row = {
     id: '44444444-4444-4444-8444-444444444444',
@@ -96,6 +97,40 @@ describe('BuilderSourceRepository', () => {
     expect(query).toHaveBeenCalledTimes(3);
     expect(query).toHaveBeenLastCalledWith('COMMIT');
     expect(release).toHaveBeenCalledTimes(1);
+  });
+
+  it('links only clean source files from the same tenant', async () => {
+    const fileId = '55555555-5555-4555-8555-555555555555';
+    query
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [{ id: input.applicationId }] })
+      .mockResolvedValueOnce({ rows: [row] })
+      .mockResolvedValueOnce({ rows: [{ file_id: fileId }] })
+      .mockResolvedValueOnce({ rows: [] });
+
+    await repository.createRevision({ ...input, fileRefs: [fileId] });
+
+    expect(query).toHaveBeenNthCalledWith(
+      4,
+      expect.stringContaining("stored_file.scan_status = 'clean'"),
+      [input.tenantId, input.applicationId, row.id, [fileId]],
+    );
+    expect(query).toHaveBeenNthCalledWith(5, 'COMMIT');
+  });
+
+  it('rolls back when a source file is unavailable to the tenant', async () => {
+    const fileId = '55555555-5555-4555-8555-555555555555';
+    query
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [{ id: input.applicationId }] })
+      .mockResolvedValueOnce({ rows: [row] })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [] });
+
+    await expect(
+      repository.createRevision({ ...input, fileRefs: [fileId] }),
+    ).rejects.toThrow('source file is unavailable');
+    expect(query).toHaveBeenLastCalledWith('ROLLBACK');
   });
 
   it('rolls back and releases the client when revision creation fails', async () => {
