@@ -2,12 +2,16 @@ import { randomUUID } from 'node:crypto';
 import { Pool, type PoolClient } from 'pg';
 import { getDatabaseConfig } from './database.config';
 import { migrationChecksum } from './migration-runner';
-import { initialSchemaMigration } from './migrations/0001-initial-schema';
+import { migrations } from './migrations';
 
 const REQUIRED_TABLES = [
   'application_versions',
   'applications',
   'audit_logs',
+  'builder_draft_revisions',
+  'builder_revision_sources',
+  'builder_source_files',
+  'builder_source_revisions',
   'business_records',
   'identity_users',
   'membership_roles',
@@ -86,18 +90,20 @@ async function verifyRequiredTables(client: PoolClient): Promise<void> {
 }
 
 async function verifyMigrationChecksum(client: PoolClient): Promise<void> {
-  const result = await client.query<{ checksum: string }>(
-    'SELECT checksum FROM schema_migrations WHERE id = $1',
-    [initialSchemaMigration.id],
-  );
+  for (const migration of migrations) {
+    const result = await client.query<{ checksum: string }>(
+      'SELECT checksum FROM schema_migrations WHERE id = $1',
+      [migration.id],
+    );
 
-  if (result.rowCount !== 1) {
-    throw new Error(`Migration ${initialSchemaMigration.id} is not applied`);
-  }
+    if (result.rowCount !== 1) {
+      throw new Error(`Migration ${migration.id} is not applied`);
+    }
 
-  const expected = migrationChecksum(initialSchemaMigration.sql);
-  if (result.rows[0].checksum.trim() !== expected) {
-    throw new Error(`Migration ${initialSchemaMigration.id} checksum mismatch`);
+    const expected = migrationChecksum(migration.sql);
+    if (result.rows[0].checksum.trim() !== expected) {
+      throw new Error(`Migration ${migration.id} checksum mismatch`);
+    }
   }
 }
 
@@ -119,6 +125,8 @@ export async function verifySchema(
   const roleBetaId = randomUUID();
   const applicationAlphaId = randomUUID();
   const applicationVersionAlphaId = randomUUID();
+  const sourceRevisionAlphaId = randomUUID();
+  const draftRevisionAlphaId = randomUUID();
   const recordAlphaId = randomUUID();
   const workflowAlphaId = randomUUID();
   const rejectedCrossTenantCases: string[] = [];
@@ -204,6 +212,75 @@ export async function verifySchema(
       ],
     );
     await client.query(
+      `INSERT INTO builder_source_revisions (
+        id,
+        tenant_id,
+        application_id,
+        revision_no,
+        sections,
+        segments,
+        created_by_membership_id
+      ) VALUES ($1, $2, $3, 1, $4::jsonb, $5::jsonb, $6)`,
+      [
+        sourceRevisionAlphaId,
+        tenantAlphaId,
+        applicationAlphaId,
+        JSON.stringify({ goal: 'Verify Builder persistence' }),
+        JSON.stringify([{ id: 'verify-segment', section: 'goal' }]),
+        membershipAlphaId,
+      ],
+    );
+    await client.query(
+      `INSERT INTO builder_draft_revisions (
+        id,
+        tenant_id,
+        application_id,
+        application_version_id,
+        revision_no,
+        definition,
+        design_metadata,
+        snapshot_checksum,
+        created_by_membership_id
+      ) VALUES ($1, $2, $3, $4, 1, $5::jsonb, $6::jsonb, $7, $8)`,
+      [
+        draftRevisionAlphaId,
+        tenantAlphaId,
+        applicationAlphaId,
+        applicationVersionAlphaId,
+        JSON.stringify({ name: 'verification' }),
+        JSON.stringify({ sourceMappings: [], openIssues: [] }),
+        'd'.repeat(64),
+        membershipAlphaId,
+      ],
+    );
+    await client.query(
+      `INSERT INTO builder_revision_sources (
+        tenant_id,
+        application_id,
+        application_version_id,
+        revision_id,
+        source_revision_id
+      ) VALUES ($1, $2, $3, $4, $5)`,
+      [
+        tenantAlphaId,
+        applicationAlphaId,
+        applicationVersionAlphaId,
+        draftRevisionAlphaId,
+        sourceRevisionAlphaId,
+      ],
+    );
+    await client.query(
+      `UPDATE application_versions
+       SET current_revision_id = $1
+       WHERE tenant_id = $2 AND application_id = $3 AND id = $4`,
+      [
+        draftRevisionAlphaId,
+        tenantAlphaId,
+        applicationAlphaId,
+        applicationVersionAlphaId,
+      ],
+    );
+    await client.query(
       `INSERT INTO business_records (
         id,
         tenant_id,
@@ -264,6 +341,35 @@ export async function verifySchema(
           tenantBetaId,
           applicationAlphaId,
           'b'.repeat(64),
+          membershipBetaId,
+        ],
+      },
+      {
+        name: 'Builder source revision cannot use an application from another tenant',
+        sql: `INSERT INTO builder_source_revisions (
+                tenant_id,
+                application_id,
+                revision_no,
+                created_by_membership_id
+              ) VALUES ($1, $2, 1, $3)`,
+        values: [tenantBetaId, applicationAlphaId, membershipBetaId],
+      },
+      {
+        name: 'Builder draft revision cannot use an application version from another tenant',
+        sql: `INSERT INTO builder_draft_revisions (
+                tenant_id,
+                application_id,
+                application_version_id,
+                revision_no,
+                definition,
+                snapshot_checksum,
+                created_by_membership_id
+              ) VALUES ($1, $2, $3, 1, '{}'::jsonb, $4, $5)`,
+        values: [
+          tenantBetaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          'e'.repeat(64),
           membershipBetaId,
         ],
       },

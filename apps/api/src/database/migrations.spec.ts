@@ -4,6 +4,7 @@ describe('database migrations', () => {
   it('registers the initial DigiX schema migration', () => {
     expect(migrations.map((migration) => migration.id)).toEqual([
       '0001_initial_schema',
+      '0002_builder_drafts',
     ]);
   });
 
@@ -33,6 +34,27 @@ describe('database migrations', () => {
     );
     expect(migrations[0].sql).toContain(
       'FOREIGN KEY (tenant_id, workflow_instance_id)',
+    );
+  });
+
+  it.each([
+    'builder_source_revisions',
+    'builder_source_files',
+    'builder_draft_revisions',
+    'builder_revision_sources',
+  ])('creates the %s table for Builder drafts', (tableName) => {
+    expect(migrations[1].sql).toContain(`CREATE TABLE ${tableName}`);
+  });
+
+  it('keeps Builder revision relationships tenant-scoped', () => {
+    expect(migrations[1].sql).toContain(
+      'FOREIGN KEY (tenant_id, application_id, source_revision_id)',
+    );
+    expect(migrations[1].sql).toContain(
+      'FOREIGN KEY (tenant_id, application_id, application_version_id)',
+    );
+    expect(migrations[1].sql).toContain(
+      'ADD CONSTRAINT application_versions_current_revision_fk',
     );
   });
 });
