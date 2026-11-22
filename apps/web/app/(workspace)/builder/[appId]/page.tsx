@@ -19,8 +19,15 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getTenantContext } from "../../../../lib/api/server";
 import { isValidUUID } from "../../../../lib/builder/types";
+import { getDraftAction } from "../../../../lib/builder/actions";
 import Stepper from "../../../../components/builder/Stepper";
 import SourceEditor from "../../../../components/builder/SourceEditor";
+import NormalizeView from "../../../../components/builder/NormalizeView";
+import BuilderView from "../../../../components/builder/BuilderView";
+import type {
+  BuilderApplicationDefinitionV1,
+  BuilderDesignMetadata,
+} from "../../../../../../apps/api/src/builder/builder.types";
 
 interface BuilderAppPageProps {
   params: Promise<{ appId: string }>;
@@ -83,6 +90,41 @@ export default async function BuilderAppPage({
       : "source"
   ) as "source" | "normalize" | "edit" | "validate";
 
+  // For edit step: load draft
+  let initialDraft: {
+    definition: BuilderApplicationDefinitionV1;
+    lockVersion: number;
+    revisionNo: number;
+    sourceMappings?: BuilderDesignMetadata["sourceMappings"];
+    openIssues?: BuilderDesignMetadata["openIssues"];
+  } | null = null;
+
+  if (validStep === "edit") {
+    const res = await getDraftAction(appId, 1);
+    if (res.ok && res.data) {
+      initialDraft = res.data;
+    } else {
+      // Fallback empty definition if not normalized yet
+      initialDraft = {
+        definition: {
+          schemaVersion: "1.0",
+          appId,
+          tenantId: currentTenant?.id ?? "default",
+          version: 1,
+          name: "Bản nháp",
+          roles: [],
+          fields: [],
+          steps: [],
+          transitions: [],
+        },
+        lockVersion: 1,
+        revisionNo: 1,
+        sourceMappings: [],
+        openIssues: [],
+      };
+    }
+  }
+
   return (
     <div className="page">
       <header className="page-header">
@@ -121,23 +163,37 @@ export default async function BuilderAppPage({
         />
       )}
 
-      {validStep !== "source" && (
+      {validStep === "normalize" && (
+        <NormalizeView
+          appId={appId}
+          tenantId={currentTenant?.id ?? "default"}
+          appName="Bản nháp quy trình"
+          version={1}
+        />
+      )}
+
+      {validStep === "edit" && initialDraft && (
+        <BuilderView
+          appId={appId}
+          tenantId={currentTenant?.id ?? "default"}
+          version={1}
+          initialDefinition={initialDraft.definition}
+          initialLockVersion={initialDraft.lockVersion}
+          initialRevisionNo={initialDraft.revisionNo}
+          initialSourceMappings={initialDraft.sourceMappings}
+          initialOpenIssues={initialDraft.openIssues}
+        />
+      )}
+
+      {validStep === "validate" && (
         <div className="panel" style={{ padding: 32 }}>
           <div className="info-banner">
             <div>
-              <b>Chuyển bước trong tiến trình</b>
+              <b>Bước 05: Kiểm tra quy trình</b>
               <p style={{ margin: "4px 0 0" }}>
-                Giai đoạn {validStep} đang sẵn sàng kết nối.
+                Đang chuẩn bị giao diện kiểm tra quy trình v1.
               </p>
             </div>
-          </div>
-          <div style={{ marginTop: 16 }}>
-            <Link
-              href={`/builder/${appId}?step=source`}
-              className="button secondary"
-            >
-              ← Quay lại Bước 02: Mô tả nguồn
-            </Link>
           </div>
         </div>
       )}
