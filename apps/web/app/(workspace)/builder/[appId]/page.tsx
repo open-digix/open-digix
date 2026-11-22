@@ -24,6 +24,7 @@ import Stepper from "../../../../components/builder/Stepper";
 import SourceEditor from "../../../../components/builder/SourceEditor";
 import NormalizeView from "../../../../components/builder/NormalizeView";
 import BuilderView from "../../../../components/builder/BuilderView";
+import ValidateView from "../../../../components/builder/ValidateView";
 import type {
   BuilderApplicationDefinitionV1,
   BuilderDesignMetadata,
@@ -186,16 +187,7 @@ export default async function BuilderAppPage({
       )}
 
       {validStep === "validate" && (
-        <div className="panel" style={{ padding: 32 }}>
-          <div className="info-banner">
-            <div>
-              <b>Bước 05: Kiểm tra quy trình</b>
-              <p style={{ margin: "4px 0 0" }}>
-                Đang chuẩn bị giao diện kiểm tra quy trình v1.
-              </p>
-            </div>
-          </div>
-        </div>
+        <ValidateView appId={appId} version={1} />
       )}
     </div>
   );
