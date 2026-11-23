@@ -68,16 +68,27 @@ export const VALIDATION_MESSAGES_VI: Record<string, string> = {
   WORKFLOW_CYCLE_NOT_SUPPORTED:
     "Quy trình có vòng lặp (phiên bản v1 chưa hỗ trợ)",
   UNHANDLED_EXCEPTION_NOTE:
-    "Ngoại lệ trong mô tả chưa được đưa vào quy trình: ",
+    "Ngoại lệ trong mô tả chưa được đưa vào quy trình",
 };
+
+export function formatUnhandledExceptionVi(message: string): string {
+  let cleaned = message.trim();
+  cleaned = cleaned.replace(/^UNHANDLED_EXCEPTION_NOTE:?\s*/i, "").trim();
+  if (/unhandled\s+exception/i.test(cleaned)) {
+    const colonIdx = cleaned.indexOf(":");
+    if (colonIdx !== -1) {
+      cleaned = cleaned.slice(colonIdx + 1).trim();
+    }
+  }
+  return `Ngoại lệ trong mô tả chưa được đưa vào quy trình: ${cleaned || message}`;
+}
 
 export function getValidationMessageVi(
   issue: BuilderValidationIssue,
   definition?: BuilderApplicationDefinitionV1,
 ): string {
   if (issue.code === "UNHANDLED_EXCEPTION_NOTE") {
-    const rawNote = issue.message.replace(/^UNHANDLED_EXCEPTION_NOTE:?\s*/i, "").trim();
-    return `Ngoại lệ trong mô tả chưa được đưa vào quy trình: ${rawNote || issue.message}`;
+    return formatUnhandledExceptionVi(issue.message);
   }
 
   const path = issue.path || "";

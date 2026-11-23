@@ -19,6 +19,10 @@
 import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import type { NormalizeResult } from "../../lib/builder/actions";
+import {
+  formatUnhandledExceptionVi,
+  getValidationMessageVi,
+} from "../../lib/builder/validation-messages";
 
 interface NormalizeViewProps {
   appId: string;
@@ -163,8 +167,8 @@ export default function NormalizeView({
                 <b>[Cần bổ sung] {issue.code}</b>
                 <p>
                   {issue.code === "UNHANDLED_EXCEPTION_NOTE"
-                    ? `Ngoại lệ trong mô tả chưa được đưa vào quy trình: ${issue.message.replace(/^UNHANDLED_EXCEPTION_NOTE:?\s*/i, "")}`
-                    : issue.message}
+                    ? formatUnhandledExceptionVi(issue.message)
+                    : getValidationMessageVi(issue, definition)}
                 </p>
               </div>
             ))}
@@ -173,8 +177,8 @@ export default function NormalizeView({
                 <b>[Cần lưu ý] {issue.code}</b>
                 <p>
                   {issue.code === "UNHANDLED_EXCEPTION_NOTE"
-                    ? `Ngoại lệ trong mô tả chưa được đưa vào quy trình: ${issue.message.replace(/^UNHANDLED_EXCEPTION_NOTE:?\s*/i, "")}`
-                    : issue.message}
+                    ? formatUnhandledExceptionVi(issue.message)
+                    : getValidationMessageVi(issue, definition)}
                 </p>
               </div>
             ))}
