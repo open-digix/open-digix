@@ -19,6 +19,7 @@ import { render, screen } from "@testing-library/react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import TenantSelect from "./TenantSelect";
+import Stepper from "../builder/Stepper";
 import type { MeMembership, MeUser } from "../../lib/tenant/types";
 
 // Mock next/navigation
@@ -236,6 +237,32 @@ describe("Workspace Layout Components", () => {
         screen.getByText("Không kết nối được hệ thống"),
       ).toBeInTheDocument();
       expect(screen.getByText("Thử lại")).toBeInTheDocument();
+    });
+
+    it("Point 4: menu-button has aria-label and contains menu-lines for mobile hamburger", () => {
+      render(
+        <Topbar
+          user={mockUser}
+          activeMemberships={mockMemberships}
+          currentTenantId="tenant-alpha-uuid"
+          roles={["employee"]}
+          isSidebarOpen={false}
+          onToggleSidebar={vi.fn()}
+        />,
+      );
+
+      const menuBtn = screen.getByRole("button", { name: "Mở điều hướng" });
+      expect(menuBtn).toBeInTheDocument();
+      expect(menuBtn.id).toBe("menu-button");
+      expect(menuBtn.querySelector(".menu-lines")).toBeInTheDocument();
+    });
+
+    it("Point 4: Stepper wraps stage labels in .flow-stage-label for responsive display", () => {
+      const { container } = render(<Stepper currentStep="source" />);
+
+      const labels = container.querySelectorAll(".flow-stage-label");
+      expect(labels).toHaveLength(5);
+      expect(labels[1].textContent).toBe("Mô tả nguồn");
     });
   });
 });

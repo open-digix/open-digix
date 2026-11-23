@@ -43,7 +43,7 @@ export default function Stepper({ currentStep }: StepperProps) {
         return (
           <div key={s.id} className={`flow-stage ${statusClass}`}>
             <span>{isComplete ? "✓" : s.no}</span>
-            {s.label}
+            <span className="flow-stage-label">{s.label}</span>
           </div>
         );
       })}
