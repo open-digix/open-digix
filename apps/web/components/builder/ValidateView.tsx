@@ -84,7 +84,7 @@ export default function ValidateView({ appId, version }: ValidateViewProps) {
         }}
       >
         <span style={{ fontSize: 11, color: "var(--ws-muted)" }}>
-          API Kiểm tra: <code>POST /v1/apps/:appId/drafts/:version/validate</code>
+          Kiểm tra tính hợp lệ của quy trình
         </span>
         <div style={{ display: "flex", gap: 10 }}>
           <Link href={`/builder/${appId}?step=edit`} className="button secondary">

@@ -99,7 +99,7 @@ export default function NormalizeView({
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div>
           <span style={{ fontSize: 11, color: "var(--ws-muted)" }}>
-            Revision {normalizeData?.revisionNo ?? 1} · lockVersion {normalizeData?.lockVersion ?? 1}
+            Bản mô tả số {normalizeData?.revisionNo ?? 1} · Phiên bản khóa {normalizeData?.lockVersion ?? 1}
           </span>
         </div>
         <div style={{ display: "flex", gap: 10 }}>

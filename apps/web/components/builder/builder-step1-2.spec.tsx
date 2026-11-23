@@ -278,4 +278,30 @@ describe("Builder Step 01 & 02 Components", () => {
     expect(screen.getByText("Chi tiết kỹ thuật")).toBeInTheDocument();
     expect(screen.getByText("Request body validation failed")).toBeInTheDocument();
   });
+
+  it("SourceEditor displays user-friendly labels without technical jargon", () => {
+    render(
+      <SourceEditor
+        appId="3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        tenantId="tenant-test"
+        appName="Test App"
+        version={1}
+      />,
+    );
+
+    // Displays "Chưa lưu bản mô tả" instead of "REVISION 00"
+    expect(screen.getByText("Chưa lưu bản mô tả")).toBeInTheDocument();
+    expect(screen.queryByText(/REVISION 00/)).not.toBeInTheDocument();
+
+    // Displays clear non-technical AI message
+    expect(
+      screen.getByText(
+        "Bản nháp được chuẩn hóa theo quy tắc cố định, không dùng AI. Hãy đối chiếu với mô tả gốc trước khi dùng.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/không sử dụng AI ảo tưởng/)).not.toBeInTheDocument();
+
+    // Does not display technical HTTP endpoint
+    expect(screen.queryByText(/POST \/v1\/apps/)).not.toBeInTheDocument();
+  });
 });

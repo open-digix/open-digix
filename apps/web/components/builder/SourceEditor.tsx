@@ -135,18 +135,6 @@ export default function SourceEditor({
   const [errorInfo, setErrorInfo] = useState<FormattedApiError | null>(null);
 
   useEffect(() => {
-    try {
-      const apps = getStoredBuilderApps(tenantId);
-      const found = apps.find((a) => a.appId === appId);
-      if (found?.goal) {
-        setSections((prev) => ({ ...prev, goal: found.goal || prev.goal }));
-      }
-    } catch {
-      // Ignore
-    }
-  }, [tenantId, appId]);
-
-  useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isDirty) {
         e.preventDefault();
@@ -229,7 +217,7 @@ export default function SourceEditor({
         // Ignore
       }
 
-      showToast(`Đã lưu mô tả nguồn (Revision ${revNo}).`);
+      showToast(`Đã lưu mô tả nguồn (Bản mô tả số ${revNo}).`);
       return { sourceRevisionId: revId, revisionNo: revNo };
     } catch {
       setErrorInfo(
@@ -303,7 +291,9 @@ export default function SourceEditor({
             chuẩn hóa thành manifest v1.
           </p>
         </div>
-        <span>REVISION {String(revisionNo).padStart(2, "0")}</span>
+        <span>
+          {revisionNo > 0 ? `Bản mô tả số ${revisionNo}` : "Chưa lưu bản mô tả"}
+        </span>
       </div>
 
       {isSessionEmpty && (
@@ -423,8 +413,8 @@ export default function SourceEditor({
               ))}
 
               <div className="flow-form-foot">
-                <span>
-                  POST <code>/v1/apps/:appId/descriptions</code>
+                <span style={{ fontSize: 12, color: "var(--ws-muted)" }}>
+                  Lưu mô tả để chuẩn hóa sang quy trình
                 </span>
                 <div>
                   <button
@@ -473,7 +463,7 @@ export default function SourceEditor({
               </li>
             </ol>
             <div className="flow-tip">
-              Bản nháp do hệ thống chuẩn hóa không sử dụng AI ảo tưởng, mà tuân thủ các quy tắc logic xác định từ văn bản.
+              Bản nháp được chuẩn hóa theo quy tắc cố định, không dùng AI. Hãy đối chiếu với mô tả gốc trước khi dùng.
             </div>
           </div>
         </aside>

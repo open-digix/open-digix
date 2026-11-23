@@ -374,7 +374,7 @@ export default function BuilderView({
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <span className="status warning">Bản nháp v{definition.version}</span>
           <span style={{ fontSize: 11, color: "var(--ws-muted)" }}>
-            Revision {revisionNo} · lockVersion {lockVersion}
+            Bản mô tả số {revisionNo} · Phiên bản khóa {lockVersion}
           </span>
         </div>
 
