@@ -22,6 +22,7 @@ import {
   saveDescriptionsAction,
   normalizeDraftAction,
 } from "../../lib/builder/actions";
+import { getStoredBuilderApps } from "../../lib/builder/storage";
 import { useMockToast } from "../workspace/MockToast";
 
 interface SourceEditorProps {
@@ -32,17 +33,16 @@ interface SourceEditorProps {
 }
 
 const SECTION_FIELDS = [
-  { id: "goal", label: "Mục tiêu quy trình", required: false, rows: 2 },
-  { id: "inputs", label: "Dữ liệu đầu vào (inputs)", required: false, rows: 4 },
-  { id: "roles", label: "Vai trò tham gia (roles)", required: false, rows: 3 },
-  { id: "steps", label: "Các bước xử lý (steps)", required: false, rows: 3 },
-  { id: "branches", label: "Rẽ nhánh & điều kiện (branches)", required: false, rows: 4 },
-  { id: "outputs", label: "Kết quả đầu ra (outputs)", required: false, rows: 2 },
-  { id: "exceptions", label: "Ngoại lệ & lưu ý (exceptions)", required: false, rows: 2 },
+  { id: "goal", label: "Mục tiêu quy trình", required: false, rows: 2, readOnly: true },
+  { id: "inputs", label: "Dữ liệu đầu vào (inputs)", required: false, rows: 4, readOnly: false },
+  { id: "roles", label: "Vai trò tham gia (roles)", required: false, rows: 3, readOnly: false },
+  { id: "steps", label: "Các bước xử lý (steps)", required: false, rows: 3, readOnly: false },
+  { id: "branches", label: "Rẽ nhánh & điều kiện (branches)", required: false, rows: 4, readOnly: false },
+  { id: "outputs", label: "Kết quả đầu ra (outputs)", required: false, rows: 2, readOnly: false },
+  { id: "exceptions", label: "Ngoại lệ & lưu ý (exceptions)", required: false, rows: 2, readOnly: false },
 ] as const;
 
 export const SAMPLE_SOURCE_SECTIONS: Record<string, string> = {
-  goal: "Yêu cầu cấp phát laptop làm việc",
   inputs: `device_name: string, required
 estimated_price: integer, required, min: 1, max: 50000000
 manager_decision: enum, options: approved, rejected`,
@@ -68,9 +68,19 @@ export default function SourceEditor({
   const storageKey = `ws_source_${tenantId}_${appId}`;
 
   const [sections, setSections] = useState<Record<string, string>>(() => {
+    let initialGoal = "";
+    if (typeof window !== "undefined") {
+      try {
+        const apps = getStoredBuilderApps(tenantId);
+        const found = apps.find((a) => a.appId === appId);
+        if (found?.goal) initialGoal = found.goal;
+      } catch {
+        // Ignore
+      }
+    }
     if (typeof window === "undefined") {
       return {
-        goal: "",
+        goal: initialGoal,
         inputs: "",
         roles: "",
         steps: "",
@@ -83,13 +93,18 @@ export default function SourceEditor({
       const raw = sessionStorage.getItem(`ws_source_${tenantId}_${appId}`);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed.sections) return parsed.sections;
+        if (parsed.sections) {
+          return {
+            ...parsed.sections,
+            goal: initialGoal || parsed.sections.goal || "",
+          };
+        }
       }
     } catch {
       // Ignore
     }
     return {
-      goal: "",
+      goal: initialGoal,
       inputs: "",
       roles: "",
       steps: "",
@@ -119,6 +134,18 @@ export default function SourceEditor({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    try {
+      const apps = getStoredBuilderApps(tenantId);
+      const found = apps.find((a) => a.appId === appId);
+      if (found?.goal) {
+        setSections((prev) => ({ ...prev, goal: found.goal || prev.goal }));
+      }
+    } catch {
+      // Ignore
+    }
+  }, [tenantId, appId]);
+
+  useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isDirty) {
         e.preventDefault();
@@ -134,7 +161,10 @@ export default function SourceEditor({
   };
 
   const fillSample = () => {
-    setSections(SAMPLE_SOURCE_SECTIONS);
+    setSections((prev) => ({
+      ...prev,
+      ...SAMPLE_SOURCE_SECTIONS,
+    }));
     setIsDirty(true);
     setErrorMessage(null);
   };
@@ -309,14 +339,39 @@ export default function SourceEditor({
                     </span>{" "}
                     {sec.label}
                     {sec.required ? " *" : ""}
+                    {sec.readOnly ? (
+                      <span
+                        style={{
+                          fontSize: 11,
+                          color: "var(--ws-muted)",
+                          fontWeight: "normal",
+                          marginLeft: 6,
+                        }}
+                      >
+                        (Chỉ đọc từ lúc tạo ứng dụng)
+                      </span>
+                    ) : null}
                   </label>
                   <textarea
                     id={`source-${sec.id}`}
                     name={sec.id}
                     rows={sec.rows}
                     required={sec.required}
+                    readOnly={sec.readOnly}
+                    style={
+                      sec.readOnly
+                        ? {
+                            background: "var(--ws-soft, #f8fafc)",
+                            cursor: "not-allowed",
+                          }
+                        : undefined
+                    }
                     value={sections[sec.id] || ""}
-                    onChange={(e) => handleChange(sec.id, e.target.value)}
+                    onChange={
+                      sec.readOnly
+                        ? undefined
+                        : (e) => handleChange(sec.id, e.target.value)
+                    }
                   />
                 </div>
               ))}

@@ -20,6 +20,7 @@ import CreateAppForm, { generateAppKey } from "./CreateAppForm";
 import SourceEditor, { SAMPLE_SOURCE_SECTIONS } from "./SourceEditor";
 import { saveDescriptionsAction } from "../../lib/builder/actions";
 import { apiCall } from "../../lib/api/server";
+import { saveStoredBuilderApp } from "../../lib/builder/storage";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -89,7 +90,16 @@ describe("Builder Step 01 & 02 Components", () => {
     ).toBeInTheDocument();
   });
 
-  it("SourceEditor renders 7 sections and fills sample data", () => {
+  it("SourceEditor renders goal as read-only from stored app and fills only 6 editable sections", () => {
+    saveStoredBuilderApp("tenant-test", {
+      appId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      appKey: "test-app",
+      name: "Test App",
+      goal: "Mục tiêu mua sắm ban đầu",
+      version: 1,
+      createdAt: "2026-11-23",
+    });
+
     render(
       <SourceEditor
         appId="3fa85f64-5717-4562-b3fc-2c963f66afa6"
@@ -101,27 +111,26 @@ describe("Builder Step 01 & 02 Components", () => {
 
     expect(screen.getByText(/Mục tiêu quy trình/)).toBeInTheDocument();
     expect(
-      screen.getByText("Dữ liệu đầu vào (inputs)"),
+      screen.getByText("(Chỉ đọc từ lúc tạo ứng dụng)"),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText("Vai trò tham gia (roles)"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Các bước xử lý (steps)")).toBeInTheDocument();
-    expect(
-      screen.getByText("Rẽ nhánh & điều kiện (branches)"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Kết quả đầu ra (outputs)"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Ngoại lệ & lưu ý (exceptions)"),
-    ).toBeInTheDocument();
+
+    const goalArea = screen.getByLabelText(
+      /Mục tiêu quy trình/,
+    ) as HTMLTextAreaElement;
+    expect(goalArea.readOnly).toBe(true);
+    expect(goalArea.value).toBe("Mục tiêu mua sắm ban đầu");
 
     const fillBtn = screen.getByText("✦ Điền ví dụ (MẪU THỬ)");
     fireEvent.click(fillBtn);
 
-    const goalArea = screen.getByLabelText(/Mục tiêu quy trình/) as HTMLTextAreaElement;
-    expect(goalArea.value).toBe(SAMPLE_SOURCE_SECTIONS.goal);
+    // Goal remains unchanged
+    expect(goalArea.value).toBe("Mục tiêu mua sắm ban đầu");
+
+    // The other 6 fields are filled
+    const inputsArea = screen.getByLabelText(
+      /Dữ liệu đầu vào/,
+    ) as HTMLTextAreaElement;
+    expect(inputsArea.value).toBe(SAMPLE_SOURCE_SECTIONS.inputs);
   });
 
   it("SourceEditor blocks saving and shows error if all 6 notes are empty", async () => {

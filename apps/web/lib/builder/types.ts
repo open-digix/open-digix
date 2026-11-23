@@ -130,6 +130,7 @@ export interface StoredBuilderApp {
   appId: string;
   appKey: string;
   name: string;
+  goal?: string;
   version: number;
   createdAt: string;
 }

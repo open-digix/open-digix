@@ -118,6 +118,7 @@ export default function CreateAppForm({ tenantId }: CreateAppFormProps) {
           appId: res.data.appId,
           appKey: res.data.appKey,
           name: res.data.name,
+          goal: goal.trim() || undefined,
           version: res.data.version,
           createdAt: new Date().toLocaleDateString("vi-VN"),
         });
