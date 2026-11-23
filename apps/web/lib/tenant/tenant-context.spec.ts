@@ -61,7 +61,7 @@ describe("Point 1: getTenantContext and selectTenantAction", () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(mockMe),
-    } as any);
+    } as unknown as Response);
 
     mockCookieStore.get.mockReturnValue(undefined);
 
@@ -96,7 +96,7 @@ describe("Point 1: getTenantContext and selectTenantAction", () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(mockMe),
-    } as any);
+    } as unknown as Response);
 
     mockCookieStore.get.mockReturnValue({ value: "non-existent-tenant" });
 
@@ -125,7 +125,7 @@ describe("Point 1: getTenantContext and selectTenantAction", () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(mockMe),
-    } as any);
+    } as unknown as Response);
 
     // Valid tenant
     await selectTenantAction("t1");

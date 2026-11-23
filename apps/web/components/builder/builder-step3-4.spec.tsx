@@ -174,7 +174,7 @@ describe("Builder Step 03 & 04 Components", () => {
         ok: true,
         json: () => Promise.resolve(mockDraftResponse),
       });
-    }) as any;
+    }) as unknown as typeof fetch;
 
     const res = await getDraftAction("00000000-0000-0000-0000-000000000001", 1);
     expect(res.ok).toBe(true);
@@ -216,7 +216,7 @@ describe("Builder Step 03 & 04 Components", () => {
             revisionNo: 1,
           }),
       });
-    }) as any;
+    }) as unknown as typeof fetch;
 
     const pageElement = await BuilderAppPage({
       params: Promise.resolve({ appId: "00000000-0000-0000-0000-000000000001" }),
@@ -338,7 +338,7 @@ describe("Builder Step 03 & 04 Components", () => {
         });
       }
       return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
-    }) as any;
+    }) as unknown as typeof fetch;
 
     const updateRes = await updateDraftAction(
       "00000000-0000-0000-0000-000000000001",

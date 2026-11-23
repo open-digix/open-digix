@@ -145,7 +145,7 @@ describe("Workspace Layout Components", () => {
       globalThis.fetch = vi.fn().mockResolvedValue({
         status: 401,
         ok: false,
-      } as any);
+      } as unknown as Response);
 
       const res = await getMeCached();
       expect(res.ok).toBe(false);
@@ -159,7 +159,7 @@ describe("Workspace Layout Components", () => {
       globalThis.fetch = vi.fn().mockResolvedValue({
         status: 403,
         ok: false,
-      } as any);
+      } as unknown as Response);
 
       const res = await getMeCached();
       expect(res.ok).toBe(false);
@@ -186,7 +186,7 @@ describe("Workspace Layout Components", () => {
       globalThis.fetch = vi.fn().mockResolvedValue({
         status: 401,
         ok: false,
-      } as any);
+      } as unknown as Response);
 
       const element = await WorkspaceLayoutContent({
         children: <div>Child Content</div>,
@@ -207,7 +207,7 @@ describe("Workspace Layout Components", () => {
       globalThis.fetch = vi.fn().mockResolvedValue({
         status: 403,
         ok: false,
-      } as any);
+      } as unknown as Response);
 
       const element = await WorkspaceLayoutContent({
         children: <div>Child Content</div>,

@@ -335,7 +335,13 @@ export async function getDraftAction(
       },
     };
   } catch (err) {
-    if (err instanceof ApiError || (err && (err as any).name === "ApiError")) {
+    if (
+      err instanceof ApiError ||
+      (err !== null &&
+        typeof err === "object" &&
+        "name" in err &&
+        (err as { name: unknown }).name === "ApiError")
+    ) {
       const apiErr = err as ApiError;
       return {
         ok: false,
