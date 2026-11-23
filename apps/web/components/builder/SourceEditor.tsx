@@ -46,13 +46,18 @@ const SECTION_FIELDS = [
 export const SAMPLE_SOURCE_SECTIONS: Record<string, string> = {
   inputs: `device_name: string, required
 estimated_price: integer, required, min: 1, max: 50000000
-manager_decision: enum, options: approved, rejected`,
+manager_decision: enum, options: approved, rejected
+director_decision: enum, options: approved, rejected`,
   roles: `employee: Nhân viên
-manager: Quản lý`,
-  steps: `manager_review: manager, decisionField: manager_decision`,
+manager: Quản lý
+director: Giám đốc`,
+  steps: `manager_review: manager, decisionField: manager_decision
+director_review: director, decisionField: director_decision`,
   branches: `manager_decision = rejected -> declined
 manager_decision = approved AND estimated_price < 20000000 -> accepted
-manager_decision = approved AND estimated_price >= 20000000 -> director_review`,
+manager_decision = approved AND estimated_price >= 20000000 -> director_review
+director_decision = approved -> accepted
+director_decision = rejected -> declined`,
   outputs: `accepted: approved
 declined: rejected`,
   exceptions: "Nếu người yêu cầu không có quản lý trực tiếp thì chuyển lên HR.",

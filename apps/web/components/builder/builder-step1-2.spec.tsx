@@ -132,6 +132,22 @@ describe("Builder Step 01 & 02 Components", () => {
       /Dữ liệu đầu vào/,
     ) as HTMLTextAreaElement;
     expect(inputsArea.value).toBe(SAMPLE_SOURCE_SECTIONS.inputs);
+    expect(inputsArea.value).toContain("director_decision");
+
+    const rolesArea = screen.getByLabelText(
+      /Vai trò tham gia/,
+    ) as HTMLTextAreaElement;
+    expect(rolesArea.value).toContain("director: Giám đốc");
+
+    const stepsArea = screen.getByLabelText(
+      /Các bước xử lý/,
+    ) as HTMLTextAreaElement;
+    expect(stepsArea.value).toContain("director_review");
+
+    const branchesArea = screen.getByLabelText(
+      /Rẽ nhánh & điều kiện/,
+    ) as HTMLTextAreaElement;
+    expect(branchesArea.value.split("\n")).toHaveLength(5);
   });
 
   it("SourceEditor blocks saving and shows error if all 6 notes are empty", async () => {
