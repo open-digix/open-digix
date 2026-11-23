@@ -32,6 +32,7 @@ export interface ActionResult<T> {
     code: string;
     message: string;
     details?: unknown;
+    issues?: readonly { path: string; message: string }[];
   };
 }
 
@@ -145,7 +146,12 @@ export async function createAppAction(input: {
     if (err instanceof ApiError) {
       return {
         ok: false,
-        error: { code: err.code, message: err.message, details: err.details },
+        error: {
+          code: err.code,
+          message: err.message,
+          details: err.details,
+          issues: err.issues,
+        },
       };
     }
     return {
@@ -230,7 +236,12 @@ export async function saveDescriptionsAction(
     if (err instanceof ApiError) {
       return {
         ok: false,
-        error: { code: err.code, message: err.message, details: err.details },
+        error: {
+          code: err.code,
+          message: err.message,
+          details: err.details,
+          issues: err.issues,
+        },
       };
     }
     return {
@@ -291,7 +302,12 @@ export async function normalizeDraftAction(
     if (err instanceof ApiError) {
       return {
         ok: false,
-        error: { code: err.code, message: err.message, details: err.details },
+        error: {
+          code: err.code,
+          message: err.message,
+          details: err.details,
+          issues: err.issues,
+        },
       };
     }
     return {
@@ -368,7 +384,12 @@ export async function getDraftAction(
       const apiErr = err as ApiError;
       return {
         ok: false,
-        error: { code: apiErr.code, message: apiErr.message, details: apiErr.details },
+        error: {
+          code: apiErr.code,
+          message: apiErr.message,
+          details: apiErr.details,
+          issues: apiErr.issues,
+        },
       };
     }
     return {
@@ -433,7 +454,12 @@ export async function updateDraftAction(
     if (err instanceof ApiError) {
       return {
         ok: false,
-        error: { code: err.code, message: err.message, details: err.details },
+        error: {
+          code: err.code,
+          message: err.message,
+          details: err.details,
+          issues: err.issues,
+        },
       };
     }
     return {
@@ -484,7 +510,12 @@ export async function validateDraftAction(
     if (err instanceof ApiError) {
       return {
         ok: false,
-        error: { code: err.code, message: err.message, details: err.details },
+        error: {
+          code: err.code,
+          message: err.message,
+          details: err.details,
+          issues: err.issues,
+        },
       };
     }
     return {

@@ -21,6 +21,7 @@ import SourceEditor, { SAMPLE_SOURCE_SECTIONS } from "./SourceEditor";
 import { saveDescriptionsAction } from "../../lib/builder/actions";
 import { apiCall } from "../../lib/api/server";
 import { saveStoredBuilderApp } from "../../lib/builder/storage";
+import { formatApiErrorVi } from "../../lib/api/errors";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -146,9 +147,10 @@ describe("Builder Step 01 & 02 Components", () => {
     const saveBtn = screen.getByText("Lưu mô tả");
     fireEvent.click(saveBtn);
 
+    expect(await screen.findByText(/Mô tả chưa hợp lệ/)).toBeInTheDocument();
     expect(
-      await screen.findByText(/Cần nhập ít nhất một mục mô tả/),
-    ).toBeInTheDocument();
+      screen.getAllByText(/Cần nhập ít nhất một mục mô tả/).length,
+    ).toBeGreaterThan(0);
   });
 
   it("saveDescriptionsAction sends a flat body with only valid notes and fileRefs, omitting goal and sections", async () => {
@@ -212,5 +214,68 @@ describe("Builder Step 01 & 02 Components", () => {
     expect(res.error?.code).toBe("INVALID_SOURCE_INPUT");
     expect(res.error?.message).toBe("Cần nhập ít nhất một mục mô tả.");
     expect(mockApiCall).not.toHaveBeenCalled();
+  });
+
+  it("formatApiErrorVi maps INVALID_SOURCE_INPUT and field paths correctly", () => {
+    const formatted = formatApiErrorVi({
+      code: "INVALID_SOURCE_INPUT",
+      message: "Validation failed on descriptions payload",
+      issues: [
+        { path: "/inputNotes", message: "inputNotes must contain at most 10000 characters." },
+        { path: "/roleNotes", message: "roleNotes must be a string." },
+        { path: "/stepNotes", message: "stepNotes must be a string." },
+        { path: "/branchNotes", message: "branchNotes must be a string." },
+        { path: "/outputNotes", message: "outputNotes must be a string." },
+        { path: "/exceptionNotes", message: "exceptionNotes must be a string." },
+      ],
+    });
+
+    expect(formatted.title).toBe("Mô tả chưa hợp lệ");
+    expect(formatted.rawMessage).toBe("Validation failed on descriptions payload");
+    expect(formatted.issues).toEqual([
+      { path: "/inputNotes", fieldLabel: "Dữ liệu đầu vào", message: "inputNotes must contain at most 10000 characters." },
+      { path: "/roleNotes", fieldLabel: "Vai trò & người thực hiện", message: "roleNotes must be a string." },
+      { path: "/stepNotes", fieldLabel: "Các bước thực hiện", message: "stepNotes must be a string." },
+      { path: "/branchNotes", fieldLabel: "Rẽ nhánh & điều kiện", message: "branchNotes must be a string." },
+      { path: "/outputNotes", fieldLabel: "Kết quả đầu ra", message: "outputNotes must be a string." },
+      { path: "/exceptionNotes", fieldLabel: "Trường hợp ngoại lệ", message: "exceptionNotes must be a string." },
+    ]);
+  });
+
+  it("SourceEditor displays translated Vietnamese error with issues and details", async () => {
+    const mockApiCall = vi.mocked(apiCall);
+    const { ApiError } = await import("../../lib/api/server");
+    mockApiCall.mockRejectedValueOnce(
+      new ApiError(
+        400,
+        "INVALID_SOURCE_INPUT",
+        "Request body validation failed",
+        undefined,
+        [{ path: "/inputNotes", message: "Dữ liệu đầu vào vượt quá số ký tự cho phép." }],
+      ),
+    );
+
+    render(
+      <SourceEditor
+        appId="3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        tenantId="tenant-test"
+        appName="Test App"
+        version={1}
+      />,
+    );
+
+    const fillBtn = screen.getByText("✦ Điền ví dụ (MẪU THỬ)");
+    fireEvent.click(fillBtn);
+
+    const saveBtn = screen.getByText("Lưu mô tả");
+    fireEvent.click(saveBtn);
+
+    expect(await screen.findByText(/Mô tả chưa hợp lệ/)).toBeInTheDocument();
+    expect(screen.getByText("Dữ liệu đầu vào:")).toBeInTheDocument();
+    expect(
+      screen.getByText("Dữ liệu đầu vào vượt quá số ký tự cho phép."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Chi tiết kỹ thuật")).toBeInTheDocument();
+    expect(screen.getByText("Request body validation failed")).toBeInTheDocument();
   });
 });

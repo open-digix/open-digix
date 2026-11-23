@@ -19,18 +19,29 @@ import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { getToken } from "next-auth/jwt";
 import type { MeMembership, MeResponse, TenantContext } from "../tenant/types";
+import type { ApiIssue } from "./errors";
+export { formatApiErrorVi } from "./errors";
+export type { ApiIssue, FormattedApiError } from "./errors";
 
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
   readonly details?: unknown;
+  readonly issues?: readonly ApiIssue[];
 
-  constructor(status: number, code: string, message: string, details?: unknown) {
+  constructor(
+    status: number,
+    code: string,
+    message: string,
+    details?: unknown,
+    issues?: readonly ApiIssue[],
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
     this.details = details;
+    this.issues = issues;
   }
 }
 
@@ -171,8 +182,12 @@ export async function apiCall<T>(
   if (!res.ok) {
     const errCode = data?.error?.code ?? `HTTP_${res.status}`;
     const errMessage = data?.error?.message ?? res.statusText;
+    const rawIssues = data?.error?.issues ?? data?.error?.details;
+    const issues = Array.isArray(rawIssues)
+      ? (rawIssues as readonly ApiIssue[])
+      : undefined;
     const errDetails = data?.error?.details;
-    throw new ApiError(res.status, errCode, errMessage, errDetails);
+    throw new ApiError(res.status, errCode, errMessage, errDetails, issues);
   }
 
   return data as T;

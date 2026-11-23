@@ -23,6 +23,7 @@ import {
   normalizeDraftAction,
 } from "../../lib/builder/actions";
 import { getStoredBuilderApps } from "../../lib/builder/storage";
+import { formatApiErrorVi, type FormattedApiError } from "../../lib/api/errors";
 import { useMockToast } from "../workspace/MockToast";
 
 interface SourceEditorProps {
@@ -131,7 +132,7 @@ export default function SourceEditor({
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isNormalizing, setIsNormalizing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorInfo, setErrorInfo] = useState<FormattedApiError | null>(null);
 
   useEffect(() => {
     try {
@@ -166,12 +167,12 @@ export default function SourceEditor({
       ...SAMPLE_SOURCE_SECTIONS,
     }));
     setIsDirty(true);
-    setErrorMessage(null);
+    setErrorInfo(null);
   };
 
   const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    setErrorMessage(null);
+    setErrorInfo(null);
 
     const hasContent = [
       sections.inputs,
@@ -183,7 +184,13 @@ export default function SourceEditor({
     ].some((v) => Boolean(v && v.trim().length > 0));
 
     if (!hasContent) {
-      setErrorMessage("Cần nhập ít nhất một mục mô tả.");
+      setErrorInfo(
+        formatApiErrorVi({
+          code: "INVALID_SOURCE_INPUT",
+          message: "Cần nhập ít nhất một mục mô tả.",
+          issues: [{ path: "/", message: "Cần nhập ít nhất một mục mô tả." }],
+        }),
+      );
       return null;
     }
 
@@ -192,7 +199,14 @@ export default function SourceEditor({
     try {
       const res = await saveDescriptionsAction(appId, sections);
       if (!res.ok || !res.data) {
-        setErrorMessage(res.error?.message || "Không thể lưu mô tả nguồn.");
+        setErrorInfo(
+          formatApiErrorVi(
+            res.error ?? {
+              code: "INTERNAL_ERROR",
+              message: "Không thể lưu mô tả nguồn.",
+            },
+          ),
+        );
         return null;
       }
 
@@ -218,7 +232,12 @@ export default function SourceEditor({
       showToast(`Đã lưu mô tả nguồn (Revision ${revNo}).`);
       return { sourceRevisionId: revId, revisionNo: revNo };
     } catch {
-      setErrorMessage("Đã xảy ra lỗi kết nối khi lưu mô tả nguồn.");
+      setErrorInfo(
+        formatApiErrorVi({
+          code: "INTERNAL_ERROR",
+          message: "Đã xảy ra lỗi kết nối khi lưu mô tả nguồn.",
+        }),
+      );
       return null;
     } finally {
       setIsSaving(false);
@@ -238,8 +257,13 @@ export default function SourceEditor({
       );
 
       if (!res.ok || !res.data) {
-        setErrorMessage(
-          res.error?.message || "Không thể chuẩn hóa bản nháp quy trình.",
+        setErrorInfo(
+          formatApiErrorVi(
+            res.error ?? {
+              code: "INTERNAL_ERROR",
+              message: "Không thể chuẩn hóa bản nháp quy trình.",
+            },
+          ),
         );
         return;
       }
@@ -255,7 +279,12 @@ export default function SourceEditor({
 
       router.push(`/builder/${appId}?step=normalize`);
     } catch {
-      setErrorMessage("Đã xảy ra lỗi kết nối khi chuẩn hóa.");
+      setErrorInfo(
+        formatApiErrorVi({
+          code: "INTERNAL_ERROR",
+          message: "Đã xảy ra lỗi kết nối khi chuẩn hóa.",
+        }),
+      );
     } finally {
       setIsNormalizing(false);
     }
@@ -297,7 +326,7 @@ export default function SourceEditor({
         </div>
       )}
 
-      {errorMessage && (
+      {errorInfo && (
         <div
           className="info-banner"
           style={{
@@ -308,7 +337,24 @@ export default function SourceEditor({
           }}
           role="alert"
         >
-          <b>Lỗi:</b> {errorMessage}
+          <b>Lỗi: {errorInfo.title}</b>
+          {errorInfo.issues.length > 0 && (
+            <ul style={{ margin: "6px 0 0", paddingLeft: 20 }}>
+              {errorInfo.issues.map((iss, i) => (
+                <li key={i}>
+                  <strong>{iss.fieldLabel}:</strong> {iss.message}
+                </li>
+              ))}
+            </ul>
+          )}
+          {errorInfo.rawMessage && (
+            <details style={{ marginTop: 8, fontSize: 11, opacity: 0.85 }}>
+              <summary style={{ cursor: "pointer" }}>Chi tiết kỹ thuật</summary>
+              <pre style={{ margin: "4px 0 0", whiteSpace: "pre-wrap" }}>
+                {errorInfo.rawMessage}
+              </pre>
+            </details>
+          )}
         </div>
       )}
 
