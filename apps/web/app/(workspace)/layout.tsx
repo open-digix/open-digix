@@ -18,15 +18,170 @@ import "./workspace.css";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { getTenantContext } from "../../lib/api/server";
+import {
+  getServerAccessToken,
+  getMeCached,
+  getTenantContext,
+} from "../../lib/api/server";
 import AppShell from "../../components/workspace/AppShell";
 
-async function WorkspaceLayoutContent({
+export async function WorkspaceLayoutContent({
   children,
 }: {
   children: React.ReactNode;
 }) {
   await connection();
+
+  const token = await getServerAccessToken();
+  if (!token) {
+    redirect("/login");
+  }
+
+  const meResult = await getMeCached();
+  if (!meResult.ok) {
+    if (meResult.kind === "unauthenticated") {
+      return (
+        <div
+          className="ws-root"
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 24,
+            background: "var(--ws-canvas)",
+          }}
+        >
+          <div
+            className="card"
+            style={{
+              maxWidth: 460,
+              width: "100%",
+              textAlign: "center",
+              padding: 32,
+            }}
+          >
+            <div
+              className="info-banner"
+              style={{ borderColor: "var(--ws-danger)", marginBottom: 16 }}
+              role="alert"
+            >
+              <b>Phiên đăng nhập đã hết hạn</b>
+            </div>
+            <p
+              style={{
+                color: "var(--ws-muted)",
+                marginBottom: 24,
+                fontSize: 13,
+                lineHeight: 1.5,
+              }}
+            >
+              Phiên làm việc của bạn không còn hợp lệ hoặc đã hết hạn. Vui lòng
+              đăng nhập lại.
+            </p>
+            <a href="/login" className="button primary">
+              Đăng nhập lại
+            </a>
+          </div>
+        </div>
+      );
+    }
+
+    if (meResult.kind === "forbidden") {
+      return (
+        <div
+          className="ws-root"
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 24,
+            background: "var(--ws-canvas)",
+          }}
+        >
+          <div
+            className="card"
+            style={{
+              maxWidth: 460,
+              width: "100%",
+              textAlign: "center",
+              padding: 32,
+            }}
+          >
+            <div
+              className="info-banner"
+              style={{ borderColor: "var(--ws-danger)", marginBottom: 16 }}
+              role="alert"
+            >
+              <b>Tài khoản chưa được cấp quyền vào doanh nghiệp nào</b>
+            </div>
+            <p
+              style={{
+                color: "var(--ws-muted)",
+                marginBottom: 24,
+                fontSize: 13,
+                lineHeight: 1.5,
+              }}
+            >
+              Vui lòng liên hệ với quản trị viên doanh nghiệp để được phân quyền
+              trước khi truy cập.
+            </p>
+            <a href="/login" className="button secondary">
+              Đăng nhập lại
+            </a>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className="ws-root"
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+          background: "var(--ws-canvas)",
+        }}
+      >
+        <div
+          className="card"
+          style={{
+            maxWidth: 460,
+            width: "100%",
+            textAlign: "center",
+            padding: 32,
+          }}
+        >
+          <div
+            className="info-banner"
+            style={{ borderColor: "var(--ws-danger)", marginBottom: 16 }}
+            role="alert"
+          >
+            <b>Không kết nối được hệ thống</b>
+          </div>
+          <p
+            style={{
+              color: "var(--ws-muted)",
+              marginBottom: 24,
+              fontSize: 13,
+              lineHeight: 1.5,
+            }}
+          >
+            Không thể tải dữ liệu người dùng từ hệ thống backend. Vui lòng kiểm
+            tra lại dịch vụ và thử lại.
+          </p>
+          <a href="/dashboard" className="button primary">
+            Thử lại
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   const context = await getTenantContext();
   if (!context) {
     redirect("/login");

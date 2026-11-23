@@ -138,4 +138,104 @@ describe("Workspace Layout Components", () => {
     expect(screen.getByRole("combobox")).toBeInTheDocument();
     expect(screen.getByText("Tenant Beta")).toBeInTheDocument();
   });
+
+  describe("Point 6: getMeCached classification and layout error states", () => {
+    it("getMeCached classifies 401 as unauthenticated", async () => {
+      const { getMeCached } = await import("../../lib/api/server");
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        status: 401,
+        ok: false,
+      } as any);
+
+      const res = await getMeCached();
+      expect(res.ok).toBe(false);
+      if (!res.ok) {
+        expect(res.kind).toBe("unauthenticated");
+      }
+    });
+
+    it("getMeCached classifies 403 as forbidden", async () => {
+      const { getMeCached } = await import("../../lib/api/server");
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        status: 403,
+        ok: false,
+      } as any);
+
+      const res = await getMeCached();
+      expect(res.ok).toBe(false);
+      if (!res.ok) {
+        expect(res.kind).toBe("forbidden");
+      }
+    });
+
+    it("getMeCached classifies network error/500 as unavailable", async () => {
+      const { getMeCached } = await import("../../lib/api/server");
+      globalThis.fetch = vi.fn().mockRejectedValue(new Error("Network failed"));
+
+      const res = await getMeCached();
+      expect(res.ok).toBe(false);
+      if (!res.ok) {
+        expect(res.kind).toBe("unavailable");
+      }
+    });
+
+    it("WorkspaceLayout renders 401 error message when session expired", async () => {
+      const { WorkspaceLayoutContent } = await import(
+        "../../app/(workspace)/layout"
+      );
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        status: 401,
+        ok: false,
+      } as any);
+
+      const element = await WorkspaceLayoutContent({
+        children: <div>Child Content</div>,
+      });
+
+      render(element);
+
+      expect(
+        screen.getByText("Phiên đăng nhập đã hết hạn"),
+      ).toBeInTheDocument();
+      expect(screen.getByText("Đăng nhập lại")).toBeInTheDocument();
+    });
+
+    it("WorkspaceLayout renders 403 error message when forbidden", async () => {
+      const { WorkspaceLayoutContent } = await import(
+        "../../app/(workspace)/layout"
+      );
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        status: 403,
+        ok: false,
+      } as any);
+
+      const element = await WorkspaceLayoutContent({
+        children: <div>Child Content</div>,
+      });
+
+      render(element);
+
+      expect(
+        screen.getByText("Tài khoản chưa được cấp quyền vào doanh nghiệp nào"),
+      ).toBeInTheDocument();
+    });
+
+    it("WorkspaceLayout renders 500/unavailable error message with retry", async () => {
+      const { WorkspaceLayoutContent } = await import(
+        "../../app/(workspace)/layout"
+      );
+      globalThis.fetch = vi.fn().mockRejectedValue(new Error("Connection refused"));
+
+      const element = await WorkspaceLayoutContent({
+        children: <div>Child Content</div>,
+      });
+
+      render(element);
+
+      expect(
+        screen.getByText("Không kết nối được hệ thống"),
+      ).toBeInTheDocument();
+      expect(screen.getByText("Thử lại")).toBeInTheDocument();
+    });
+  });
 });

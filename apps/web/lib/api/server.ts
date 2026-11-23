@@ -47,9 +47,17 @@ export async function getServerAccessToken(): Promise<string | null> {
   return token.accessToken;
 }
 
-export const getMeCached = cache(async (): Promise<MeResponse | null> => {
+export type GetMeResult =
+  | { ok: true; me: MeResponse }
+  | {
+      ok: false;
+      kind: "unauthenticated" | "forbidden" | "unavailable";
+      status?: number;
+    };
+
+export const getMeCached = cache(async (): Promise<GetMeResult> => {
   const token = await getServerAccessToken();
-  if (!token) return null;
+  if (!token) return { ok: false, kind: "unauthenticated" };
 
   const internalUrl = process.env.API_INTERNAL_URL ?? "http://localhost:3001";
   try {
@@ -60,19 +68,29 @@ export const getMeCached = cache(async (): Promise<MeResponse | null> => {
       cache: "no-store",
     });
 
-    if (!response.ok) {
-      return null;
+    if (response.status === 401) {
+      return { ok: false, kind: "unauthenticated", status: 401 };
     }
 
-    return (await response.json()) as MeResponse;
+    if (response.status === 403) {
+      return { ok: false, kind: "forbidden", status: 403 };
+    }
+
+    if (!response.ok) {
+      return { ok: false, kind: "unavailable", status: response.status };
+    }
+
+    const me = (await response.json()) as MeResponse;
+    return { ok: true, me };
   } catch {
-    return null;
+    return { ok: false, kind: "unavailable" };
   }
 });
 
 export async function getTenantContext(): Promise<TenantContext | null> {
-  const me = await getMeCached();
-  if (!me) return null;
+  const meResult = await getMeCached();
+  if (!meResult.ok) return null;
+  const me = meResult.me;
 
   const activeMemberships = me.memberships.filter(
     (m) => m.status === "active" && m.tenant.status === "active",

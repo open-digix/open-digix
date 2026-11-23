@@ -21,10 +21,11 @@ import { redirect } from "next/navigation";
 import { getMeCached } from "../api/server";
 
 export async function selectTenantAction(tenantId: string): Promise<void> {
-  const me = await getMeCached();
-  if (!me) {
+  const meResult = await getMeCached();
+  if (!meResult.ok) {
     redirect("/login");
   }
+  const me = meResult.me;
 
   const active = me.memberships.find(
     (m) =>
