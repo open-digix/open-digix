@@ -19,6 +19,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { formatTransitionToVietnamese } from "../../lib/builder/transitions";
 import EditModal from "./EditModal";
 import BuilderView from "./BuilderView";
+import NormalizeView from "./NormalizeView";
 import type { BuilderApplicationDefinitionV1 } from "../../lib/builder/types";
 
 describe("Builder Step 03 & 04 Components", () => {
@@ -348,5 +349,160 @@ describe("Builder Step 03 & 04 Components", () => {
     );
     expect(updateRes.ok).toBe(false);
     expect(updateRes.error?.code).toBe("FORBIDDEN");
+  });
+
+  it("Step 03 NormalizeView highlights source segment on click and renders source revision", () => {
+    sessionStorage.setItem(
+      "ws_source_tenant-1_app-1",
+      JSON.stringify({
+        revisionNo: 3,
+        sourceRevisionId: "rev-id-3",
+        segments: [
+          { id: "inputs_1", section: "inputs", text: "device_name: string, required" },
+          { id: "inputs_2", section: "inputs", text: "estimated_price: integer" },
+        ],
+      }),
+    );
+    sessionStorage.setItem(
+      "ws_normalize_tenant-1_app-1",
+      JSON.stringify({
+        revisionNo: 1,
+        lockVersion: 2,
+        definition: {
+          roles: ["employee"],
+          fields: [{ id: "device_name", type: "string", required: true }],
+          steps: [{ id: "start", type: "start" }],
+        },
+        sourceMappings: [
+          {
+            targetType: "field",
+            targetId: "device_name",
+            sourceRevisionId: "rev-id-3",
+            segmentIds: ["inputs_1"],
+          },
+        ],
+        openIssues: [],
+      }),
+    );
+
+    render(
+      <NormalizeView
+        appId="app-1"
+        tenantId="tenant-1"
+        appName="Test App"
+        version={1}
+      />,
+    );
+
+    expect(screen.getByText(/Bản mô tả số 3/)).toBeInTheDocument();
+    expect(screen.getByText(/Lần lưu bản nháp 1/)).toBeInTheDocument();
+    expect(screen.getByText("device_name: string, required")).toBeInTheDocument();
+
+    // Click on device_name field in right column
+    const fieldItem = screen.getByText("device_name *");
+    fireEvent.click(fieldItem);
+
+    // The segment should have highlighted class
+    const segElement = document.getElementById("source-seg-inputs_1");
+    expect(segElement?.className).toContain("highlighted");
+  });
+
+  it("Step 04 BuilderView displays segment text in related sources panel, not just ID", () => {
+    sessionStorage.setItem(
+      "ws_source_tenant-1_app-1",
+      JSON.stringify({
+        revisionNo: 2,
+        segments: [
+          { id: "inputs_1", section: "inputs", text: "device_name: string, required" },
+        ],
+      }),
+    );
+
+    const sampleDef: BuilderApplicationDefinitionV1 = {
+      schemaVersion: "1.0",
+      appId: "app-1",
+      tenantId: "tenant-1",
+      version: 1,
+      name: "Purchase Request",
+      roles: ["employee"],
+      fields: [{ id: "device_name", type: "string", required: true }],
+      steps: [{ id: "start", type: "start" }],
+      transitions: [],
+    };
+
+    render(
+      <BuilderView
+        appId="app-1"
+        tenantId="tenant-1"
+        version={1}
+        initialDefinition={sampleDef}
+        initialLockVersion={1}
+        initialRevisionNo={1}
+        initialSourceMappings={[
+          {
+            targetType: "field",
+            targetId: "device_name",
+            sourceRevisionId: "rev-1",
+            segmentIds: ["inputs_1"],
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText(/Bản mô tả số 2/)).toBeInTheDocument();
+    expect(screen.getByText(/Lần lưu bản nháp 1/)).toBeInTheDocument();
+
+    // Select the field row
+    const row = screen.getByText("device_name *");
+    fireEvent.click(row);
+
+    // In panel, the text content should be displayed
+    expect(screen.getByText("device_name: string, required")).toBeInTheDocument();
+    expect(screen.getByText(/\[INPUTS\] inputs_1/)).toBeInTheDocument();
+  });
+
+  it("Step 04 BuilderView shows fallback message when source text is not in session", () => {
+    sessionStorage.clear();
+
+    const sampleDef: BuilderApplicationDefinitionV1 = {
+      schemaVersion: "1.0",
+      appId: "app-2",
+      tenantId: "tenant-2",
+      version: 1,
+      name: "Purchase Request",
+      roles: ["employee"],
+      fields: [{ id: "amount", type: "integer", required: true }],
+      steps: [{ id: "start", type: "start" }],
+      transitions: [],
+    };
+
+    render(
+      <BuilderView
+        appId="app-2"
+        tenantId="tenant-2"
+        version={1}
+        initialDefinition={sampleDef}
+        initialLockVersion={1}
+        initialRevisionNo={1}
+        initialSourceMappings={[
+          {
+            targetType: "field",
+            targetId: "amount",
+            sourceRevisionId: "rev-1",
+            segmentIds: ["inputs_99"],
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText(/Chưa lưu bản mô tả/)).toBeInTheDocument();
+
+    // Select the field row
+    const row = screen.getByText("amount *");
+    fireEvent.click(row);
+
+    expect(
+      screen.getByText("Mô tả gốc chỉ xem được trong phiên đã nhập"),
+    ).toBeInTheDocument();
   });
 });

@@ -16,7 +16,7 @@
 
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import type { NormalizeResult } from "../../lib/builder/actions";
 
@@ -25,6 +25,12 @@ interface NormalizeViewProps {
   tenantId: string;
   appName: string;
   version: number;
+}
+
+interface SourceSegment {
+  id: string;
+  section: string;
+  text: string;
 }
 
 function subscribe(callback: () => void) {
@@ -36,6 +42,8 @@ export default function NormalizeView({
   appId,
   tenantId,
 }: NormalizeViewProps) {
+  const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
+
   const rawNormalize = useSyncExternalStore(
     subscribe,
     () => {
@@ -70,12 +78,18 @@ export default function NormalizeView({
   }
 
   let sourceSections: Record<string, string> = {};
+  let sourceSegments: SourceSegment[] = [];
+  let sourceRevisionNo: number | null = null;
+
   if (rawSource) {
     try {
       const parsed = JSON.parse(rawSource);
       if (parsed.sections) sourceSections = parsed.sections;
+      if (Array.isArray(parsed.segments)) sourceSegments = parsed.segments;
+      if (typeof parsed.revisionNo === "number") sourceRevisionNo = parsed.revisionNo;
     } catch {
       sourceSections = {};
+      sourceSegments = [];
     }
   }
 
@@ -83,6 +97,25 @@ export default function NormalizeView({
   const openIssues = normalizeData?.openIssues || [];
   const blockingIssues = openIssues.filter((i) => i.blocking);
   const warningIssues = openIssues.filter((i) => !i.blocking);
+
+  const activeMapping = selectedTargetId
+    ? normalizeData?.sourceMappings?.find((m) => m.targetId === selectedTargetId)
+    : null;
+  const activeSegmentIds = activeMapping?.segmentIds ?? [];
+
+  const handleSelectTarget = (targetId: string) => {
+    setSelectedTargetId(targetId);
+    const mapping = normalizeData?.sourceMappings?.find(
+      (m) => m.targetId === targetId,
+    );
+    const segIds = mapping?.segmentIds || [];
+    if (segIds.length > 0) {
+      const el = document.getElementById(`source-seg-${segIds[0]}`);
+      if (el && typeof el.scrollIntoView === "function") {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  };
 
   return (
     <div>
@@ -99,7 +132,7 @@ export default function NormalizeView({
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div>
           <span style={{ fontSize: 11, color: "var(--ws-muted)" }}>
-            Bản mô tả số {normalizeData?.revisionNo ?? 1} · Phiên bản khóa {normalizeData?.lockVersion ?? 1}
+            Bản mô tả số {sourceRevisionNo ?? 1} · Lần lưu bản nháp {normalizeData?.revisionNo ?? 1} · Phiên bản khóa {normalizeData?.lockVersion ?? 1}
           </span>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
@@ -128,13 +161,21 @@ export default function NormalizeView({
             {blockingIssues.map((issue, idx) => (
               <div key={`b-${idx}`} className="flow-issue blocking">
                 <b>[Cần bổ sung] {issue.code}</b>
-                <p>{issue.message}</p>
+                <p>
+                  {issue.code === "UNHANDLED_EXCEPTION_NOTE"
+                    ? `Ngoại lệ trong mô tả chưa được đưa vào quy trình: ${issue.message.replace(/^UNHANDLED_EXCEPTION_NOTE:?\s*/i, "")}`
+                    : issue.message}
+                </p>
               </div>
             ))}
             {warningIssues.map((issue, idx) => (
               <div key={`w-${idx}`} className="flow-issue">
                 <b>[Cần lưu ý] {issue.code}</b>
-                <p>{issue.message}</p>
+                <p>
+                  {issue.code === "UNHANDLED_EXCEPTION_NOTE"
+                    ? `Ngoại lệ trong mô tả chưa được đưa vào quy trình: ${issue.message.replace(/^UNHANDLED_EXCEPTION_NOTE:?\s*/i, "")}`
+                    : issue.message}
+                </p>
               </div>
             ))}
           </div>
@@ -152,19 +193,56 @@ export default function NormalizeView({
             </div>
           </div>
           <div className="panel-body">
-            {Object.entries(sourceSections).length === 0 ? (
-              <div className="flow-source-block">
-                <p style={{ color: "var(--ws-muted)" }}>
-                  (Không tìm thấy mô tả nguồn trong phiên này)
-                </p>
-              </div>
-            ) : (
+            {sourceSegments.length > 0 ? (
+              sourceSegments.map((seg) => {
+                const isHighlighted = activeSegmentIds.includes(seg.id);
+                return (
+                  <div
+                    key={seg.id}
+                    id={`source-seg-${seg.id}`}
+                    className={`flow-source-block ${isHighlighted ? "highlighted" : ""}`}
+                    style={{
+                      transition: "all 0.2s ease",
+                      border: isHighlighted
+                        ? "2px solid var(--ws-teal, #1c7c7d)"
+                        : "1px solid var(--ws-border, #d9e2ec)",
+                      backgroundColor: isHighlighted
+                        ? "var(--ws-soft, #f0fdfa)"
+                        : undefined,
+                      boxShadow: isHighlighted
+                        ? "0 0 0 2px rgba(28, 124, 125, 0.2)"
+                        : undefined,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: 4,
+                      }}
+                    >
+                      <b>{seg.section.toUpperCase()}</b>
+                      <small style={{ color: "var(--ws-muted)", fontSize: 10 }}>
+                        {seg.id}
+                      </small>
+                    </div>
+                    <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{seg.text}</p>
+                  </div>
+                );
+              })
+            ) : Object.entries(sourceSections).length > 0 ? (
               Object.entries(sourceSections).map(([sec, text]) => (
                 <div key={sec} className="flow-source-block">
                   <b>{sec.toUpperCase()}</b>
                   <p>{text || "(Không có nội dung)"}</p>
                 </div>
               ))
+            ) : (
+              <div className="flow-source-block">
+                <p style={{ color: "var(--ws-muted)" }}>
+                  Mô tả gốc chỉ xem được trong phiên đã nhập
+                </p>
+              </div>
             )}
           </div>
         </div>
@@ -200,35 +278,98 @@ export default function NormalizeView({
                   </div>
                 </div>
 
-                <div className="flow-mini-title">Vai trò được nhận diện</div>
-                {definition.roles?.map((r) => (
-                  <div key={r} className="flow-summary-item">
-                    <span>{r}</span>
-                    <small>Mã vai trò (chưa có nhãn)</small>
-                  </div>
-                ))}
+                <div className="flow-mini-title">Vai trò được nhận diện (chọn để xem nguồn)</div>
+                {definition.roles?.map((r) => {
+                  const isSelected = selectedTargetId === r;
+                  return (
+                    <div
+                      key={r}
+                      role="button"
+                      tabIndex={0}
+                      className={`flow-summary-item ${isSelected ? "selected" : ""}`}
+                      onClick={() => handleSelectTarget(r)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") handleSelectTarget(r);
+                      }}
+                      style={{
+                        cursor: "pointer",
+                        border: isSelected
+                          ? "1px solid var(--ws-teal, #1c7c7d)"
+                          : undefined,
+                        backgroundColor: isSelected
+                          ? "var(--ws-soft, #f0fdfa)"
+                          : undefined,
+                      }}
+                    >
+                      <span>{r}</span>
+                      <small>Mã vai trò (chưa có nhãn)</small>
+                    </div>
+                  );
+                })}
 
-                <div className="flow-mini-title">Trường dữ liệu được nhận diện</div>
-                {definition.fields?.map((f) => (
-                  <div key={f.id} className="flow-summary-item">
-                    <span>
-                      {f.id} {f.required && "*"}
-                    </span>
-                    <small>
-                      Kiểu: {f.type} {f.options ? `[${f.options.join(", ")}]` : ""}
-                    </small>
-                  </div>
-                ))}
+                <div className="flow-mini-title">Trường dữ liệu được nhận diện (chọn để xem nguồn)</div>
+                {definition.fields?.map((f) => {
+                  const isSelected = selectedTargetId === f.id;
+                  return (
+                    <div
+                      key={f.id}
+                      role="button"
+                      tabIndex={0}
+                      className={`flow-summary-item ${isSelected ? "selected" : ""}`}
+                      onClick={() => handleSelectTarget(f.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") handleSelectTarget(f.id);
+                      }}
+                      style={{
+                        cursor: "pointer",
+                        border: isSelected
+                          ? "1px solid var(--ws-teal, #1c7c7d)"
+                          : undefined,
+                        backgroundColor: isSelected
+                          ? "var(--ws-soft, #f0fdfa)"
+                          : undefined,
+                      }}
+                    >
+                      <span>
+                        {f.id} {f.required && "*"}
+                      </span>
+                      <small>
+                        Kiểu: {f.type} {f.options ? `[${f.options.join(", ")}]` : ""}
+                      </small>
+                    </div>
+                  );
+                })}
 
-                <div className="flow-mini-title">Các bước xử lý</div>
-                {definition.steps?.map((s) => (
-                  <div key={s.id} className="flow-summary-item">
-                    <span>{s.id}</span>
-                    <small>
-                      Kiểu: {s.type} {s.role ? `· Gán: ${s.role}` : ""}
-                    </small>
-                  </div>
-                ))}
+                <div className="flow-mini-title">Các bước xử lý (chọn để xem nguồn)</div>
+                {definition.steps?.map((s) => {
+                  const isSelected = selectedTargetId === s.id;
+                  return (
+                    <div
+                      key={s.id}
+                      role="button"
+                      tabIndex={0}
+                      className={`flow-summary-item ${isSelected ? "selected" : ""}`}
+                      onClick={() => handleSelectTarget(s.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") handleSelectTarget(s.id);
+                      }}
+                      style={{
+                        cursor: "pointer",
+                        border: isSelected
+                          ? "1px solid var(--ws-teal, #1c7c7d)"
+                          : undefined,
+                        backgroundColor: isSelected
+                          ? "var(--ws-soft, #f0fdfa)"
+                          : undefined,
+                      }}
+                    >
+                      <span>{s.id}</span>
+                      <small>
+                        Kiểu: {s.type} {s.role ? `· Gán: ${s.role}` : ""}
+                      </small>
+                    </div>
+                  );
+                })}
               </>
             )}
           </div>

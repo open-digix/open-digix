@@ -46,6 +46,7 @@ interface BuilderViewProps {
 
 export default function BuilderView({
   appId,
+  tenantId,
   version,
   initialDefinition,
   initialLockVersion,
@@ -70,7 +71,29 @@ export default function BuilderView({
   );
   const [showUnsavedPrompt, setShowUnsavedPrompt] = useState(false);
   const [lockVersion, setLockVersion] = useState<number>(initialLockVersion);
-  const [revisionNo] = useState<number>(initialRevisionNo);
+  const [draftRevisionNo, setDraftRevisionNo] = useState<number>(initialRevisionNo);
+  const [sourceData] = useState<{
+    sourceRevisionNo: number | null;
+    segments: { id: string; section: string; text: string }[];
+  }>(() => {
+    if (typeof window === "undefined") {
+      return { sourceRevisionNo: null, segments: [] };
+    }
+    try {
+      const raw = sessionStorage.getItem(`ws_source_${tenantId}_${appId}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return {
+          sourceRevisionNo:
+            typeof parsed.revisionNo === "number" ? parsed.revisionNo : null,
+          segments: Array.isArray(parsed.segments) ? parsed.segments : [],
+        };
+      }
+    } catch {
+      // Ignore
+    }
+    return { sourceRevisionNo: null, segments: [] };
+  });
   const [sourceMappings, setSourceMappings] =
     useState<BuilderDesignMetadata["sourceMappings"]>(initialSourceMappings);
   const [openIssues, setOpenIssues] =
@@ -127,8 +150,13 @@ export default function BuilderView({
 
       if (res.data) {
         setLockVersion(res.data.lockVersion);
+        if (typeof res.data.revisionNo === "number") {
+          setDraftRevisionNo(res.data.revisionNo);
+        }
         setSavedSnapshot(JSON.stringify(definition));
-        showToast(`Đã lưu bản nháp thành công · lockVersion ${res.data.lockVersion}.`);
+        showToast(
+          `Đã lưu bản nháp thành công · Lần lưu bản nháp ${res.data.revisionNo} · Phiên bản khóa ${res.data.lockVersion}.`,
+        );
       }
     } catch {
       setGeneralError("Đã xảy ra lỗi kết nối khi lưu bản nháp.");
@@ -144,6 +172,9 @@ export default function BuilderView({
         setDefinition(res.data.definition);
         setSavedSnapshot(JSON.stringify(res.data.definition));
         setLockVersion(res.data.lockVersion);
+        if (typeof res.data.revisionNo === "number") {
+          setDraftRevisionNo(res.data.revisionNo);
+        }
         if (res.data.sourceMappings) setSourceMappings(res.data.sourceMappings);
         if (res.data.openIssues) setOpenIssues(res.data.openIssues);
         setConflictJson(null);
@@ -374,7 +405,10 @@ export default function BuilderView({
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <span className="status warning">Bản nháp v{definition.version}</span>
           <span style={{ fontSize: 11, color: "var(--ws-muted)" }}>
-            Bản mô tả số {revisionNo} · Phiên bản khóa {lockVersion}
+            {sourceData.sourceRevisionNo !== null
+              ? `Bản mô tả số ${sourceData.sourceRevisionNo}`
+              : "Chưa lưu bản mô tả"}{" "}
+            · Lần lưu bản nháp {draftRevisionNo} · Phiên bản khóa {lockVersion}
           </span>
         </div>
 
@@ -647,29 +681,69 @@ export default function BuilderView({
                   </div>
                   {selectedMapping && selectedMapping.segmentIds.length > 0 ? (
                     <div>
-                      <small style={{ color: "var(--ws-muted)" }}>
-                        Ánh xạ từ {selectedMapping.segmentIds.length} đoạn văn bản nguồn:
-                      </small>
-                      <div
+                      <small
                         style={{
-                          background: "var(--ws-canvas)",
-                          padding: 10,
-                          borderRadius: 6,
-                          marginTop: 6,
-                          fontSize: 10,
+                          color: "var(--ws-muted)",
+                          display: "block",
+                          marginBottom: 6,
                         }}
                       >
-                        {selectedMapping.segmentIds.join(", ")}
-                      </div>
+                        Ánh xạ từ {selectedMapping.segmentIds.length} đoạn văn bản nguồn:
+                      </small>
+                      {sourceData.segments.length > 0 ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          {selectedMapping.segmentIds.map((segId) => {
+                            const seg = sourceData.segments.find((s) => s.id === segId);
+                            return (
+                              <div
+                                key={segId}
+                                style={{
+                                  background: "var(--ws-canvas)",
+                                  padding: 10,
+                                  borderRadius: 6,
+                                  fontSize: 11,
+                                  borderLeft: "3px solid var(--ws-teal, #1c7c7d)",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontSize: 9,
+                                    fontWeight: 700,
+                                    color: "var(--ws-muted)",
+                                    marginBottom: 4,
+                                  }}
+                                >
+                                  {seg ? `[${seg.section.toUpperCase()}] ${seg.id}` : segId}
+                                </div>
+                                <div style={{ whiteSpace: "pre-wrap", color: "var(--ws-navy)" }}>
+                                  {seg?.text || "Mô tả gốc chỉ xem được trong phiên đã nhập"}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div
+                          style={{
+                            background: "var(--ws-canvas)",
+                            padding: 10,
+                            borderRadius: 6,
+                            fontSize: 11,
+                            color: "var(--ws-muted)",
+                          }}
+                        >
+                          Mô tả gốc chỉ xem được trong phiên đã nhập
+                        </div>
+                      )}
                     </div>
                   ) : (
-                    <div style={{ color: "var(--ws-muted)", fontSize: 10 }}>
+                    <div style={{ color: "var(--ws-muted)", fontSize: 11 }}>
                       Chưa có đoạn nguồn liên quan được liên kết.
                     </div>
                   )}
                 </div>
               ) : (
-                <div style={{ color: "var(--ws-muted)", fontSize: 10 }}>
+                <div style={{ color: "var(--ws-muted)", fontSize: 11 }}>
                   Chọn một trường, vai trò hoặc bước ở cột trái để xem liên kết nguồn.
                 </div>
               )}
