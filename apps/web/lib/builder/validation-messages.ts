@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { BuilderValidationIssue } from "./types";
+import type {
+  BuilderValidationIssue,
+  BuilderApplicationDefinitionV1,
+} from "./types";
 
 export const VALIDATION_MESSAGES_VI: Record<string, string> = {
   SCHEMA_VALIDATION_ERROR:
@@ -65,17 +68,105 @@ export const VALIDATION_MESSAGES_VI: Record<string, string> = {
   WORKFLOW_CYCLE_NOT_SUPPORTED:
     "Quy trình có vòng lặp (phiên bản v1 chưa hỗ trợ)",
   UNHANDLED_EXCEPTION_NOTE:
-    "Ngoại lệ trong mô tả chưa được đưa vào quy trình (cần lưu ý)",
+    "Ngoại lệ trong mô tả chưa được đưa vào quy trình: ",
 };
 
-export function getValidationMessageVi(issue: BuilderValidationIssue): string {
-  const baseMessage = VALIDATION_MESSAGES_VI[issue.code] || issue.message;
+export function getValidationMessageVi(
+  issue: BuilderValidationIssue,
+  definition?: BuilderApplicationDefinitionV1,
+): string {
+  if (issue.code === "UNHANDLED_EXCEPTION_NOTE") {
+    const rawNote = issue.message.replace(/^UNHANDLED_EXCEPTION_NOTE:?\s*/i, "").trim();
+    return `Ngoại lệ trong mô tả chưa được đưa vào quy trình: ${rawNote || issue.message}`;
+  }
+
+  const path = issue.path || "";
+
+  // Check transitions
+  const transMatch = path.match(/transitions[/.\[](\d+)/);
+  if (transMatch) {
+    const idx = parseInt(transMatch[1], 10);
+    const trans = definition?.transitions?.[idx];
+    const transNum = idx + 1;
+
+    if (issue.code === "UNKNOWN_TRANSITION_TARGET") {
+      const target = trans?.to || issue.message.match(/'([^']+)'/)?.[1] || "";
+      return target
+        ? `Nhánh thứ ${transNum} trỏ tới bước '${target}' chưa khai báo`
+        : `Nhánh thứ ${transNum} trỏ tới bước chưa khai báo`;
+    }
+    if (issue.code === "UNKNOWN_TRANSITION_SOURCE") {
+      const source = trans?.from || issue.message.match(/'([^']+)'/)?.[1] || "";
+      return source
+        ? `Nhánh thứ ${transNum} bắt đầu từ bước '${source}' chưa khai báo`
+        : `Nhánh thứ ${transNum} bắt đầu từ bước chưa khai báo`;
+    }
+    if (issue.code === "GATEWAY_CONDITION_REQUIRED") {
+      return `Nhánh thứ ${transNum} từ điểm rẽ '${trans?.from || ""}' cần điều kiện`;
+    }
+    if (issue.code === "UNEXPECTED_TRANSITION_CONDITION") {
+      return `Nhánh thứ ${transNum} không phải từ điểm rẽ nên không được có điều kiện`;
+    }
+  }
+
+  // Check steps
+  const stepMatch = path.match(/steps[/.\[](\d+)/);
+  if (stepMatch) {
+    const idx = parseInt(stepMatch[1], 10);
+    const step = definition?.steps?.[idx];
+    const stepId = step?.id || issue.stepId || `thứ ${idx + 1}`;
+
+    if (issue.code === "TASK_ROLE_REQUIRED" || issue.code === "TASK_MISSING_ROLE") {
+      return `Bước '${stepId}' chưa chọn người phụ trách`;
+    }
+    if (issue.code === "UNKNOWN_TASK_ROLE") {
+      const rName = step?.role || issue.message.match(/'([^']+)'/)?.[1] || "";
+      return rName
+        ? `Bước '${stepId}' dùng vai trò '${rName}' chưa khai báo`
+        : `Bước '${stepId}': Bước xử lý dùng vai trò chưa khai báo`;
+    }
+    if (issue.code === "UNKNOWN_DECISION_FIELD") {
+      const fName = step?.decisionField || issue.message.match(/'([^']+)'/)?.[1] || "";
+      return fName
+        ? `Bước '${stepId}' dùng trường quyết định '${fName}' không tồn tại`
+        : `Bước '${stepId}': Trường quyết định không tồn tại`;
+    }
+    if (issue.code === "INVALID_DECISION_FIELD_TYPE") {
+      const fName = step?.decisionField || issue.message.match(/'([^']+)'/)?.[1] || "";
+      return fName
+        ? `Bước '${stepId}' có trường quyết định '${fName}' phải là kiểu enum hoặc boolean`
+        : `Bước '${stepId}': Trường quyết định phải là kiểu enum hoặc boolean`;
+    }
+    if (issue.code === "UNREACHABLE_STEP") {
+      return `Bước '${stepId}' không có đường tới từ điểm bắt đầu`;
+    }
+    if (issue.code === "NO_PATH_TO_END") {
+      return `Bước '${stepId}' không có đường tới bất kỳ điểm kết thúc nào`;
+    }
+  }
+
+  // Check fields
+  const fieldMatch = path.match(/fields[/.\[](\d+)/);
+  if (fieldMatch) {
+    const idx = parseInt(fieldMatch[1], 10);
+    const field = definition?.fields?.[idx];
+    const fieldId = field?.id || `thứ ${idx + 1}`;
+
+    if (issue.code === "INVALID_FIELD_BOUNDS") {
+      return `Trường '${fieldId}' có giá trị nhỏ nhất lớn hơn giá trị lớn nhất`;
+    }
+    if (issue.code === "ENUM_OPTIONS_REQUIRED") {
+      return `Trường '${fieldId}' kiểu lựa chọn cần danh sách lựa chọn`;
+    }
+    if (issue.code === "DUPLICATE_FIELD") {
+      return `Mã trường '${fieldId}' bị trùng lặp`;
+    }
+  }
 
   if (issue.stepId) {
-    return `Bước "${issue.stepId}": ${baseMessage}`;
+    const base = VALIDATION_MESSAGES_VI[issue.code] || issue.message;
+    return `Bước '${issue.stepId}': ${base}`;
   }
-  if (issue.path) {
-    return `${baseMessage} (${issue.path})`;
-  }
-  return baseMessage;
+
+  return VALIDATION_MESSAGES_VI[issue.code] || issue.message;
 }

@@ -16,9 +16,10 @@
 
 import { describe, it, expect } from "vitest";
 import { getValidationMessageVi } from "../../lib/builder/validation-messages";
+import type { BuilderApplicationDefinitionV1 } from "../../lib/builder/types";
 
 describe("Builder Step 05 Validation Messages", () => {
-  it("translates validation issue codes into clear Vietnamese messages", () => {
+  it("translates validation issue codes into clear Vietnamese messages with stepId", () => {
     expect(
       getValidationMessageVi({
         severity: "error",
@@ -27,7 +28,7 @@ describe("Builder Step 05 Validation Messages", () => {
         path: "steps[1].role",
         message: "Task role is required",
       }),
-    ).toBe('Bước "manager_review": Bước xử lý chưa chọn người phụ trách');
+    ).toBe("Bước 'manager_review' chưa chọn người phụ trách");
 
     expect(
       getValidationMessageVi({
@@ -37,7 +38,7 @@ describe("Builder Step 05 Validation Messages", () => {
         path: "steps[1].decisionField",
         message: "Unknown decision field",
       }),
-    ).toBe('Bước "manager_review": Trường quyết định không tồn tại');
+    ).toBe("Bước 'manager_review': Trường quyết định không tồn tại");
 
     expect(
       getValidationMessageVi({
@@ -46,7 +47,54 @@ describe("Builder Step 05 Validation Messages", () => {
         path: "steps",
         message: "Workflow must have exactly one start step",
       }),
-    ).toBe("Quy trình phải có đúng một điểm bắt đầu (steps)");
+    ).toBe("Quy trình phải có đúng một điểm bắt đầu");
+  });
+
+  it("extracts transition target from definition by path and formats natural message", () => {
+    const mockDef: BuilderApplicationDefinitionV1 = {
+      schemaVersion: "1.0",
+      appId: "app-1",
+      tenantId: "tenant-1",
+      version: 1,
+      name: "App 1",
+      roles: ["employee", "manager"],
+      fields: [],
+      steps: [
+        { id: "start", type: "start" },
+        { id: "manager_review", type: "task" },
+      ],
+      transitions: [
+        { from: "start", to: "manager_review" },
+        { from: "manager_review", to: "step2" },
+        { from: "step2", to: "step3" },
+        { from: "step3", to: "step4" },
+        { from: "manager_route", to: "director_review" },
+      ],
+    };
+
+    expect(
+      getValidationMessageVi(
+        {
+          severity: "error",
+          code: "UNKNOWN_TRANSITION_TARGET",
+          path: "/transitions/4/to",
+          message: "Unknown transition target: director_review",
+        },
+        mockDef,
+      ),
+    ).toBe("Nhánh thứ 5 trỏ tới bước 'director_review' chưa khai báo");
+  });
+
+  it("formats UNHANDLED_EXCEPTION_NOTE with Vietnamese prefix", () => {
+    expect(
+      getValidationMessageVi({
+        severity: "warning",
+        code: "UNHANDLED_EXCEPTION_NOTE",
+        message: "UNHANDLED_EXCEPTION_NOTE: Nếu người yêu cầu không có quản lý trực tiếp thì chuyển lên HR.",
+      }),
+    ).toBe(
+      "Ngoại lệ trong mô tả chưa được đưa vào quy trình: Nếu người yêu cầu không có quản lý trực tiếp thì chuyển lên HR.",
+    );
   });
 
   it("falls back to raw message for unrecognized codes", () => {
@@ -57,6 +105,6 @@ describe("Builder Step 05 Validation Messages", () => {
         path: "custom.path",
         message: "Thông báo lỗi tùy chỉnh từ backend",
       }),
-    ).toBe("Thông báo lỗi tùy chỉnh từ backend (custom.path)");
+    ).toBe("Thông báo lỗi tùy chỉnh từ backend");
   });
 });

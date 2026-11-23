@@ -20,14 +20,22 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { validateDraftAction } from "../../lib/builder/actions";
 import { getValidationMessageVi } from "../../lib/builder/validation-messages";
-import type { BuilderValidationResult } from "../../lib/builder/types";
+import type {
+  BuilderValidationResult,
+  BuilderApplicationDefinitionV1,
+} from "../../lib/builder/types";
 
 interface ValidateViewProps {
   appId: string;
   version: number;
+  definition?: BuilderApplicationDefinitionV1;
 }
 
-export default function ValidateView({ appId, version }: ValidateViewProps) {
+export default function ValidateView({
+  appId,
+  version,
+  definition,
+}: ValidateViewProps) {
   const [isValidating, setIsValidating] = useState(true);
   const [result, setResult] = useState<BuilderValidationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -224,7 +232,16 @@ export default function ValidateView({ appId, version }: ValidateViewProps) {
                           <code>{issue.code}</code>
                         </td>
                         <td>
-                          <strong>{getValidationMessageVi(issue)}</strong>
+                          <strong>{getValidationMessageVi(issue, definition)}</strong>
+                          {issue.path && (
+                            <details style={{ marginTop: 4, fontSize: 10, color: "var(--ws-muted)" }}>
+                              <summary style={{ cursor: "pointer" }}>Chi tiết kỹ thuật</summary>
+                              <code style={{ fontSize: 9 }}>Đường dẫn: {issue.path}</code>
+                              {issue.message && issue.message !== issue.code && (
+                                <div style={{ marginTop: 2 }}>{issue.message}</div>
+                              )}
+                            </details>
+                          )}
                         </td>
                         <td>
                           {issue.stepId ? (

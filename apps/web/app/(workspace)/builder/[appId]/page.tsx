@@ -204,7 +204,11 @@ export default async function BuilderAppPage({
       )}
 
       {validStep === "validate" && !isDraftUnnormalized && (
-        <ValidateView appId={appId} version={1} />
+        <ValidateView
+          appId={appId}
+          version={1}
+          definition={initialDraft?.definition}
+        />
       )}
     </div>
   );
