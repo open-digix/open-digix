@@ -85,19 +85,9 @@ export async function getTenantContext(): Promise<TenantContext | null> {
 
   if (activeMemberships.length === 1) {
     currentMembership = activeMemberships[0];
-    if (tenantCookie !== currentMembership.tenant.id) {
-      cookieStore.set("ws-tenant", currentMembership.tenant.id, {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-      });
-    }
   } else if (tenantCookie) {
     currentMembership =
       activeMemberships.find((m) => m.tenant.id === tenantCookie) ?? null;
-    if (!currentMembership) {
-      cookieStore.delete("ws-tenant");
-    }
   }
 
   const needsTenantSelection =
