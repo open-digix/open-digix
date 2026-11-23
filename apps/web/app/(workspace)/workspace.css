@@ -421,7 +421,16 @@
   display:flex;align-items:center;gap:9px;color:var(--ws-c-718592);font-size:11px;white-space:nowrap
 }
 
-.ws-root .tenant-select select {
+.ws-root .tenant-name {
+  max-width:140px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  display:inline-block;
+}
+
+.ws-root .tenant-select select,
+.ws-root .tenant-select-dropdown {
   border:0;background:transparent;color:var(--ws-c-233d4b);font-weight:700;max-width:180px;padding:4px 17px 4px 2px;cursor:pointer
 }
 
@@ -653,7 +662,7 @@
 }
 
 .ws-root .panel-head {
-  padding:18px 20px 14px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px
+  padding:18px 20px 14px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap
 }
 
 .ws-root .panel-head h2, .ws-root .panel-head h3 {
@@ -1306,11 +1315,26 @@
   .ws-root .topbar {
     padding:0 16px
   }
-  .ws-root .tenant-select span, .ws-root .notification-button, .ws-root .breadcrumb .root, .ws-root .breadcrumb .sep {
+  .ws-root .tenant-select .tenant-label, .ws-root .notification-button, .ws-root .breadcrumb .root, .ws-root .breadcrumb .sep {
     display:none
   }
-  .ws-root .tenant-select select {
-    max-width:130px;font-size:10px
+  .ws-root .tenant-select {
+    max-width:130px
+  }
+  .ws-root .tenant-name {
+    max-width:90px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    display:inline-block
+  }
+  .ws-root .tenant-select select,
+  .ws-root .tenant-select-dropdown {
+    max-width:90px;
+    font-size:10px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap
   }
   .ws-root .top-actions {
     gap:7px
@@ -1326,6 +1350,10 @@
     overflow-wrap:break-word;
     word-break:break-word
   }
+  .ws-root .page-header p {
+    overflow-wrap:break-word;
+    word-break:break-word
+  }
   .ws-root .hero-copy {
     padding:20px 16px
   }
@@ -1334,10 +1362,22 @@
     overflow-wrap:break-word
   }
   .ws-root .hero-band p {
-    overflow-wrap:break-word
+    overflow-wrap:break-word;
+    word-break:break-word;
+    max-width:100%
   }
   .ws-root .hero-actions {
-    flex-wrap:wrap
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    width:100%
+  }
+  .ws-root .hero-actions .button {
+    width:100%;
+    text-align:center;
+    justify-content:center;
+    white-space:normal;
+    box-sizing:border-box
   }
   .ws-root .stats-grid {
     grid-template-columns:repeat(2,minmax(0,1fr));gap:9px
@@ -1390,14 +1430,18 @@
   }
   .ws-root .hero-actions {
     display:flex;
+    flex-direction:column;
     gap:8px;
-    flex-wrap:wrap
+    width:100%
   }
   .ws-root .hero-actions .button {
+    width:100%;
     max-width:100%;
     white-space:normal;
     text-align:center;
-    padding:9px 12px
+    justify-content:center;
+    padding:9px 12px;
+    box-sizing:border-box
   }
   .ws-root .stats-grid {
     grid-template-columns:1fr
@@ -1474,8 +1518,9 @@
   font-size:9px;color:var(--ws-c-90a0a8)
 }
 
+.ws-root code,
 .ws-root .flow-form-foot code {
-  color:var(--ws-c-4b7280);font-size:9px
+  color:var(--ws-c-4b7280);font-size:9px;overflow-wrap:anywhere;word-break:break-all;white-space:normal
 }
 
 .ws-root .flow-form-foot>div {

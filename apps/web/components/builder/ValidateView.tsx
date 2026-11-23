@@ -89,12 +89,14 @@ export default function ValidateView({
           justifyContent: "space-between",
           alignItems: "center",
           marginBottom: 16,
+          flexWrap: "wrap",
+          gap: 10,
         }}
       >
-        <span style={{ fontSize: 11, color: "var(--ws-muted)" }}>
+        <span style={{ fontSize: 11, color: "var(--ws-muted)", overflowWrap: "break-word" }}>
           Kiểm tra tính hợp lệ của quy trình
         </span>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <Link href={`/builder/${appId}?step=edit`} className="button secondary">
             ← Quay lại chỉnh sửa
           </Link>

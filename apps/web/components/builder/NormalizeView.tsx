@@ -129,13 +129,13 @@ export default function NormalizeView({
         </div>
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
         <div>
-          <span style={{ fontSize: 11, color: "var(--ws-muted)" }}>
+          <span style={{ fontSize: 11, color: "var(--ws-muted)", overflowWrap: "break-word", wordBreak: "break-word" }}>
             Bản mô tả số {sourceRevisionNo ?? 1} · Lần lưu bản nháp {normalizeData?.revisionNo ?? 1} · Phiên bản khóa {normalizeData?.lockVersion ?? 1}
           </span>
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <Link href={`/builder/${appId}?step=source`} className="button secondary">
             ← Nhập lại mô tả
           </Link>

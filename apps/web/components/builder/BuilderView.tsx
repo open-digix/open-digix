@@ -402,9 +402,9 @@ export default function BuilderView({
           gap: 10,
         }}
       >
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
           <span className="status warning">Bản nháp v{definition.version}</span>
-          <span style={{ fontSize: 11, color: "var(--ws-muted)" }}>
+          <span style={{ fontSize: 11, color: "var(--ws-muted)", overflowWrap: "break-word", wordBreak: "break-word" }}>
             {sourceData.sourceRevisionNo !== null
               ? `Bản mô tả số ${sourceData.sourceRevisionNo}`
               : "Chưa lưu bản mô tả"}{" "}

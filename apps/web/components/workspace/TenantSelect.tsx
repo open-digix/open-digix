@@ -37,21 +37,23 @@ export default function TenantSelect({
   }
 
   if (activeMemberships.length === 1) {
+    const tenantName = activeMemberships[0].tenant.name;
     return (
-      <div className="tenant-select" title="Doanh nghiệp hiện tại">
-        <span>Doanh nghiệp:</span>
-        <strong style={{ color: "var(--ws-ink)" }}>
-          {activeMemberships[0].tenant.name}
+      <div className="tenant-select" title={`Doanh nghiệp: ${tenantName}`}>
+        <span className="tenant-label">Doanh nghiệp:</span>
+        <strong className="tenant-name" style={{ color: "var(--ws-ink)" }}>
+          {tenantName}
         </strong>
       </div>
     );
   }
 
   return (
-    <label className="tenant-select">
-      <span>Doanh nghiệp</span>
+    <label className="tenant-select" title="Chọn doanh nghiệp">
+      <span className="tenant-label">Doanh nghiệp</span>
       <select
         id="tenant-select"
+        className="tenant-select-dropdown"
         aria-label="Chọn doanh nghiệp"
         disabled={isPending}
         value={selectedId}
