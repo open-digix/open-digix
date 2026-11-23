@@ -23,7 +23,7 @@ import type {
   BuilderDesignMetadata,
   BuilderSourceSegment,
   BuilderValidationResult,
-} from "../../../../apps/api/src/builder/builder.types";
+} from "./types";
 
 export interface ActionResult<T> {
   ok: boolean;

@@ -28,7 +28,7 @@ import ValidateView from "../../../../components/builder/ValidateView";
 import type {
   BuilderApplicationDefinitionV1,
   BuilderDesignMetadata,
-} from "../../../../../../apps/api/src/builder/builder.types";
+} from "../../../../lib/builder/types";
 
 interface BuilderAppPageProps {
   params: Promise<{ appId: string }>;

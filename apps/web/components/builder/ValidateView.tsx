@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { validateDraftAction } from "../../lib/builder/actions";
 import { getValidationMessageVi } from "../../lib/builder/validation-messages";
-import type { BuilderValidationResult } from "../../../../apps/api/src/builder/builder.types";
+import type { BuilderValidationResult } from "../../lib/builder/types";
 
 interface ValidateViewProps {
   appId: string;

@@ -23,7 +23,7 @@ import type {
   BuilderStepDefinition,
   BuilderStepType,
   BuilderEndState,
-} from "../../../../apps/api/src/builder/builder.types";
+} from "../../lib/builder/types";
 
 export type EditableItem =
   | BuilderFieldDefinition

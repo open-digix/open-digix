@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { BuilderValidationIssue } from "../../../../apps/api/src/builder/builder.types";
+import type { BuilderValidationIssue } from "./types";
 
 export const VALIDATION_MESSAGES_VI: Record<string, string> = {
   SCHEMA_VALIDATION_ERROR:

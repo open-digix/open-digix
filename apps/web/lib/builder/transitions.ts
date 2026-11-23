@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { BuilderTransitionDefinition } from "../../../../apps/api/src/builder/builder.types";
+import type { BuilderTransitionDefinition } from "./types";
 
 const OP_MAP: Record<string, string> = {
   eq: "=",

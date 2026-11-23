@@ -19,7 +19,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { formatTransitionToVietnamese } from "../../lib/builder/transitions";
 import EditModal from "./EditModal";
 import BuilderView from "./BuilderView";
-import type { BuilderApplicationDefinitionV1 } from "../../../../apps/api/src/builder/builder.types";
+import type { BuilderApplicationDefinitionV1 } from "../../lib/builder/types";
 
 describe("Builder Step 03 & 04 Components", () => {
   it("formatTransitionToVietnamese formats transitions into natural Vietnamese sentences", () => {

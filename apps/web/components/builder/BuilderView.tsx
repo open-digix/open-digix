@@ -30,7 +30,7 @@ import type {
   BuilderDesignMetadata,
   BuilderFieldDefinition,
   BuilderStepDefinition,
-} from "../../../../apps/api/src/builder/builder.types";
+} from "../../lib/builder/types";
 
 interface BuilderViewProps {
   appId: string;
