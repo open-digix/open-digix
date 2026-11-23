@@ -57,8 +57,11 @@ export default function AppsPage() {
             <path d="m21 21-4.35-4.35" />
           </svg>
           <input
+            id="search-apps"
+            name="search"
             type="search"
             placeholder="Tìm theo tên ứng dụng..."
+            aria-label="Tìm kiếm ứng dụng"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />

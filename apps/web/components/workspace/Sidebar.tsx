@@ -52,9 +52,10 @@ export default function Sidebar({ roles, isOpen, onClose }: SidebarProps) {
       >
         <Image
           src="/brand/digix-logo-dark.svg"
-          width={151}
-          height={40}
+          width={154}
+          height={32}
           alt="DigiX Lab"
+          priority
         />
       </Link>
       <div className="workspace-tag">

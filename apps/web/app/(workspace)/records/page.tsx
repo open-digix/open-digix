@@ -47,7 +47,10 @@ export default function RecordsPage() {
 
       <div className="filterbar">
         <select
+          id="records-filter"
+          name="statusFilter"
           className="select"
+          aria-label="Lọc theo trạng thái hồ sơ"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
         >

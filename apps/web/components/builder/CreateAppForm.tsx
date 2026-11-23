@@ -179,6 +179,7 @@ export default function CreateAppForm({ tenantId }: CreateAppFormProps) {
                 onChange={(e) => handleNameChange(e.target.value)}
                 maxLength={80}
                 required
+                autoComplete="off"
                 placeholder="Ví dụ: Đề nghị mua sắm"
               />
               <small>Tên hiển thị trong không gian làm việc.</small>
@@ -193,6 +194,7 @@ export default function CreateAppForm({ tenantId }: CreateAppFormProps) {
                   value={appKey}
                   onChange={(e) => handleKeyChange(e.target.value)}
                   required
+                  autoComplete="off"
                   placeholder="vi-du-de-nghi-mua-sam"
                 />
                 {keyError ? (
@@ -211,6 +213,7 @@ export default function CreateAppForm({ tenantId }: CreateAppFormProps) {
                   name="departments"
                   value={departments}
                   onChange={(e) => setDepartments(e.target.value)}
+                  autoComplete="off"
                   placeholder="Ví dụ: IT, FINANCE"
                 />
                 <small>Tách nhau bằng dấu phẩy (tùy chọn).</small>
@@ -231,8 +234,8 @@ export default function CreateAppForm({ tenantId }: CreateAppFormProps) {
             </div>
 
             <div className="flow-form-foot">
-              <span>
-                POST <code>/v1/apps</code>
+              <span style={{ fontSize: 11, color: "var(--ws-muted)" }}>
+                Bước 1 / 5: Khởi tạo thông tin cơ bản
               </span>
               <div>
                 <button

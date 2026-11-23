@@ -316,6 +316,7 @@ export default function EditModal({
                 <label htmlFor="field-id">Mã trường (ID) *</label>
                 <input
                   id="field-id"
+                  name="fieldId"
                   value={fieldId}
                   disabled={!isNew}
                   onChange={(e) => setFieldId(e.target.value)}
@@ -328,6 +329,7 @@ export default function EditModal({
                 <label htmlFor="field-type">Kiểu dữ liệu *</label>
                 <select
                   id="field-type"
+                  name="fieldType"
                   value={fieldType}
                   onChange={(e) => setFieldType(e.target.value as BuilderFieldType)}
                 >
@@ -343,6 +345,7 @@ export default function EditModal({
                 <input
                   type="checkbox"
                   id="field-required"
+                  name="required"
                   checked={required}
                   onChange={(e) => setRequired(e.target.checked)}
                   style={{ width: "auto", minHeight: "auto" }}
@@ -359,6 +362,7 @@ export default function EditModal({
                     <input
                       type="number"
                       id="field-min"
+                      name="min"
                       value={minVal}
                       onChange={(e) => setMinVal(e.target.value)}
                       placeholder="Không giới hạn"
@@ -369,6 +373,7 @@ export default function EditModal({
                     <input
                       type="number"
                       id="field-max"
+                      name="max"
                       value={maxVal}
                       onChange={(e) => setMaxVal(e.target.value)}
                       placeholder="Không giới hạn"
@@ -382,6 +387,7 @@ export default function EditModal({
                   <label htmlFor="field-options">Danh sách lựa chọn *</label>
                   <textarea
                     id="field-options"
+                    name="options"
                     value={enumOptions}
                     onChange={(e) => setEnumOptions(e.target.value)}
                     placeholder="approved, rejected, pending"
@@ -409,6 +415,7 @@ export default function EditModal({
                 <label htmlFor="role-id">Mã vai trò (ID) *</label>
                 <input
                   id="role-id"
+                  name="roleId"
                   value={roleId}
                   disabled={!isNew}
                   onChange={(e) => setRoleId(e.target.value)}
@@ -446,6 +453,7 @@ export default function EditModal({
                 <label htmlFor="step-id">Mã bước (ID) *</label>
                 <input
                   id="step-id"
+                  name="stepId"
                   value={stepId}
                   disabled={!isNew}
                   onChange={(e) => setStepId(e.target.value)}
@@ -457,6 +465,7 @@ export default function EditModal({
                 <label htmlFor="step-type">Kiểu bước</label>
                 <select
                   id="step-type"
+                  name="stepType"
                   value={stepType}
                   onChange={(e) => setStepType(e.target.value as BuilderStepType)}
                 >
@@ -473,6 +482,7 @@ export default function EditModal({
                     <label htmlFor="step-role">Vai trò phụ trách *</label>
                     <select
                       id="step-role"
+                      name="stepRole"
                       value={stepRole}
                       onChange={(e) => setStepRole(e.target.value)}
                       required
@@ -490,6 +500,7 @@ export default function EditModal({
                     <label htmlFor="step-decision">Trường quyết định (nếu có)</label>
                     <select
                       id="step-decision"
+                      name="decisionField"
                       value={decisionField}
                       onChange={(e) => {
                         setDecisionField(e.target.value);
@@ -514,6 +525,7 @@ export default function EditModal({
                       <input
                         type="checkbox"
                         id="step-no-self"
+                        name="noSelfApproval"
                         checked={noSelfApproval}
                         onChange={(e) => setNoSelfApproval(e.target.checked)}
                         style={{ width: "auto", minHeight: "auto" }}
@@ -531,6 +543,7 @@ export default function EditModal({
                   <label htmlFor="step-end-state">Trạng thái kết thúc *</label>
                   <select
                     id="step-end-state"
+                    name="endState"
                     value={endState}
                     onChange={(e) => setEndState(e.target.value as BuilderEndState)}
                   >

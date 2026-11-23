@@ -111,8 +111,11 @@ export default function AssistantPage() {
 
       <form className="chat-input" onSubmit={handleSend}>
         <input
+          id="assistant-prompt"
+          name="prompt"
           type="text"
           placeholder="Nhập câu hỏi của bạn tại đây..."
+          aria-label="Nhập câu hỏi cho trợ lý"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
         />
