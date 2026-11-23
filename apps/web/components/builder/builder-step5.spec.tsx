@@ -15,7 +15,10 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { getValidationMessageVi } from "../../lib/builder/validation-messages";
+import {
+  getValidationMessageVi,
+  formatUnhandledExceptionVi,
+} from "../../lib/builder/validation-messages";
 import type { BuilderApplicationDefinitionV1 } from "../../lib/builder/types";
 
 describe("Builder Step 05 Validation Messages", () => {
@@ -96,6 +99,32 @@ describe("Builder Step 05 Validation Messages", () => {
     ).toBe(
       "Ngoại lệ trong mô tả chưa được đưa vào quy trình: Nếu người yêu cầu không có quản lý trực tiếp thì chuyển lên HR.",
     );
+  });
+
+  it("removes English 'Unhandled exception in source description:' prefix from UNHANDLED_EXCEPTION_NOTE", () => {
+    const rawEnglishMsg =
+      "Unhandled exception in source description: Nếu phòng giám đốc bận thì tự động duyệt sau 24h.";
+    const translated = getValidationMessageVi({
+      severity: "warning",
+      code: "UNHANDLED_EXCEPTION_NOTE",
+      path: "/exceptions/0",
+      message: rawEnglishMsg,
+    });
+    expect(translated).toBe(
+      "Ngoại lệ trong mô tả chưa được đưa vào quy trình: Nếu phòng giám đốc bận thì tự động duyệt sau 24h.",
+    );
+    expect(translated).not.toContain("Unhandled exception in source description:");
+    expect(translated).not.toContain("Unhandled");
+  });
+
+  it("formatUnhandledExceptionVi helper cleans English prefixes completely", () => {
+    const res = formatUnhandledExceptionVi(
+      "UNHANDLED_EXCEPTION_NOTE: Unhandled exception in source description: Khách hàng VIP ưu tiên xử lý trước.",
+    );
+    expect(res).toBe(
+      "Ngoại lệ trong mô tả chưa được đưa vào quy trình: Khách hàng VIP ưu tiên xử lý trước.",
+    );
+    expect(res).not.toContain("Unhandled");
   });
 
   it("falls back to raw message for unrecognized codes", () => {

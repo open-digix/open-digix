@@ -264,5 +264,20 @@ describe("Workspace Layout Components", () => {
       expect(labels).toHaveLength(5);
       expect(labels[1].textContent).toBe("Mô tả nguồn");
     });
+
+    it("renders Stepper desktop with number in span and label in b element beside number without collapsed classes", () => {
+      const { container } = render(<Stepper currentStep="source" />);
+
+      const stages = container.querySelectorAll(".flow-stage");
+      expect(stages).toHaveLength(5);
+      for (const stage of stages) {
+        expect(stage.className).not.toContain("collapsed");
+        const num = stage.querySelector("span.flow-stage-num");
+        const label = stage.querySelector("b.flow-stage-label");
+        expect(num).toBeInTheDocument();
+        expect(label).toBeInTheDocument();
+        expect(num?.contains(label)).toBe(false);
+      }
+    });
   });
 });
