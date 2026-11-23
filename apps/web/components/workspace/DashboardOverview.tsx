@@ -24,19 +24,42 @@ interface DashboardOverviewProps {
   roles: string[];
 }
 
+export function getGreetingVi(date: Date = new Date()): string {
+  try {
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Ho_Chi_Minh",
+      hour: "numeric",
+      hourCycle: "h23",
+    });
+    const hourStr = formatter.format(date);
+    const hour = parseInt(hourStr, 10);
+    if (isNaN(hour)) return "Xin chào";
+
+    if (hour < 11) return "Chào buổi sáng";
+    if (hour < 13) return "Chào buổi trưa";
+    if (hour < 18) return "Chào buổi chiều";
+    return "Chào buổi tối";
+  } catch {
+    return "Xin chào";
+  }
+}
+
 export default function DashboardOverview({
   user,
   tenant,
   roles,
 }: DashboardOverviewProps) {
   const displayName = user.displayName || user.email || "Bạn";
+  const greeting = getGreetingVi();
 
   return (
     <div className="page">
       <header className="page-header">
         <div>
           <div className="eyebrow">TỔNG QUAN DOANH NGHIỆP</div>
-          <h1>Chào buổi sáng, {displayName}</h1>
+          <h1>
+            {greeting}, {displayName}
+          </h1>
           <p>
             Không gian làm việc của <strong>{tenant.name}</strong>
           </p>
