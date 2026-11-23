@@ -16,6 +16,7 @@
 
 import type {
   BuilderValidationIssue,
+  BuilderOpenIssue,
   BuilderApplicationDefinitionV1,
 } from "./types";
 
@@ -84,14 +85,17 @@ export function formatUnhandledExceptionVi(message: string): string {
 }
 
 export function getValidationMessageVi(
-  issue: BuilderValidationIssue,
+  issue:
+    | BuilderValidationIssue
+    | BuilderOpenIssue
+    | { code: string; message: string; path?: string; stepId?: string; targetId?: string },
   definition?: BuilderApplicationDefinitionV1,
 ): string {
   if (issue.code === "UNHANDLED_EXCEPTION_NOTE") {
     return formatUnhandledExceptionVi(issue.message);
   }
 
-  const path = issue.path || "";
+  const path = ("path" in issue && issue.path) || "";
 
   // Check transitions
   const transMatch = path.match(/transitions[/.\[](\d+)/);
@@ -125,7 +129,10 @@ export function getValidationMessageVi(
   if (stepMatch) {
     const idx = parseInt(stepMatch[1], 10);
     const step = definition?.steps?.[idx];
-    const stepId = step?.id || issue.stepId || `thứ ${idx + 1}`;
+    const stepId =
+      step?.id ||
+      ("stepId" in issue && issue.stepId) ||
+      `thứ ${idx + 1}`;
 
     if (issue.code === "TASK_ROLE_REQUIRED" || issue.code === "TASK_MISSING_ROLE") {
       return `Bước '${stepId}' chưa chọn người phụ trách`;
@@ -174,9 +181,10 @@ export function getValidationMessageVi(
     }
   }
 
-  if (issue.stepId) {
+  const stepId = ("stepId" in issue && issue.stepId) || undefined;
+  if (stepId) {
     const base = VALIDATION_MESSAGES_VI[issue.code] || issue.message;
-    return `Bước '${issue.stepId}': ${base}`;
+    return `Bước '${stepId}': ${base}`;
   }
 
   return VALIDATION_MESSAGES_VI[issue.code] || issue.message;
