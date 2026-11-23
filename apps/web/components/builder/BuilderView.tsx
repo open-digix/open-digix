@@ -18,6 +18,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   updateDraftAction,
   getDraftAction,
@@ -52,6 +53,7 @@ export default function BuilderView({
   initialSourceMappings = [],
   initialOpenIssues = [],
 }: BuilderViewProps) {
+  const router = useRouter();
   const { showToast, ToastContainer } = useMockToast();
 
   const [definition, setDefinition] =
@@ -62,12 +64,18 @@ export default function BuilderView({
       steps: initialDefinition?.steps ?? [],
       transitions: initialDefinition?.transitions ?? [],
     }));
+  const [savedSnapshot, setSavedSnapshot] = useState<string>(() =>
+    JSON.stringify(initialDefinition),
+  );
+  const [showUnsavedPrompt, setShowUnsavedPrompt] = useState(false);
   const [lockVersion, setLockVersion] = useState<number>(initialLockVersion);
   const [revisionNo] = useState<number>(initialRevisionNo);
   const [sourceMappings, setSourceMappings] =
     useState<BuilderDesignMetadata["sourceMappings"]>(initialSourceMappings);
   const [openIssues, setOpenIssues] =
     useState<BuilderDesignMetadata["openIssues"]>(initialOpenIssues);
+
+  const hasUnsavedChanges = JSON.stringify(definition) !== savedSnapshot;
 
   const [tab, setTab] = useState<
     "fields" | "roles" | "steps" | "transitions" | "overview"
@@ -118,6 +126,7 @@ export default function BuilderView({
 
       if (res.data) {
         setLockVersion(res.data.lockVersion);
+        setSavedSnapshot(JSON.stringify(definition));
         showToast(`Đã lưu bản nháp thành công · lockVersion ${res.data.lockVersion}.`);
       }
     } catch {
@@ -132,6 +141,7 @@ export default function BuilderView({
       const res = await getDraftAction(appId, version);
       if (res.ok && res.data) {
         setDefinition(res.data.definition);
+        setSavedSnapshot(JSON.stringify(res.data.definition));
         setLockVersion(res.data.lockVersion);
         if (res.data.sourceMappings) setSourceMappings(res.data.sourceMappings);
         if (res.data.openIssues) setOpenIssues(res.data.openIssues);
@@ -190,8 +200,112 @@ export default function BuilderView({
     showToast(`Đã xóa vai trò ${roleId}.`);
   };
 
+  const handleValidateClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (hasUnsavedChanges) {
+      setShowUnsavedPrompt(true);
+    } else {
+      router.push(`/builder/${appId}?step=validate`);
+    }
+  };
+
+  const handleSaveAndValidate = async () => {
+    setIsSaving(true);
+    setGeneralError(null);
+    setConflictJson(null);
+
+    try {
+      const res = await updateDraftAction(
+        appId,
+        version,
+        lockVersion,
+        definition,
+        {
+          sourceMappings,
+          openIssues,
+        },
+      );
+
+      if (!res.ok) {
+        setShowUnsavedPrompt(false);
+        if (
+          res.error?.code === "VERSION_CONFLICT" ||
+          res.error?.code === "409"
+        ) {
+          setConflictJson(JSON.stringify(definition, null, 2));
+        } else {
+          setGeneralError(res.error?.message || "Không thể lưu bản nháp.");
+        }
+        return;
+      }
+
+      if (res.data) {
+        setLockVersion(res.data.lockVersion);
+        setSavedSnapshot(JSON.stringify(definition));
+        showToast("Đã lưu bản nháp thành công.");
+        setShowUnsavedPrompt(false);
+        router.push(`/builder/${appId}?step=validate`);
+      }
+    } catch {
+      setShowUnsavedPrompt(false);
+      setGeneralError("Đã xảy ra lỗi kết nối khi lưu bản nháp.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div>
+      {/* Unsaved changes modal */}
+      {showUnsavedPrompt && (
+        <div
+          className="modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="unsaved-modal-title"
+        >
+          <div className="modal" style={{ maxWidth: 460 }}>
+            <div className="modal-head">
+              <div>
+                <h2 id="unsaved-modal-title">Thay đổi chưa được lưu</h2>
+                <p>Bước 04 · Soạn thảo bản nháp</p>
+              </div>
+              <button
+                type="button"
+                className="modal-close"
+                aria-label="Đóng"
+                onClick={() => setShowUnsavedPrompt(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <p style={{ margin: "0 0 16px", color: "var(--ws-text)" }}>
+                Bạn đã chỉnh sửa nội dung bản nháp. Cần lưu bản nháp thành công trước khi chuyển sang bước Kiểm tra để kết quả kiểm tra chính xác với nội dung mới nhất.
+              </p>
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="button secondary"
+                  disabled={isSaving}
+                  onClick={() => setShowUnsavedPrompt(false)}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  className="button primary"
+                  disabled={isSaving}
+                  onClick={handleSaveAndValidate}
+                >
+                  {isSaving ? "Đang lưu..." : "Lưu rồi kiểm tra"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Conflict banner */}
       {conflictJson && (
         <div
@@ -272,12 +386,13 @@ export default function BuilderView({
           >
             {isSaving ? "Đang lưu..." : "Lưu bản nháp"}
           </button>
-          <Link
-            href={`/builder/${appId}?step=validate`}
+          <button
+            type="button"
             className="button primary"
+            onClick={handleValidateClick}
           >
             Kiểm tra quy trình →
-          </Link>
+          </button>
         </div>
       </div>
 

@@ -33,6 +33,21 @@ vi.mock("next/server", () => ({
   connection: () => Promise.resolve(),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  usePathname: () => "/builder",
+  redirect: (url: string) => {
+    throw new Error(`NEXT_REDIRECT: ${url}`);
+  },
+}));
+
 vi.mock("next-auth/jwt", () => ({
   getToken: () => Promise.resolve({ accessToken: "mock-token" }),
 }));

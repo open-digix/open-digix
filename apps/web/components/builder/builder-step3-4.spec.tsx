@@ -230,4 +230,56 @@ describe("Builder Step 03 & 04 Components", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("← Về bước Mô tả")).toBeInTheDocument();
   });
+
+  it("Point 4: prompts user when navigating to validate with unsaved changes and only proceeds after save", async () => {
+    const sampleDef: BuilderApplicationDefinitionV1 = {
+      schemaVersion: "1.0",
+      appId: "00000000-0000-0000-0000-000000000001",
+      tenantId: "tenant-1",
+      version: 1,
+      name: "Purchase Request",
+      roles: ["employee", "manager"],
+      fields: [
+        { id: "device_name", type: "string", required: true },
+      ],
+      steps: [
+        { id: "start", type: "start" },
+      ],
+      transitions: [],
+    };
+
+    render(
+      <BuilderView
+        appId="00000000-0000-0000-0000-000000000001"
+        tenantId="tenant-1"
+        version={1}
+        initialDefinition={sampleDef}
+        initialLockVersion={1}
+        initialRevisionNo={1}
+      />,
+    );
+
+    // Switch to roles tab and add a role to create unsaved change
+    const rolesTab = screen.getByText(/Vai trò \(2\)/);
+    fireEvent.click(rolesTab);
+    const addRoleBtn = screen.getByRole("button", { name: "+ Thêm vai trò" });
+    fireEvent.click(addRoleBtn);
+
+    const input = screen.getByLabelText(/Mã vai trò/i);
+    fireEvent.change(input, { target: { value: "lead_role" } });
+    fireEvent.click(screen.getByRole("button", { name: "Thêm vai trò" }));
+
+    // Click Validate button
+    const validateBtn = screen.getByRole("button", { name: "Kiểm tra quy trình →" });
+    fireEvent.click(validateBtn);
+
+    // Prompt modal should appear
+    expect(screen.getByText("Thay đổi chưa được lưu")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Lưu rồi kiểm tra" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Hủy" })).toBeInTheDocument();
+
+    // Clicking cancel closes the prompt
+    fireEvent.click(screen.getByRole("button", { name: "Hủy" }));
+    expect(screen.queryByText("Thay đổi chưa được lưu")).not.toBeInTheDocument();
+  });
 });
