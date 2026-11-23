@@ -118,4 +118,69 @@ describe("Builder Step 03 & 04 Components", () => {
     expect(screen.getByText("employee")).toBeInTheDocument();
     expect(screen.getByText("manager")).toBeInTheDocument();
   });
+
+  it("Point 2: getDraftAction parses top-level sourceMappings and openIssues", async () => {
+    const { getDraftAction } = await import("../../lib/builder/actions");
+    const mockDraftResponse = {
+      definition: {
+        schemaVersion: "1.0",
+        appId: "00000000-0000-0000-0000-000000000001",
+        tenantId: "tenant-1",
+        version: 1,
+        name: "Test App",
+        roles: ["designer"],
+        fields: [],
+        steps: [],
+        transitions: [],
+      },
+      sourceMappings: [
+        {
+          targetType: "field",
+          targetId: "amount",
+          sourceRevisionId: "rev-1",
+          segmentIds: ["seg-1"],
+        },
+      ],
+      openIssues: [
+        {
+          code: "FIELD_ORPHAN",
+          message: "Trường chưa dùng",
+          blocking: false,
+        },
+      ],
+      lockVersion: 3,
+      revisionNo: 5,
+    };
+
+    globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+      if (url.includes("/v1/me")) {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              user: { id: "u1", email: "a@b.com", displayName: "A", status: "active" },
+              memberships: [
+                {
+                  id: "m1",
+                  status: "active",
+                  tenant: { id: "t1", name: "Tenant 1", status: "active" },
+                  roles: ["designer"],
+                },
+              ],
+            }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(mockDraftResponse),
+      });
+    }) as any;
+
+    const res = await getDraftAction("00000000-0000-0000-0000-000000000001", 1);
+    expect(res.ok).toBe(true);
+    expect(res.data?.sourceMappings).toHaveLength(1);
+    expect(res.data?.sourceMappings?.[0].targetId).toBe("amount");
+    expect(res.data?.openIssues).toHaveLength(1);
+    expect(res.data?.openIssues?.[0].code).toBe("FIELD_ORPHAN");
+  });
 });

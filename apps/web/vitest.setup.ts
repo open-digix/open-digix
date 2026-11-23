@@ -15,3 +15,20 @@
  */
 
 import "@testing-library/jest-dom/vitest";
+import { vi } from "vitest";
+
+const mockCookieStore = {
+  get: vi.fn().mockReturnValue(undefined),
+  set: vi.fn(),
+  delete: vi.fn(),
+};
+
+vi.mock("next/headers", () => ({
+  cookies: () => Promise.resolve(mockCookieStore),
+  headers: () => Promise.resolve(new Headers()),
+  connection: () => Promise.resolve(),
+}));
+
+vi.mock("next-auth/jwt", () => ({
+  getToken: () => Promise.resolve({ accessToken: "mock-token" }),
+}));

@@ -58,9 +58,9 @@ export default function BuilderView({
     useState<BuilderApplicationDefinitionV1>(initialDefinition);
   const [lockVersion, setLockVersion] = useState<number>(initialLockVersion);
   const [revisionNo] = useState<number>(initialRevisionNo);
-  const [sourceMappings] =
+  const [sourceMappings, setSourceMappings] =
     useState<BuilderDesignMetadata["sourceMappings"]>(initialSourceMappings);
-  const [openIssues] =
+  const [openIssues, setOpenIssues] =
     useState<BuilderDesignMetadata["openIssues"]>(initialOpenIssues);
 
   const [tab, setTab] = useState<
@@ -127,6 +127,8 @@ export default function BuilderView({
       if (res.ok && res.data) {
         setDefinition(res.data.definition);
         setLockVersion(res.data.lockVersion);
+        if (res.data.sourceMappings) setSourceMappings(res.data.sourceMappings);
+        if (res.data.openIssues) setOpenIssues(res.data.openIssues);
         setConflictJson(null);
         showToast("Đã tải lại bản nháp mới nhất từ hệ thống.");
       }

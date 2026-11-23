@@ -146,7 +146,7 @@ export async function apiCall<T>(
     cache: "no-store",
   });
 
-  const contentType = res.headers.get("content-type") ?? "";
+  const contentType = res.headers?.get("content-type") ?? "application/json";
   const isJson = contentType.includes("application/json");
   const data = isJson ? await res.json() : null;
 

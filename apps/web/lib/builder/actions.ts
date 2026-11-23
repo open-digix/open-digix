@@ -316,7 +316,8 @@ export async function getDraftAction(
 
     const data = await apiCall<{
       definition: BuilderApplicationDefinitionV1;
-      designMetadata: BuilderDesignMetadata;
+      sourceMappings?: BuilderDesignMetadata["sourceMappings"];
+      openIssues?: BuilderDesignMetadata["openIssues"];
       lockVersion: number;
       revisionNo: number;
     }>(`/v1/apps/${appId}/drafts/${version}`, {
@@ -327,17 +328,18 @@ export async function getDraftAction(
       ok: true,
       data: {
         definition: data.definition,
-        sourceMappings: data.designMetadata?.sourceMappings || [],
-        openIssues: data.designMetadata?.openIssues || [],
+        sourceMappings: data.sourceMappings ?? [],
+        openIssues: data.openIssues ?? [],
         lockVersion: data.lockVersion,
         revisionNo: data.revisionNo,
       },
     };
   } catch (err) {
-    if (err instanceof ApiError) {
+    if (err instanceof ApiError || (err && (err as any).name === "ApiError")) {
+      const apiErr = err as ApiError;
       return {
         ok: false,
-        error: { code: err.code, message: err.message, details: err.details },
+        error: { code: apiErr.code, message: apiErr.message, details: apiErr.details },
       };
     }
     return {
