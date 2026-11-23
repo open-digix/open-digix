@@ -1422,7 +1422,19 @@
   content:'';position:absolute;right:11px;top:50%;width:24px;height:1px;background:var(--ws-c-dce7e9)
 }
 
-.ws-root .flow-stage span {
+.ws-root .flow-stage b,
+.ws-root .flow-stage .flow-stage-label {
+  font-weight:700;
+  font-size:inherit;
+  color:inherit;
+  display:inline;
+  background:transparent;
+  width:auto;
+  height:auto;
+  border-radius:0;
+}
+
+.ws-root .flow-stage span:not(.flow-stage-label) {
   display:grid;place-items:center;flex:none;width:24px;height:24px;border-radius:50%;background:var(--ws-c-edf2f3);color:var(--ws-c-8298a2);font-size:9px
 }
 
@@ -1430,7 +1442,7 @@
   color:var(--ws-accent)
 }
 
-.ws-root .flow-stage.active span {
+.ws-root .flow-stage.active span:not(.flow-stage-label) {
   background:var(--ws-accent);color:var(--ws-surface)
 }
 
@@ -1438,7 +1450,7 @@
   color:var(--ws-c-376b68)
 }
 
-.ws-root .flow-stage.complete span {
+.ws-root .flow-stage.complete span:not(.flow-stage-label) {
   background:var(--ws-c-ddf1eb);color:var(--ws-accent)
 }
 
@@ -1711,7 +1723,7 @@
     display:flex;
     overflow-x:auto;
     padding:8px 10px;
-    gap:6px;
+    gap:8px;
     scrollbar-width:thin;
     -webkit-overflow-scrolling:touch
   }
@@ -1720,13 +1732,21 @@
     gap:6px;
     white-space:nowrap;
     flex:none;
-    font-size:10px
+    font-size:11px;
+    color:var(--ws-c-8a9ba4)
   }
   .ws-root .flow-stage:not(.active) .flow-stage-label {
     display:none
   }
-  .ws-root .flow-stage span {
-    width:21px;height:21px;font-size:8px;
+  .ws-root .flow-stage.active .flow-stage-label {
+    display:inline;
+    font-size:11px;
+    font-weight:700;
+    color:var(--ws-accent);
+    white-space:nowrap
+  }
+  .ws-root .flow-stage span:not(.flow-stage-label) {
+    width:22px;height:22px;font-size:9px;
     flex:none
   }
   .ws-root .flow-form-foot, .ws-root .flow-intro {
