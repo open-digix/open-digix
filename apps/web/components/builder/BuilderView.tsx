@@ -55,7 +55,13 @@ export default function BuilderView({
   const { showToast, ToastContainer } = useMockToast();
 
   const [definition, setDefinition] =
-    useState<BuilderApplicationDefinitionV1>(initialDefinition);
+    useState<BuilderApplicationDefinitionV1>(() => ({
+      ...initialDefinition,
+      roles: initialDefinition?.roles ?? [],
+      fields: initialDefinition?.fields ?? [],
+      steps: initialDefinition?.steps ?? [],
+      transitions: initialDefinition?.transitions ?? [],
+    }));
   const [lockVersion, setLockVersion] = useState<number>(initialLockVersion);
   const [revisionNo] = useState<number>(initialRevisionNo);
   const [sourceMappings, setSourceMappings] =

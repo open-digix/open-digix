@@ -183,4 +183,51 @@ describe("Builder Step 03 & 04 Components", () => {
     expect(res.data?.openIssues).toHaveLength(1);
     expect(res.data?.openIssues?.[0].code).toBe("FIELD_ORPHAN");
   });
+
+  it("Point 3: blocks edit and validate step when draft is unnormalized, showing clear notice", async () => {
+    const BuilderAppPage = (
+      await import("../../app/(workspace)/builder/[appId]/page")
+    ).default;
+
+    globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+      if (url.includes("/v1/me")) {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              user: { id: "u1", email: "a@b.com", displayName: "A", status: "active" },
+              memberships: [
+                {
+                  id: "m1",
+                  status: "active",
+                  tenant: { id: "t1", name: "Tenant 1", status: "active" },
+                  roles: ["designer"],
+                },
+              ],
+            }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            definition: {},
+            lockVersion: 1,
+            revisionNo: 1,
+          }),
+      });
+    }) as any;
+
+    const pageElement = await BuilderAppPage({
+      params: Promise.resolve({ appId: "00000000-0000-0000-0000-000000000001" }),
+      searchParams: Promise.resolve({ step: "edit" }),
+    });
+
+    render(pageElement);
+
+    expect(
+      screen.getByText("Bản nháp chưa có nội dung — hãy lưu mô tả và chuẩn hóa trước"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("← Về bước Mô tả")).toBeInTheDocument();
+  });
 });

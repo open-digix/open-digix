@@ -29,6 +29,10 @@ vi.mock("next/headers", () => ({
   connection: () => Promise.resolve(),
 }));
 
+vi.mock("next/server", () => ({
+  connection: () => Promise.resolve(),
+}));
+
 vi.mock("next-auth/jwt", () => ({
   getToken: () => Promise.resolve({ accessToken: "mock-token" }),
 }));

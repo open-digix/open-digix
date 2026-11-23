@@ -91,7 +91,7 @@ export default async function BuilderAppPage({
       : "source"
   ) as "source" | "normalize" | "edit" | "validate";
 
-  // For edit step: load draft
+  // Check draft content for edit and validate steps
   let initialDraft: {
     definition: BuilderApplicationDefinitionV1;
     lockVersion: number;
@@ -99,30 +99,24 @@ export default async function BuilderAppPage({
     sourceMappings?: BuilderDesignMetadata["sourceMappings"];
     openIssues?: BuilderDesignMetadata["openIssues"];
   } | null = null;
+  let isDraftUnnormalized = false;
 
-  if (validStep === "edit") {
+  if (validStep === "edit" || validStep === "validate") {
     const res = await getDraftAction(appId, 1);
-    if (res.ok && res.data) {
-      initialDraft = res.data;
+    const def = res.data?.definition as Partial<BuilderApplicationDefinitionV1> | undefined;
+    const isInvalid =
+      !res.ok ||
+      !def ||
+      Object.keys(def).length === 0 ||
+      !Array.isArray(def.roles) ||
+      !Array.isArray(def.fields) ||
+      !Array.isArray(def.steps) ||
+      !Array.isArray(def.transitions);
+
+    if (isInvalid) {
+      isDraftUnnormalized = true;
     } else {
-      // Fallback empty definition if not normalized yet
-      initialDraft = {
-        definition: {
-          schemaVersion: "1.0",
-          appId,
-          tenantId: currentTenant?.id ?? "default",
-          version: 1,
-          name: "Bản nháp",
-          roles: [],
-          fields: [],
-          steps: [],
-          transitions: [],
-        },
-        lockVersion: 1,
-        revisionNo: 1,
-        sourceMappings: [],
-        openIssues: [],
-      };
+      initialDraft = res.data;
     }
   }
 
@@ -173,7 +167,28 @@ export default async function BuilderAppPage({
         />
       )}
 
-      {validStep === "edit" && initialDraft && (
+      {isDraftUnnormalized && (validStep === "edit" || validStep === "validate") && (
+        <div className="card" style={{ padding: 24, textAlign: "center" }}>
+          <div
+            className="info-banner"
+            style={{
+              borderColor: "var(--ws-warning)",
+              marginBottom: 16,
+              display: "inline-block",
+            }}
+          >
+            <b>Bản nháp chưa có nội dung — hãy lưu mô tả và chuẩn hóa trước</b>
+          </div>
+          <p style={{ color: "var(--ws-muted)", marginBottom: 16 }}>
+            Ứng dụng cần được nhập mô tả quy trình ở bước 02 và chuẩn hóa ở bước 03 trước khi có thể chỉnh sửa bản nháp hoặc kiểm tra.
+          </p>
+          <Link href={`/builder/${appId}?step=source`} className="button primary">
+            ← Về bước Mô tả
+          </Link>
+        </div>
+      )}
+
+      {validStep === "edit" && !isDraftUnnormalized && initialDraft && (
         <BuilderView
           appId={appId}
           tenantId={currentTenant?.id ?? "default"}
@@ -186,7 +201,7 @@ export default async function BuilderAppPage({
         />
       )}
 
-      {validStep === "validate" && (
+      {validStep === "validate" && !isDraftUnnormalized && (
         <ValidateView appId={appId} version={1} />
       )}
     </div>
