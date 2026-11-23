@@ -66,6 +66,7 @@ export default async function BuilderAppPage({
   const canAccess = roles.some((r) =>
     ["designer", "publisher", "tenant_admin"].includes(r),
   );
+  const canEdit = roles.some((r) => ["designer", "tenant_admin"].includes(r));
 
   if (!canAccess) {
     return (
@@ -116,7 +117,7 @@ export default async function BuilderAppPage({
     if (isInvalid) {
       isDraftUnnormalized = true;
     } else {
-      initialDraft = res.data;
+      initialDraft = res.data ?? null;
     }
   }
 
