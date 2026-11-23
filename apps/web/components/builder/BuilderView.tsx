@@ -42,6 +42,7 @@ interface BuilderViewProps {
   initialRevisionNo: number;
   initialSourceMappings?: BuilderDesignMetadata["sourceMappings"];
   initialOpenIssues?: BuilderDesignMetadata["openIssues"];
+  canEdit?: boolean;
 }
 
 export default function BuilderView({
@@ -52,6 +53,7 @@ export default function BuilderView({
   initialRevisionNo,
   initialSourceMappings = [],
   initialOpenIssues = [],
+  canEdit = true,
 }: BuilderViewProps) {
   const router = useRouter();
   const { showToast, ToastContainer } = useMockToast();
@@ -378,14 +380,20 @@ export default function BuilderView({
         </div>
 
         <div style={{ display: "flex", gap: 8 }}>
-          <button
-            type="button"
-            className="button secondary"
-            disabled={isSaving}
-            onClick={handleSaveDraft}
-          >
-            {isSaving ? "Đang lưu..." : "Lưu bản nháp"}
-          </button>
+          {canEdit ? (
+            <button
+              type="button"
+              className="button secondary"
+              disabled={isSaving}
+              onClick={handleSaveDraft}
+            >
+              {isSaving ? "Đang lưu..." : "Lưu bản nháp"}
+            </button>
+          ) : (
+            <span className="status neutral" style={{ alignSelf: "center" }}>
+              Chỉ xem (publisher)
+            </span>
+          )}
           <button
             type="button"
             className="button primary"
@@ -446,7 +454,7 @@ export default function BuilderView({
               <p>Mã định danh kỹ thuật (nhãn tiếng Việt chờ BE-05)</p>
             </div>
 
-            {tab === "fields" && (
+            {canEdit && tab === "fields" && (
               <button
                 type="button"
                 className="button primary"
@@ -456,7 +464,7 @@ export default function BuilderView({
                 + Thêm trường
               </button>
             )}
-            {tab === "roles" && (
+            {canEdit && tab === "roles" && (
               <button
                 type="button"
                 className="button primary"
@@ -466,7 +474,7 @@ export default function BuilderView({
                 + Thêm vai trò
               </button>
             )}
-            {tab === "steps" && (
+            {canEdit && tab === "steps" && (
               <button
                 type="button"
                 className="button primary"
@@ -501,16 +509,18 @@ export default function BuilderView({
                         {" · (Chưa có nhãn)"}
                       </small>
                     </div>
-                    <button
-                      type="button"
-                      className="text-link"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setModalState({ kind: "field", item: f });
-                      }}
-                    >
-                      Sửa
-                    </button>
+                    {canEdit && (
+                      <button
+                        type="button"
+                        className="text-link"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setModalState({ kind: "field", item: f });
+                        }}
+                      >
+                        Sửa
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -530,16 +540,18 @@ export default function BuilderView({
                       <b>{r}</b>
                       <small>Mã vai trò · (Chưa có nhãn tiếng Việt)</small>
                     </div>
-                    <button
-                      type="button"
-                      className="text-link"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setModalState({ kind: "role", item: r });
-                      }}
-                    >
-                      Sửa
-                    </button>
+                    {canEdit && (
+                      <button
+                        type="button"
+                        className="text-link"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setModalState({ kind: "role", item: r });
+                        }}
+                      >
+                        Sửa
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -566,16 +578,18 @@ export default function BuilderView({
                         {s.endState ? ` · Kết quả: ${s.endState}` : ""}
                       </small>
                     </div>
-                    <button
-                      type="button"
-                      className="text-link"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setModalState({ kind: "step", item: s });
-                      }}
-                    >
-                      Sửa
-                    </button>
+                    {canEdit && (
+                      <button
+                        type="button"
+                        className="text-link"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setModalState({ kind: "step", item: s });
+                        }}
+                      >
+                        Sửa
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>

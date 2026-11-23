@@ -198,6 +198,7 @@ export default async function BuilderAppPage({
           initialRevisionNo={initialDraft.revisionNo}
           initialSourceMappings={initialDraft.sourceMappings}
           initialOpenIssues={initialDraft.openIssues}
+          canEdit={canEdit}
         />
       )}
 

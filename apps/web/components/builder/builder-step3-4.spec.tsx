@@ -282,4 +282,71 @@ describe("Builder Step 03 & 04 Components", () => {
     fireEvent.click(screen.getByRole("button", { name: "Hủy" }));
     expect(screen.queryByText("Thay đổi chưa được lưu")).not.toBeInTheDocument();
   });
+
+  it("Point 5: publisher can view draft and validate, but edit/save/add buttons are hidden and server rejects update", async () => {
+    const sampleDef: BuilderApplicationDefinitionV1 = {
+      schemaVersion: "1.0",
+      appId: "00000000-0000-0000-0000-000000000001",
+      tenantId: "tenant-1",
+      version: 1,
+      name: "Purchase Request",
+      roles: ["employee", "manager"],
+      fields: [{ id: "device_name", type: "string", required: true }],
+      steps: [{ id: "start", type: "start" }],
+      transitions: [],
+    };
+
+    render(
+      <BuilderView
+        appId="00000000-0000-0000-0000-000000000001"
+        tenantId="tenant-1"
+        version={1}
+        initialDefinition={sampleDef}
+        initialLockVersion={1}
+        initialRevisionNo={1}
+        canEdit={false}
+      />,
+    );
+
+    // Read-only indicator present
+    expect(screen.getByText("Chỉ xem (publisher)")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Lưu bản nháp" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Kiểm tra quy trình →" })).toBeInTheDocument();
+
+    // No add or edit buttons in fields
+    expect(screen.queryByRole("button", { name: "+ Thêm trường" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Sửa" })).not.toBeInTheDocument();
+
+    // Test server block in updateDraftAction
+    const { updateDraftAction } = await import("../../lib/builder/actions");
+    globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+      if (url.includes("/v1/me")) {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              user: { id: "u2", email: "pub@b.com", displayName: "Pub", status: "active" },
+              memberships: [
+                {
+                  id: "m2",
+                  status: "active",
+                  tenant: { id: "t1", name: "Tenant 1", status: "active" },
+                  roles: ["publisher"],
+                },
+              ],
+            }),
+        });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+    }) as any;
+
+    const updateRes = await updateDraftAction(
+      "00000000-0000-0000-0000-000000000001",
+      1,
+      1,
+      sampleDef,
+    );
+    expect(updateRes.ok).toBe(false);
+    expect(updateRes.error?.code).toBe("FORBIDDEN");
+  });
 });
