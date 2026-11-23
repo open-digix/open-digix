@@ -1348,6 +1348,24 @@
   .ws-root .stat-number {
     font-size:22px
   }
+  .ws-root .card-grid {
+    grid-template-columns:1fr
+  }
+  .ws-root .field-row, .ws-root .split-visual {
+    grid-template-columns:1fr
+  }
+  .ws-root .data-table th:nth-child(3), .ws-root .data-table td:nth-child(3) {
+    display:none
+  }
+  .ws-root .filterbar .search {
+    min-width:100%;
+  }
+  .ws-root .prompt-row {
+    flex-wrap:wrap
+  }
+  .ws-root .modal-actions {
+    flex-wrap:wrap
+  }
 }
 
 @media(max-width:480px) {
@@ -1383,25 +1401,6 @@
   }
   .ws-root .stats-grid {
     grid-template-columns:1fr
-  }
-}
-  .ws-root .card-grid {
-    grid-template-columns:1fr
-  }
-  .ws-root .field-row, .ws-root .split-visual {
-    grid-template-columns:1fr
-  }
-  .ws-root .data-table th:nth-child(3), .ws-root .data-table td:nth-child(3) {
-    display:none
-  }
-  .ws-root .filterbar .search {
-    min-width:100%;
-  }
-  .ws-root .prompt-row {
-    flex-wrap:wrap
-  }
-  .ws-root .modal-actions {
-    flex-wrap:wrap
   }
 }
 
