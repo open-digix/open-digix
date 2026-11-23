@@ -90,6 +90,7 @@ describe("Builder Step 05 Validation Messages", () => {
       getValidationMessageVi({
         severity: "warning",
         code: "UNHANDLED_EXCEPTION_NOTE",
+        path: "/exceptions/0",
         message: "UNHANDLED_EXCEPTION_NOTE: Nếu người yêu cầu không có quản lý trực tiếp thì chuyển lên HR.",
       }),
     ).toBe(
