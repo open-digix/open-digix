@@ -32,7 +32,7 @@ interface SourceEditorProps {
 }
 
 const SECTION_FIELDS = [
-  { id: "goal", label: "Mục tiêu quy trình", required: true, rows: 2 },
+  { id: "goal", label: "Mục tiêu quy trình", required: false, rows: 2 },
   { id: "inputs", label: "Dữ liệu đầu vào (inputs)", required: false, rows: 4 },
   { id: "roles", label: "Vai trò tham gia (roles)", required: false, rows: 3 },
   { id: "steps", label: "Các bước xử lý (steps)", required: false, rows: 3 },
@@ -142,6 +142,21 @@ export default function SourceEditor({
   const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setErrorMessage(null);
+
+    const hasContent = [
+      sections.inputs,
+      sections.roles,
+      sections.steps,
+      sections.branches,
+      sections.outputs,
+      sections.exceptions,
+    ].some((v) => Boolean(v && v.trim().length > 0));
+
+    if (!hasContent) {
+      setErrorMessage("Cần nhập ít nhất một mục mô tả.");
+      return null;
+    }
+
     setIsSaving(true);
 
     try {

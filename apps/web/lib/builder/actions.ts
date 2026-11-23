@@ -182,24 +182,47 @@ export async function saveDescriptionsAction(
       };
     }
 
+    const inputNotes = sections.inputs?.trim();
+    const roleNotes = sections.roles?.trim();
+    const stepNotes = sections.steps?.trim();
+    const branchNotes = sections.branches?.trim();
+    const outputNotes = sections.outputs?.trim();
+    const exceptionNotes = sections.exceptions?.trim();
+
+    if (
+      !inputNotes &&
+      !roleNotes &&
+      !stepNotes &&
+      !branchNotes &&
+      !outputNotes &&
+      !exceptionNotes
+    ) {
+      return {
+        ok: false,
+        error: {
+          code: "INVALID_SOURCE_INPUT",
+          message: "Cần nhập ít nhất một mục mô tả.",
+        },
+      };
+    }
+
+    const body: Record<string, unknown> = {
+      fileRefs: [],
+    };
+    if (inputNotes) body.inputNotes = inputNotes;
+    if (roleNotes) body.roleNotes = roleNotes;
+    if (stepNotes) body.stepNotes = stepNotes;
+    if (branchNotes) body.branchNotes = branchNotes;
+    if (outputNotes) body.outputNotes = outputNotes;
+    if (exceptionNotes) body.exceptionNotes = exceptionNotes;
+
     const data = await apiCall<{
       sourceRevisionId: string;
       revisionNo: number;
       segments: readonly BuilderSourceSegment[];
     }>(`/v1/apps/${appId}/descriptions`, {
       method: "POST",
-      body: {
-        sections: {
-          goal: sections.goal || "",
-          inputs: sections.inputs || "",
-          roles: sections.roles || "",
-          steps: sections.steps || "",
-          branches: sections.branches || "",
-          outputs: sections.outputs || "",
-          exceptions: sections.exceptions || "",
-        },
-        fileRefs: [],
-      },
+      body,
     });
 
     return { ok: true, data };

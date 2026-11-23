@@ -18,10 +18,39 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import CreateAppForm, { generateAppKey } from "./CreateAppForm";
 import SourceEditor, { SAMPLE_SOURCE_SECTIONS } from "./SourceEditor";
+import { saveDescriptionsAction } from "../../lib/builder/actions";
+import { apiCall } from "../../lib/api/server";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+}));
+
+vi.mock("../../lib/api/server", () => ({
+  apiCall: vi.fn(),
+  getTenantContext: vi.fn().mockResolvedValue({
+    roles: ["designer"],
+    currentTenant: { id: "tenant-test" },
+  }),
+  ApiError: class ApiError extends Error {
+    readonly status: number;
+    readonly code: string;
+    readonly details?: unknown;
+    readonly issues?: readonly { path: string; message: string }[];
+    constructor(
+      status: number,
+      code: string,
+      message: string,
+      details?: unknown,
+      issues?: readonly { path: string; message: string }[],
+    ) {
+      super(message);
+      this.status = status;
+      this.code = code;
+      this.details = details;
+      this.issues = issues;
+    }
+  },
 }));
 
 describe("Builder Step 01 & 02 Components", () => {
@@ -70,7 +99,7 @@ describe("Builder Step 01 & 02 Components", () => {
       />,
     );
 
-    expect(screen.getByText("Mục tiêu quy trình *")).toBeInTheDocument();
+    expect(screen.getByText(/Mục tiêu quy trình/)).toBeInTheDocument();
     expect(
       screen.getByText("Dữ liệu đầu vào (inputs)"),
     ).toBeInTheDocument();
@@ -91,7 +120,88 @@ describe("Builder Step 01 & 02 Components", () => {
     const fillBtn = screen.getByText("✦ Điền ví dụ (MẪU THỬ)");
     fireEvent.click(fillBtn);
 
-    const goalArea = screen.getByLabelText(/Mục tiêu quy trình \*/) as HTMLTextAreaElement;
+    const goalArea = screen.getByLabelText(/Mục tiêu quy trình/) as HTMLTextAreaElement;
     expect(goalArea.value).toBe(SAMPLE_SOURCE_SECTIONS.goal);
+  });
+
+  it("SourceEditor blocks saving and shows error if all 6 notes are empty", async () => {
+    render(
+      <SourceEditor
+        appId="3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        tenantId="tenant-test"
+        appName="Test App"
+        version={1}
+      />,
+    );
+
+    const saveBtn = screen.getByText("Lưu mô tả");
+    fireEvent.click(saveBtn);
+
+    expect(
+      await screen.findByText(/Cần nhập ít nhất một mục mô tả/),
+    ).toBeInTheDocument();
+  });
+
+  it("saveDescriptionsAction sends a flat body with only valid notes and fileRefs, omitting goal and sections", async () => {
+    const mockApiCall = vi.mocked(apiCall);
+    mockApiCall.mockResolvedValueOnce({
+      sourceRevisionId: "rev-uuid-1",
+      revisionNo: 1,
+      segments: [],
+    });
+
+    const res = await saveDescriptionsAction(
+      "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      {
+        goal: "This goal should NOT be sent to descriptions API",
+        sections: "This sections key should NOT be sent",
+        inputs: "   device_name: string   ",
+        roles: "   employee: Nhan vien   ",
+        steps: "",
+        branches: "   ",
+        outputs: "",
+        exceptions: "",
+      },
+    );
+
+    expect(res.ok).toBe(true);
+    expect(mockApiCall).toHaveBeenCalledTimes(1);
+    const callArgs = mockApiCall.mock.calls[0];
+    expect(callArgs[0]).toBe(
+      "/v1/apps/3fa85f64-5717-4562-b3fc-2c963f66afa6/descriptions",
+    );
+    const body = (callArgs[1] as { body: Record<string, unknown> }).body;
+    expect(body).toEqual({
+      fileRefs: [],
+      inputNotes: "device_name: string",
+      roleNotes: "employee: Nhan vien",
+    });
+    expect(body).not.toHaveProperty("goal");
+    expect(body).not.toHaveProperty("sections");
+    expect(body).not.toHaveProperty("stepNotes");
+    expect(body).not.toHaveProperty("branchNotes");
+  });
+
+  it("saveDescriptionsAction blocks if all 6 notes are empty", async () => {
+    const mockApiCall = vi.mocked(apiCall);
+    mockApiCall.mockClear();
+
+    const res = await saveDescriptionsAction(
+      "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      {
+        goal: "This is a goal but notes are empty",
+        inputs: "",
+        roles: "   ",
+        steps: "",
+        branches: "",
+        outputs: "",
+        exceptions: "",
+      },
+    );
+
+    expect(res.ok).toBe(false);
+    expect(res.error?.code).toBe("INVALID_SOURCE_INPUT");
+    expect(res.error?.message).toBe("Cần nhập ít nhất một mục mô tả.");
+    expect(mockApiCall).not.toHaveBeenCalled();
   });
 });
