@@ -18,7 +18,19 @@
 
 Mọi thay đổi đáng chú ý của dự án sẽ được ghi nhận tại đây.
 
-## [Chưa phát hành] - 23/11/2026
+## [Chưa phát hành] - 24/11/2026
+
+### Giao diện đăng nhập Keycloak (KC-01)
+- Áp dụng giao diện đăng nhập nhận diện thương hiệu DigiX cho Keycloak realm `digix` (`infra/keycloak/themes/digix/login`):
+  - Kế thừa `parent=base` để loại bỏ hoàn toàn PatternFly 5 CSS và tránh xung đột class; kiểm soát 100% markup FreeMarker.
+  - Bố cục đáp ứng: Máy tính (≥ 900px) chia đôi theo mẫu B (panel navy bên trái, form trắng bên phải); Điện thoại (< 900px) thẻ kính mờ căn giữa theo mẫu F (backdrop-filter blur 16px, bo góc 22px, safe-area-inset).
+  - Tự host 100% font chữ Be Vietnam Pro từ npm `@fontsource/be-vietnam-pro@5.3.0` (4 độ đậm 400/500/600/700 × 3 subset vietnamese/latin/latin-ext kèm `OFL.txt`), không gọi Google Fonts/gstatic.
+  - Xây dựng lại toàn bộ các màn FreeMarker: `template.ftl`, `login.ftl`, `login-reset-password.ftl`, `login-update-password.ftl`, `info.ftl`, `error.ftl`, `login-page-expired.ftl`, `logout-confirm.ftl`.
+  - Giữ nguyên 100% form action, CSRF token theo session URL của Keycloak, tên trường `username`, `password`, `rememberMe`, hidden `credentialId` và `session_code`.
+  - Trạng thái client UX (`digix-login.js`): Khóa nút và hiện spinner sau khi submit (không disable input); cảnh báo Caps Lock; rung thẻ card khi có lỗi; nút toggle hiện/ẩn mật khẩu; tự động focus ô mật khẩu khi có lỗi.
+  - Hỗ trợ tiếng Việt 100% cho mọi thông báo hệ thống Keycloak trong `messages_vi.properties`, cấu hình realm chỉ bật locale `vi`, không hiển thị bộ chọn ngôn ngữ.
+
+## 23/11/2026
 
 ### Thay đổi lớn (INT-01)
 - Chuyển giao diện từ prototype `DagTool/fronfe@5a8f0b2` vào `apps/web` (Next.js App Router).

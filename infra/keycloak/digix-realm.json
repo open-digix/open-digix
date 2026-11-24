@@ -11,6 +11,12 @@
   "resetPasswordAllowed": true,
   "editUsernameAllowed": false,
   "bruteForceProtected": true,
+  "loginTheme": "digix",
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "vi"
+  ],
+  "defaultLocale": "vi",
   "clients": [
     {
       "clientId": "digix-api",
