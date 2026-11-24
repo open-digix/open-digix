@@ -39,10 +39,29 @@
   }
 
   // 3. Hiệu ứng rung thẻ 1 lần khi có lỗi và tự động focus ô mật khẩu
+  var isReducedMotion = false;
+  try {
+    isReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (e) {}
+
   var alertBox = document.getElementById('kc-alert');
+  var hasAlert = alertBox && !alertBox.hidden && alertBox.textContent.trim().length > 0;
+
+  var hasFieldError = false;
+  var fieldErrors = document.querySelectorAll('.field-error');
+  for (var i = 0; i < fieldErrors.length; i++) {
+    if (fieldErrors[i].textContent.trim().length > 0) {
+      hasFieldError = true;
+      break;
+    }
+  }
+
   var card = document.querySelector('.card');
-  if (alertBox && !alertBox.hidden && card) {
+  if ((hasAlert || hasFieldError) && card && !isReducedMotion) {
     card.classList.add('shake');
+  }
+
+  if (hasAlert || hasFieldError) {
     var passwordInput = document.getElementById('password');
     if (passwordInput) {
       passwordInput.focus();
