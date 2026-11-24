@@ -33,3 +33,16 @@ Mọi thay đổi đáng chú ý của dự án sẽ được ghi nhận tại �
   - Bước 04 (`/builder/[appId]?step=edit`): `GET` & `PATCH /v1/apps/:appId/drafts/:version` kèm `lockVersion`, modal chỉnh sửa có ràng buộc Poka-yoke, xử lý xung đột 409 `VERSION_CONFLICT` với nút sao chép JSON, chuyển đổi `transitions` sang câu tiếng Việt chỉ đọc.
   - Bước 05 (`/builder/[appId]?step=validate`): `POST /v1/apps/:appId/drafts/:version/validate` hiển thị kết quả kiểm tra với bảng lỗi tiếng Việt đầy đủ theo mã kiểm tra của hợp đồng, nút "Xem" chuyển thẳng tab lỗi.
 - Loại bỏ tính năng mô phỏng: Xóa bỏ hoàn toàn `parseFlowSource`, `validateFlow`, nút "Chạy thử đường đi" mô phỏng 15.000.000đ, nút Thông báo và thẻ Hỗ trợ chưa có API.
+
+## [v0.0.2] - 14/11/2026
+
+### Bổ sung
+- Tích hợp API Gateway với xác thực OIDC tại lớp biên.
+- Bổ sung SeaweedFS làm kho lưu trữ đối tượng, hỗ trợ tải tệp lên theo tenant.
+- Tích hợp Flowable để triển khai định nghĩa BPMN và xử lý quy trình, tác vụ theo tenant.
+
+## [v0.0.1] - 11/11/2026
+
+### Bổ sung
+- Khởi tạo nền tảng Open Core với API, cơ sở dữ liệu hỗ trợ tenant và Keycloak để xác thực OIDC, phân quyền.
+- Xây dựng giao diện trang chủ, đăng nhập và các trang web nền tảng.
