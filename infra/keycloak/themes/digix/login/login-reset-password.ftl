@@ -22,7 +22,7 @@
 
       <button class="btn" type="submit">
         <span class="spinner" aria-hidden="true"></span>
-        <span class="label">${msg("doSubmit")}</span>
+        <span class="label">${msg("doSendResetInstructions")}</span>
         <span class="arrow" aria-hidden="true">→</span>
       </button>
     </form>

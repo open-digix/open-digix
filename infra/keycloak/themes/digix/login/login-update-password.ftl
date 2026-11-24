@@ -48,7 +48,7 @@
         <div class="btn-group">
           <button class="btn" type="submit">
             <span class="spinner" aria-hidden="true"></span>
-            <span class="label">${msg("doSubmit")}</span>
+            <span class="label">${msg("doSavePassword")}</span>
             <span class="arrow" aria-hidden="true">→</span>
           </button>
           <button class="btn btn-secondary" type="submit" name="cancel-aia" value="true" formnovalidate>${msg("doCancel")}</button>
@@ -56,7 +56,7 @@
       <#else>
         <button class="btn" type="submit">
           <span class="spinner" aria-hidden="true"></span>
-          <span class="label">${msg("doSubmit")}</span>
+          <span class="label">${msg("doSavePassword")}</span>
           <span class="arrow" aria-hidden="true">→</span>
         </button>
       </#if>
