@@ -11,6 +11,7 @@ import { HealthService } from './health.service';
 import { IdentityModule } from './identity/identity.module';
 import { RolesGuard } from './identity/roles.guard';
 import { TenantContextGuard } from './identity/tenant-context.guard';
+import { OnboardingModule } from './onboarding/onboarding.module';
 import { StorageModule } from './storage/storage.module';
 import { WorkflowModule } from './workflow/workflow.module';
 
@@ -19,6 +20,7 @@ import { WorkflowModule } from './workflow/workflow.module';
     DatabaseModule,
     AuthModule,
     IdentityModule,
+    OnboardingModule,
     BuilderModule,
     StorageModule,
     WorkflowModule,
