@@ -46,8 +46,7 @@ export default function AppShell({
     const timer = setTimeout(() => {
       try {
         const saved = localStorage.getItem("digix_sidebar_pinned");
-        const params = new URLSearchParams(window.location.search);
-        if (saved === "true" || params.get("pinned") === "1") {
+        if (saved === "true") {
           setIsPinned(true);
         }
       } catch {

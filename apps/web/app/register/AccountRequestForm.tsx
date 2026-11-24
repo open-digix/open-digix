@@ -29,19 +29,22 @@ export default function AccountRequestForm() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const state = params.get("state");
-      if (state === "validation") {
-        setErrors({
-          fullName: "Vui lòng nhập họ và tên.",
-          email: "Vui lòng nhập email.",
-          tenant: "Chọn doanh nghiệp.",
-          role: "Chọn vai trò.",
-        });
-      } else if (state === "done") {
-        setEmail(params.get("email") || "an.nguyen@example.com");
-        setIsSubmitted(true);
-      }
+      const timer = setTimeout(() => {
+        const params = new URLSearchParams(window.location.search);
+        const state = params.get("state");
+        if (state === "validation") {
+          setErrors({
+            fullName: "Vui lòng nhập họ và tên.",
+            email: "Vui lòng nhập email.",
+            tenant: "Chọn doanh nghiệp.",
+            role: "Chọn vai trò.",
+          });
+        } else if (state === "done") {
+          setEmail(params.get("email") || "an.nguyen@example.com");
+          setIsSubmitted(true);
+        }
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, []);
 
