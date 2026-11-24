@@ -585,6 +585,35 @@ button, input, select, textarea {
   box-shadow: none;
 }
 
+.btn-group {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.btn-group .btn {
+  flex: 1;
+}
+
+.btn-secondary {
+  background: var(--surface) !important;
+  color: var(--teal-strong) !important;
+  border: 1.5px solid var(--teal-strong) !important;
+  box-shadow: none !important;
+}
+
+.btn-secondary:hover {
+  background: var(--soft) !important;
+  border-color: var(--teal-hover) !important;
+  color: var(--teal-hover) !important;
+  box-shadow: none !important;
+}
+
+.btn-secondary:active {
+  background: var(--soft) !important;
+  transform: translateY(0);
+}
+
 :focus-visible {
   outline: 3px solid var(--teal-light);
   outline-offset: 2px;
@@ -733,6 +762,15 @@ button, input, select, textarea {
 
   .btn {
     height: 52px;
+  }
+
+  .btn-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-group .btn {
+    width: 100%;
   }
 }
 

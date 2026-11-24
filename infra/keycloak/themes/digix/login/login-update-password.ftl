@@ -38,11 +38,28 @@
         </#if>
       </div>
 
-      <button class="btn" type="submit">
-        <span class="spinner" aria-hidden="true"></span>
-        <span class="label">${msg("doSubmit")}</span>
-        <span class="arrow" aria-hidden="true">→</span>
-      </button>
+      <div class="row">
+        <label class="check" for="logout-sessions">
+          <input type="checkbox" id="logout-sessions" name="logout-sessions" value="on" checked> ${msg("logoutOtherSessions")}
+        </label>
+      </div>
+
+      <#if isAppInitiatedAction??>
+        <div class="btn-group">
+          <button class="btn" type="submit">
+            <span class="spinner" aria-hidden="true"></span>
+            <span class="label">${msg("doSubmit")}</span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </button>
+          <button class="btn btn-secondary" type="submit" name="cancel-aia" value="true" formnovalidate>${msg("doCancel")}</button>
+        </div>
+      <#else>
+        <button class="btn" type="submit">
+          <span class="spinner" aria-hidden="true"></span>
+          <span class="label">${msg("doSubmit")}</span>
+          <span class="arrow" aria-hidden="true">→</span>
+        </button>
+      </#if>
     </form>
   </div>
 </#if>

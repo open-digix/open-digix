@@ -6,8 +6,11 @@
 
   // 1. Trạng thái đang gửi: chỉ khóa NÚT sau khi submit (không preventDefault, không disable inputs)
   document.querySelectorAll('form').forEach(function (form) {
-    form.addEventListener('submit', function () {
-      var submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+    form.addEventListener('submit', function (e) {
+      var submitBtn = (e && e.submitter) ? e.submitter : form.querySelector('button[type="submit"], input[type="submit"]');
+      if (submitBtn && (submitBtn.getAttribute('name') === 'cancel-aia' || submitBtn.classList.contains('btn-secondary'))) {
+        return;
+      }
       if (submitBtn) {
         submitBtn.classList.add('is-loading');
         // Khóa nút trên tick tiếp theo để form gửi request bình thường
