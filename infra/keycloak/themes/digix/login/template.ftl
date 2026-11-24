@@ -1,5 +1,5 @@
 <#-- SPDX-License-Identifier: Apache-2.0 -->
-<#macro registrationLayout bodyClass="" displayInfo=false displayMessage=true displayRequiredFields=false>
+<#macro registrationLayout bodyClass="" displayInfo=false displayMessage=true displayRequiredFields=false hideBackLink=false>
 <!doctype html>
 <html lang="${(locale.currentLanguageTag)!'vi'}" class="${properties.kcHtmlClass!}">
 <head>
@@ -27,7 +27,7 @@
     </div>
     <div class="side-foot">
       <small>DigiX Lab · Phần mềm nguồn mở</small>
-      <#if (client.baseUrl)?has_content>
+      <#if (client.baseUrl)?has_content && !hideBackLink>
         <a href="${client.baseUrl}" class="side-back-link">← Về trang giới thiệu DigiX</a>
       </#if>
     </div>
@@ -51,7 +51,7 @@
         <#nested "info">
       </#if>
 
-      <#if (client.baseUrl)?has_content>
+      <#if (client.baseUrl)?has_content && !hideBackLink>
         <p class="foot mobile-back"><a href="${client.baseUrl}" class="link">← Về trang giới thiệu DigiX</a></p>
       </#if>
     </section>

@@ -1,6 +1,6 @@
 <#-- SPDX-License-Identifier: Apache-2.0 -->
 <#import "template.ftl" as layout>
-<@layout.registrationLayout; section>
+<@layout.registrationLayout hideBackLink=true; section>
 <#if section = "header">
   ${msg("logoutConfirmTitle")}
 <#elseif section = "form">
@@ -19,6 +19,8 @@
 
     <#if (client.baseUrl)?has_content>
       <p class="foot"><a href="${client.baseUrl}" class="link">← ${msg("backToApplication")}</a></p>
+    <#else>
+      <p class="foot"><a href="${url.loginUrl}" class="link">← ${msg("backToLogin")}</a></p>
     </#if>
   </div>
 </#if>
