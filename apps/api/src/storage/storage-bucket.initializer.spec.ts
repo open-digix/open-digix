@@ -11,11 +11,21 @@ describe('StorageBucketInitializer', () => {
     bucket: 'digix-files',
     client: {},
   } as StorageConfig;
-  let client: { send: jest.Mock };
+  let client: {
+    send: jest.Mock<
+      Promise<unknown>,
+      [HeadBucketCommand | CreateBucketCommand]
+    >;
+  };
   let initializer: StorageBucketInitializer;
 
   beforeEach(() => {
-    client = { send: jest.fn() };
+    client = {
+      send: jest.fn<
+        Promise<unknown>,
+        [HeadBucketCommand | CreateBucketCommand]
+      >(),
+    };
     initializer = new StorageBucketInitializer(
       client as unknown as S3Client,
       config,

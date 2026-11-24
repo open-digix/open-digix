@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [api, web]
+
+    defaults:
+      run:
+        working-directory: apps/${{ matrix.app }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: apps/${{ matrix.app }}/package-lock.json
+
+      - run: npm ci
+
+      # The API's npm run lint uses --fix, which should not modify files in CI.
+      - name: Lint API
+        if: matrix.app == 'api'
+        run: npx eslint "{src,apps,libs,test}/**/*.ts"
+
+      - name: Lint Web
+        if: matrix.app == 'web'
+        run: npm run lint
+
+      - name: Build API
+        if: matrix.app == 'api'
+        run: npm run build
+
+      # Turbopack currently fails to resolve @tailwindcss/postcss in this project.
+      - name: Build Web
+        if: matrix.app == 'web'
+        run: npm run build -- --webpack
+
+      - name: Test API
+        if: matrix.app == 'api'
+        run: npm test -- --runInBand
+
+      - name: Test Web
+        if: matrix.app == 'web'
+        run: npm test
