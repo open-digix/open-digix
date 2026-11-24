@@ -17,10 +17,12 @@
       </button>
     </form>
 
-    <#if (client.baseUrl)?has_content>
-      <p class="foot"><a href="${client.baseUrl}" class="link">← ${msg("backToApplication")}</a></p>
-    <#else>
-      <p class="foot"><a href="${url.loginUrl}" class="link">← ${msg("backToLogin")}</a></p>
+    <#if !logoutConfirm.skipLink>
+      <#if (client.baseUrl)?has_content>
+        <p class="foot"><a href="${client.baseUrl}" class="link">← ${msg("backToApplication")}</a></p>
+      <#else>
+        <p class="foot"><a href="${url.loginUrl}" class="link">← ${msg("backToLogin")}</a></p>
+      </#if>
     </#if>
   </div>
 </#if>
