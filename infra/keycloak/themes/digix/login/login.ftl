@@ -14,7 +14,7 @@
         <div class="field<#if messagesPerField.existsError('username')> has-error</#if>">
           <label for="username">${msg("usernameOrEmail")}</label>
           <div class="input-wrap">
-            <input id="username" name="username" value="${(login.username!'')}" type="text" autofocus autocomplete="username" placeholder="vd: dung.demo" aria-invalid="<#if messagesPerField.existsError('username')>true<#else>false</#if>"<#if messagesPerField.existsError('username')> aria-describedby="username-err"</#if>>
+            <input id="username" name="username" value="${(login.username!'')}" type="text" autofocus autocomplete="username" placeholder="vd: ten.dang.nhap" aria-invalid="<#if messagesPerField.existsError('username')>true<#else>false</#if>"<#if messagesPerField.existsError('username')> aria-describedby="username-err"</#if>>
           </div>
           <#if messagesPerField.existsError('username')>
             <p class="field-error" id="username-err" aria-live="polite">${kcSanitize(messagesPerField.getFirstError('username'))?no_esc}</p>
