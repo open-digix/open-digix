@@ -29,6 +29,7 @@ Mọi thay đổi đáng chú ý của dự án sẽ được ghi nhận tại �
   - Giữ nguyên 100% form action, CSRF token theo session URL của Keycloak, tên trường `username`, `password`, `rememberMe`, hidden `credentialId` và `session_code`.
   - Trạng thái client UX (`digix-login.js`): Khóa nút và hiện spinner sau khi submit (không disable input); cảnh báo Caps Lock; rung thẻ card khi có lỗi; nút toggle hiện/ẩn mật khẩu; tự động focus ô mật khẩu khi có lỗi.
   - Hỗ trợ tiếng Việt 100% cho mọi thông báo hệ thống Keycloak trong `messages_vi.properties`, cấu hình realm chỉ bật locale `vi`, không hiển thị bộ chọn ngôn ngữ.
+  - Sửa theo review PR #28: hiển thị lỗi gộp username/password khi usernameHidden bật; bổ sung nút Hủy và tùy chọn đăng xuất các thiết bị khác khi cập nhật mật khẩu; ẩn link quay lại khi logoutConfirm.skipLink bật.
 
 ## 23/11/2026
 
