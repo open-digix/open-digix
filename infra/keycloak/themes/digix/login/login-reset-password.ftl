@@ -4,8 +4,15 @@
 <#if section = "header">
   ${msg("emailForgotTitle")}
 <#elseif section = "form">
+  <div class="stepper" aria-label="Tiến trình khôi phục">
+    <div class="st on" data-st="1"><b>1</b>Tài khoản</div>
+    <div class="bar" data-bar="1"></div>
+    <div class="st" data-st="2"><b>2</b>Kiểm tra email</div>
+    <div class="bar" data-bar="2"></div>
+    <div class="st" data-st="3"><b>3</b>Mật khẩu mới</div>
+  </div>
+
   <div class="view-in">
-    <p class="eyebrow">Khôi phục truy cập</p>
     <h1 class="title">${msg("emailForgotTitle")}</h1>
     <p class="lead">${msg("emailInstruction")}</p>
 

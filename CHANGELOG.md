@@ -20,6 +20,12 @@ Mọi thay đổi đáng chú ý của dự án sẽ được ghi nhận tại �
 
 ## [Chưa phát hành] - 24/11/2026
 
+### Tinh chỉnh giao diện theo bản xem thử demo-ui-2 (S2 · I2 · R3 · Q2)
+- **S2 – Sidebar thu hẹp:** Mặc định thu gọn còn cột 76px trên máy tính. Rê chuột hoặc Tab bàn phím thì bung ra nổi đè lên nội dung (không đẩy/nhảy nội dung); nút Ghim thanh bên để giữ mở cố định 242px, trạng thái ghim được nhớ trong `localStorage`. Tooltip nổi khi thu gọn. Điện thoại (< 900px) giữ nguyên menu trượt drawer.
+- **I2 – Icon web & Keycloak:** Áp dụng icon DigiX chính thức (ô vuông navy `#112B45`, chữ X trắng, nhánh teal `#2DD4BF`) thay thế icon mặc định Next.js trên web (`/icon.svg`, `/favicon.ico`, `/apple-icon.png`, `/manifest.json`) và trang đăng nhập Keycloak (`infra/keycloak/themes/digix/login/resources/img/icon.svg`).
+- **R3 – Yêu cầu cấp tài khoản (`/register`):** Thay hộp thoại tự đăng ký chưa bật bằng trang/form Yêu cầu cấp tài khoản hoàn chỉnh với bố cục chia đôi (B) trên máy tính và thẻ kính (F) trên điện thoại; kiểm tra hợp lệ tiếng Việt; màn hình xác nhận "Đã gửi yêu cầu" ghi chú rõ API lưu yêu cầu thuộc phạm vi BE-08.
+- **Q2 – Quên mật khẩu 3 bước:** Bổ sung thanh tiến trình 3 bước (Tài khoản → Kiểm tra email → Mật khẩu mới) trong theme Keycloak (`login-reset-password.ftl`, `info.ftl`, `login-update-password.ftl`); màn Kiểm tra email có thời hạn 5 phút, lưu ý Spam và nút gửi lại đếm ngược khóa 60 giây; màn Đặt mật khẩu mới tích hợp thanh đo độ mạnh mật khẩu và danh sách 4 quy tắc kiểm tra động; màn Đã đổi mật khẩu.
+
 ### Giao diện đăng nhập Keycloak (KC-01)
 - Áp dụng giao diện đăng nhập nhận diện thương hiệu DigiX cho Keycloak realm `digix` (`infra/keycloak/themes/digix/login`):
   - Kế thừa `parent=base` để loại bỏ hoàn toàn PatternFly 5 CSS và tránh xung đột class; kiểm soát 100% markup FreeMarker.

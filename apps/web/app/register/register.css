@@ -1,0 +1,486 @@
+/* CSS cho trang Yêu cầu cấp tài khoản (R3) */
+.register-page {
+  --navy: #112b45;
+  --navy-deep: #071b2c;
+  --teal: #0d9488;
+  --teal-strong: #0b776f;
+  --teal-hover: #0a665f;
+  --teal-light: #2dd4bf;
+  --ink: #112b45;
+  --ink-2: #526878;
+  --line: #d8e1e8;
+  --surface: #ffffff;
+  --canvas: #f6f8fa;
+  --soft: #edf3f5;
+  --danger: #b42318;
+  --danger-soft: #fef3f2;
+  --success: #176b4d;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  font-family: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  color: var(--ink);
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  background: var(--canvas);
+  margin: 0;
+}
+
+.register-page * {
+  box-sizing: border-box;
+}
+
+/* === DESKTOP SIDE PANEL (Bố cục B: >= 900px) === */
+.register-page .side {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 44px 48px;
+  color: #edf3f5;
+  background: linear-gradient(160deg, #112b45 0%, #0e3a4a 60%, #0b5a58 100%);
+}
+
+.register-page .side::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  bottom: -120px;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  border: 1px solid rgba(45, 212, 191, 0.18);
+  box-shadow: 0 0 0 60px rgba(45, 212, 191, 0.04), 0 0 0 120px rgba(45, 212, 191, 0.03);
+}
+
+.register-page .side img {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+.register-page .side h2 {
+  margin: 0 0 14px;
+  max-width: 460px;
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+}
+
+.register-page .side p {
+  margin: 0;
+  max-width: 430px;
+  color: rgba(237, 243, 245, 0.78);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.register-page .steps {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 34px;
+}
+
+.register-page .step {
+  min-width: 96px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.register-page .step b {
+  display: block;
+  color: var(--teal-light);
+  font-size: 13px;
+}
+
+.register-page .step span {
+  font-size: 12.5px;
+  color: rgba(237, 243, 245, 0.85);
+}
+
+.register-page .steps i {
+  color: rgba(237, 243, 245, 0.5);
+  font-style: normal;
+}
+
+.register-page .side-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.register-page .side small {
+  color: rgba(237, 243, 245, 0.55);
+  font-size: 12px;
+}
+
+.register-page .side-back-link {
+  color: var(--teal-light);
+  font-size: 12.5px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.register-page .side-back-link:hover {
+  text-decoration: underline;
+  opacity: 0.9;
+}
+
+/* === MAIN FORM COLUMN === */
+.register-page .main {
+  display: grid;
+  place-items: center;
+  padding: 40px 24px;
+  width: 100%;
+}
+
+.register-page .card {
+  width: min(440px, 100%);
+  color: var(--ink);
+}
+
+.register-page .card.shake {
+  animation: cardShake 0.45s var(--ease);
+}
+
+@keyframes cardShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+.register-page .eyebrow {
+  margin: 0 0 8px;
+  color: var(--teal);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.register-page .title {
+  margin: 0 0 6px;
+  font-size: clamp(24px, 4vw, 30px);
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+
+.register-page .lead {
+  margin: 0 0 20px;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.register-page .note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--soft);
+  border: 1px solid #d6e6ea;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--ink-2);
+  margin: 0 0 18px;
+}
+
+.register-page .note svg {
+  flex: none;
+  color: var(--teal-strong);
+  margin-top: 1px;
+}
+
+.register-page .grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 14px;
+}
+@media (max-width: 520px) {
+  .register-page .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.register-page .field {
+  position: relative;
+  margin: 0 0 16px;
+}
+
+.register-page .field label {
+  display: block;
+  margin: 0 0 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.register-page .input-wrap {
+  position: relative;
+}
+
+.register-page .field input {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--surface);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.register-page .field input:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.15);
+}
+
+.register-page .select-wrap {
+  position: relative;
+}
+
+.register-page .select-wrap select {
+  width: 100%;
+  height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0 14px;
+  font-size: 15px;
+  color: var(--ink);
+  background: #fff;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink-2) 50%), linear-gradient(135deg, var(--ink-2) 50%, transparent 50%);
+  background-position: calc(100% - 20px) 21px, calc(100% - 15px) 21px;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.register-page .select-wrap select:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.15);
+}
+
+.register-page textarea.ta {
+  width: 100%;
+  min-height: 80px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14.5px;
+  color: var(--ink);
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.register-page textarea.ta:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.15);
+}
+
+.register-page .field.has-error input,
+.register-page .field.has-error select,
+.register-page .field.has-error textarea {
+  border-color: var(--danger);
+}
+
+.register-page .field-error {
+  min-height: 18px;
+  margin: 5px 0 0;
+  font-size: 12px;
+  color: var(--danger);
+}
+
+.register-page .btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 48px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  color: #fff;
+  background: var(--teal-strong);
+  box-shadow: 0 4px 14px rgba(11, 119, 111, 0.28);
+  transition: background 0.2s, transform 0.15s;
+}
+
+.register-page .btn:hover:not(:disabled) {
+  background: var(--teal-hover);
+  transform: translateY(-1px);
+}
+
+.register-page .btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.register-page .btn-ghost {
+  background: transparent;
+  color: var(--teal-strong);
+  border: 1.5px solid var(--teal-strong);
+  box-shadow: none;
+}
+
+.register-page .btn-ghost:hover {
+  background: rgba(11, 119, 111, 0.08);
+}
+
+.register-page .spinner {
+  display: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.register-page .btn.is-loading .spinner {
+  display: inline-block;
+}
+.register-page .btn.is-loading .arrow {
+  display: none;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.register-page .foot {
+  margin: 20px 0 0;
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+
+.register-page .link {
+  color: var(--teal-strong);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.register-page .link:hover {
+  text-decoration: underline;
+}
+
+.register-page .mobile-back {
+  display: none;
+}
+
+/* === SUCCESS PANE === */
+.register-page .pane {
+  display: none;
+}
+.register-page .pane.on {
+  display: block;
+  animation: paneIn 0.35s var(--ease);
+}
+
+@keyframes paneIn {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+.register-page .success {
+  text-align: center;
+  padding: 10px 0;
+}
+
+.register-page .tick {
+  width: 60px;
+  height: 60px;
+  stroke: var(--teal-strong);
+  margin: 0 auto 16px;
+  display: block;
+}
+
+.register-page .email-chip {
+  display: inline-block;
+  background: var(--soft);
+  border-radius: 8px;
+  padding: 2px 8px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.register-page .hint-note {
+  font-size: 12px;
+  color: var(--ink-2);
+  line-height: 1.5;
+  background: rgba(17, 43, 69, 0.04);
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin: 16px 0 20px;
+}
+
+/* === MOBILE GLASS CARD (F: < 900px) === */
+@media (max-width: 899px) {
+  .register-page {
+    grid-template-columns: 1fr;
+    min-height: 100dvh;
+    background:
+      radial-gradient(ellipse 80% 45% at 90% 5%, rgba(45, 212, 191, 0.40) 0%, transparent 60%),
+      radial-gradient(ellipse 70% 50% at 0% 95%, rgba(13, 148, 136, 0.35) 0%, transparent 60%),
+      linear-gradient(165deg, #0b2236 0%, #112b45 50%, #0f4c55 100%);
+  }
+
+  .register-page .side {
+    background: transparent;
+    padding: calc(24px + env(safe-area-inset-top, 0px)) 22px 14px;
+  }
+
+  .register-page .side::after,
+  .register-page .side-foot,
+  .register-page .side p,
+  .register-page .steps {
+    display: none;
+  }
+
+  .register-page .side h2 {
+    margin: 14px 0 0;
+    font-size: 22px;
+  }
+
+  .register-page .main {
+    padding: 4px 16px calc(56px + env(safe-area-inset-bottom, 0px));
+    place-items: start center;
+  }
+
+  .register-page .card {
+    max-width: 480px;
+    padding: 26px 20px 22px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.88);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 20px 50px rgba(3, 14, 25, 0.35);
+  }
+
+  .register-page .mobile-back {
+    display: block;
+    margin-top: 20px;
+  }
+}

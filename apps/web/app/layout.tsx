@@ -5,6 +5,14 @@ import "./landing.css";
 export const metadata: Metadata = {
   title: "Một Nền Tảng, Vạn Tiềm Năng | DigiX",
   description: "DigiX giúp doanh nghiệp nhìn lại và tối ưu cách thức vận hành bằng công nghệ.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: "/apple-icon.png",
+  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -85,4 +85,60 @@
       input.focus();
     });
   });
+
+  // 5. Độ mạnh mật khẩu và danh sách yêu cầu (cho màn login-update-password)
+  function scorePassword(v) {
+    var r = {
+      len: v.length >= 8,
+      up: /[A-ZÀ-Ỹ]/.test(v),
+      num: /\d/.test(v),
+      sym: /[^\w\sÀ-ỹ]/.test(v)
+    };
+    var n = Object.keys(r).filter(function (k) { return r[k]; }).length;
+    return { r: r, n: v ? Math.max(1, n) : 0 };
+  }
+  var TXT = ['—', 'Yếu', 'Trung bình', 'Khá', 'Mạnh'];
+  var passNew = document.getElementById('password-new');
+  if (passNew) {
+    passNew.addEventListener('input', function () {
+      var s = scorePassword(passNew.value);
+      var m = document.getElementById('meter');
+      if (m) m.dataset.level = s.n;
+      var t = document.getElementById('meter-text');
+      if (t) t.textContent = TXT[s.n];
+      var ruleItems = document.querySelectorAll('#rules li');
+      ruleItems.forEach(function (li) {
+        var req = li.getAttribute('data-r');
+        if (req && s.r[req] !== undefined) {
+          li.classList.toggle('ok', !!s.r[req]);
+        }
+      });
+    });
+  }
+
+  // 6. Đếm ngược gửi lại email (khóa 60 giây) cho màn Kiểm tra email
+  var resendBtns = document.querySelectorAll('.js-resend');
+  if (resendBtns.length) {
+    resendBtns.forEach(function (b) {
+      var timer;
+      function startCountdown() {
+        var left = 60;
+        b.disabled = true;
+        clearInterval(timer);
+        b.textContent = 'Gửi lại sau ' + left + ' giây';
+        timer = setInterval(function () {
+          left -= 1;
+          if (left <= 0) {
+            clearInterval(timer);
+            b.disabled = false;
+            b.textContent = 'Gửi lại';
+          } else {
+            b.textContent = 'Gửi lại sau ' + left + ' giây';
+          }
+        }, 1000);
+      }
+      startCountdown();
+      b.addEventListener('click', startCountdown);
+    });
+  }
 })();
