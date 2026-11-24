@@ -334,6 +334,51 @@
 .landing-auth-primary { display: inline-flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; min-height: 48px; margin-top: 26px; padding: 0 17px; border: 0; border-radius: 10px; background: var(--landing-teal); color: #fff; font-size: 14px; font-weight: 600; text-align: left; }
 .landing-auth-primary:hover { background: #0b776f; }
 
+.landing-auth-dialog.landing-auth-error-card {
+  margin: auto;
+  text-align: left;
+}
+
+.landing-auth-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 12px;
+  padding: 0 17px;
+  border: 1px solid #dce8ed;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--landing-navy);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+.landing-auth-secondary:hover {
+  background: #edf3f5;
+  border-color: #cbd5e1;
+}
+
+.landing-auth-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid rgba(13, 148, 136, 0.2);
+  border-radius: 50%;
+  border-top-color: var(--landing-teal);
+  animation: landing-spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@keyframes landing-spin {
+  to { transform: rotate(360deg); }
+}
+
 @media (max-width: 720px) {
   .landing-hero { min-height: max(600px, 100dvh); padding: 20px; }
   .landing-header { justify-content: space-between; }

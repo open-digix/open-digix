@@ -5,6 +5,10 @@ const publicIssuer = process.env.AUTH_KEYCLOAK_ISSUER;
 const internalKeycloakUrl = process.env.AUTH_KEYCLOAK_INTERNAL_URL;
 
 export const { handlers, auth } = NextAuth({
+  pages: {
+    signIn: "/login",
+    error: "/login/error",
+  },
   providers: [
     Keycloak({
       clientId: process.env.AUTH_KEYCLOAK_ID,
