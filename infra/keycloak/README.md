@@ -78,6 +78,31 @@ trường hợp truy cập tenant bị từ chối.
 Service seed không chạy trong `docker compose up` thông thường. Không dùng tài
 khoản hoặc mật khẩu thật, và không commit `.env`.
 
+## Giao diện đăng nhập (KC-01)
+
+Theme đăng nhập `digix` được cấu hình tại `infra/keycloak/themes/digix/login`:
+- Kế thừa từ `parent=base` nhằm tránh xung đột với PatternFly 5 CSS của Keycloak v2.
+- Giao diện đáp ứng: Bố cục 2 cột chia đôi theo mẫu B ở máy tính (≥ 900px), thẻ kính mờ theo mẫu F ở điện thoại (< 900px).
+- Font chữ: Tự host font **Be Vietnam Pro** từ package npm `@fontsource/be-vietnam-pro` phiên bản `5.3.0` (giấy phép SIL Open Font License 1.1) gồm 4 độ đậm (400, 500, 600, 700) và 3 subset (`vietnamese`, `latin`, `latin-ext`), kèm tệp giấy phép `OFL.txt`. Tuyệt đối không gọi tài nguyên ra bên ngoài (Google Fonts).
+- Ngôn ngữ: Hỗ trợ tiếng Việt (`vi`) là ngôn ngữ mặc định, không hiển thị bộ chọn ngôn ngữ.
+
+### Áp dụng theme cho realm đang chạy trên máy local
+
+Khi database Keycloak đã tồn tại, cờ `--import-realm` không ghi đè cấu hình realm `digix`. Để áp dụng theme mà không xóa volume dữ liệu:
+
+1. **Cách 1: Dùng lệnh kcadm.sh bên trong container**
+   ```sh
+   docker compose exec keycloak sh -c '/opt/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080 --realm master --user "$KC_BOOTSTRAP_ADMIN_USERNAME" --password "$KC_BOOTSTRAP_ADMIN_PASSWORD" && /opt/keycloak/bin/kcadm.sh update realms/digix -s loginTheme=digix -s internationalizationEnabled=true -s "supportedLocales=[\"vi\"]" -s defaultLocale=vi'
+   ```
+   *Lưu ý*: Lệnh sử dụng trực tiếp biến môi trường `$KC_BOOTSTRAP_ADMIN_USERNAME` và `$KC_BOOTSTRAP_ADMIN_PASSWORD` sẵn có trong container, không truyền mật khẩu qua host CLI hay in mật khẩu ra log.
+
+2. **Cách 2: Qua Web Admin Console**
+   - Truy cập <http://localhost:8080/admin/>
+   - Chọn realm `digix`
+   - Vào **Realm settings**:
+     - Tab **Themes**: Chọn **Login theme** = `digix` -> Bấm Save.
+     - Tab **Localization**: Bật toggle **Internationalization** = ON, chọn **Supported locales** = `vi`, đặt **Default locale** = `vi` -> Bấm Save.
+
 ## Kiểm chứng
 
 ```sh
