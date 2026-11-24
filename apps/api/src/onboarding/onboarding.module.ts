@@ -10,6 +10,7 @@ import {
 import { AuthModule } from '../auth/auth.module';
 import { OIDC_CONFIG, type OidcConfig } from '../auth/auth.config';
 import { TenantAdminRepository } from './tenant-admin.repository';
+import { TenantAdminRegistrationController } from './tenant-admin-registration.controller';
 import {
   KEYCLOAK_ADMIN_CLIENT,
   TENANT_ADMIN_IDENTITY_ISSUER,
@@ -19,6 +20,7 @@ import {
 
 @Module({
   imports: [AuthModule],
+  controllers: [TenantAdminRegistrationController],
   providers: [
     {
       provide: KEYCLOAK_ADMIN_CONFIG,
