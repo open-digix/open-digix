@@ -1,0 +1,66 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+/* Tương tác giao diện đăng nhập DigiX (Keycloak login theme). */
+
+(function () {
+  'use strict';
+
+  // 1. Trạng thái đang gửi: chỉ khóa NÚT sau khi submit (không preventDefault, không disable inputs)
+  document.querySelectorAll('form').forEach(function (form) {
+    form.addEventListener('submit', function () {
+      var submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+      if (submitBtn) {
+        submitBtn.classList.add('is-loading');
+        // Khóa nút trên tick tiếp theo để form gửi request bình thường
+        setTimeout(function () {
+          submitBtn.disabled = true;
+        }, 0);
+      }
+    });
+  });
+
+  // 2. Cảnh báo Caps Lock khi gõ mật khẩu
+  var passwordInputs = document.querySelectorAll('input[type="password"]');
+  var capsHint = document.getElementById('caps-hint');
+  if (passwordInputs.length && capsHint) {
+    passwordInputs.forEach(function (input) {
+      function checkCaps(e) {
+        if (e.getModifierState && e.getModifierState('CapsLock')) {
+          capsHint.hidden = false;
+        } else {
+          capsHint.hidden = true;
+        }
+      }
+      input.addEventListener('keyup', checkCaps);
+      input.addEventListener('keydown', checkCaps);
+      input.addEventListener('blur', function () {
+        capsHint.hidden = true;
+      });
+    });
+  }
+
+  // 3. Hiệu ứng rung thẻ 1 lần khi có lỗi và tự động focus ô mật khẩu
+  var alertBox = document.getElementById('kc-alert');
+  var card = document.querySelector('.card');
+  if (alertBox && !alertBox.hidden && card) {
+    card.classList.add('shake');
+    var passwordInput = document.getElementById('password');
+    if (passwordInput) {
+      passwordInput.focus();
+    }
+  }
+
+  // 4. Nút bật/tắt hiển thị mật khẩu
+  document.querySelectorAll('.toggle-pass').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var inputWrap = btn.closest('.input-wrap');
+      var input = inputWrap ? inputWrap.querySelector('input') : null;
+      if (!input) return;
+      var isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      btn.classList.toggle('is-on', isPassword);
+      btn.setAttribute('aria-pressed', isPassword ? 'true' : 'false');
+      btn.setAttribute('aria-label', isPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+      input.focus();
+    });
+  });
+})();
