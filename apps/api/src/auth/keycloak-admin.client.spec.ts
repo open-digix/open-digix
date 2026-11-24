@@ -92,4 +92,32 @@ describe('KeycloakAdminClient', () => {
       'Keycloak user creation returned no user location',
     );
   });
+
+  it('deletes a Keycloak user with the admin access token', async () => {
+    const fetchImplementation = jest.fn() as jest.MockedFunction<typeof fetch>;
+    fetchImplementation
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ access_token: 'admin-token' }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    const client = new KeycloakAdminClient(config, fetchImplementation);
+
+    await expect(
+      client.deleteUser('keycloak-subject'),
+    ).resolves.toBeUndefined();
+
+    expect(fetchImplementation).toHaveBeenNthCalledWith(
+      2,
+      new URL('http://keycloak:8080/admin/realms/digix/users/keycloak-subject'),
+      {
+        method: 'DELETE',
+        headers: {
+          authorization: 'Bearer admin-token',
+          'content-type': 'application/json',
+        },
+      },
+    );
+  });
 });

@@ -61,6 +61,24 @@ export class KeycloakAdminClient {
     return subject;
   }
 
+  async deleteUser(subject: string): Promise<void> {
+    const accessToken = await this.getAdminToken();
+    const userUrl = new URL(
+      `/admin/realms/${encodeURIComponent(this.config.realm)}/users/${encodeURIComponent(subject)}`,
+      this.config.internalUrl,
+    );
+    const response = await this.fetchImplementation(userUrl, {
+      method: 'DELETE',
+      headers: this.jsonHeaders(accessToken),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Keycloak user deletion failed with HTTP ${response.status}: ${await response.text()}`,
+      );
+    }
+  }
+
   private async getAdminToken(): Promise<string> {
     const tokenUrl = new URL(
       '/realms/master/protocol/openid-connect/token',
