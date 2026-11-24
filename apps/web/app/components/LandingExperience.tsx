@@ -151,7 +151,7 @@ export default function LandingExperience({ initialAuth }: { initialAuth?: AuthM
             <p className="landing-subhead landing-reveal" style={{ animationDelay: ".28s" }}>
               “DigiX không chỉ cung cấp công nghệ, mà còn giúp nhìn lại và tối ưu toàn bộ cách thức vận hành”.
             </p>
-            <button className="landing-cta landing-reveal" type="button" style={{ animationDelay: ".4s" }} onClick={() => openAuth("register")}>
+            <button className="landing-cta landing-reveal" type="button" style={{ animationDelay: ".4s" }} onClick={() => router.push("/register")}>
               Bắt đầu
             </button>
           </div>
@@ -165,7 +165,7 @@ export default function LandingExperience({ initialAuth }: { initialAuth?: AuthM
             <button className="landing-auth-close" type="button" ref={authCloseRef} aria-label="Đóng" onClick={closeAuth}>×</button>
             <div className="landing-auth-tabs" role="group" aria-label="Tài khoản DigiX">
               <button type="button" className={authMode === "login" ? "active" : ""} onClick={() => setAuthMode("login")}>Đăng nhập</button>
-              <button type="button" className={authMode === "register" ? "active" : ""} onClick={() => setAuthMode("register")}>Đăng ký</button>
+              <button type="button" className={authMode === "register" ? "active" : ""} onClick={() => { setAuthMode(null); router.push("/register"); }}>Đăng ký</button>
             </div>
             <p className="landing-auth-label">{authMode === "login" ? "CHÀO MỪNG TRỞ LẠI" : "BẮT ĐẦU CÙNG DIGIX"}</p>
             <h2 id="landing-auth-heading">{authMode === "login" ? "Đăng nhập tài khoản" : "Đăng ký tài khoản"}</h2>
