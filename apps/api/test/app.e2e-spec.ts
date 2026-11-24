@@ -5,12 +5,18 @@ import { App } from 'supertest/types';
 import { OidcTokenVerifier } from './../src/auth/oidc-token.verifier';
 import { DATABASE_POOL } from './../src/database/database.module';
 import { AppModule } from './../src/app.module';
+import { S3_CLIENT } from './../src/storage/storage.constants';
 import type { TenantContext } from './../src/identity/identity.types';
 import { RequireRoles } from './../src/identity/roles.decorator';
 import {
   CurrentTenantContext,
   TenantScoped,
 } from './../src/identity/tenant-context.decorator';
+import {
+  KEYCLOAK_ADMIN_CLIENT,
+  TENANT_ADMIN_IDENTITY_ISSUER,
+  TENANT_ADMIN_REPOSITORY,
+} from './../src/onboarding/tenant-admin-registration.service';
 
 @Controller('__test/tenant')
 class AuthorizationTestController {
@@ -31,12 +37,34 @@ describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
   let tokenVerifier: { verify: jest.Mock };
   let pool: { query: jest.Mock; end: jest.Mock };
+  let keycloakAdmin: {
+    createUser: jest.Mock;
+    deleteUser: jest.Mock;
+  };
+  let tenantAdminRepository: { createTenantAdmin: jest.Mock };
+  let s3Client: { send: jest.Mock; destroy: jest.Mock };
 
   beforeAll(() => {
     process.env.OIDC_ISSUER = 'http://localhost:8080/realms/digix';
     process.env.OIDC_AUDIENCE = 'digix-api';
     process.env.OIDC_JWKS_URI =
       'http://localhost:8080/realms/digix/protocol/openid-connect/certs';
+    process.env.KEYCLOAK_INTERNAL_URL = 'http://keycloak:8080';
+    process.env.KEYCLOAK_REALM = 'digix';
+    process.env.KEYCLOAK_ADMIN = 'admin';
+    process.env.KEYCLOAK_ADMIN_PASSWORD = 'test-admin-password';
+    process.env.S3_ENDPOINT = 'http://minio:9000';
+    process.env.S3_REGION = 'us-east-1';
+    process.env.S3_FORCE_PATH_STYLE = 'true';
+    process.env.S3_ACCESS_KEY_ID = 'test-access-key';
+    process.env.S3_SECRET_ACCESS_KEY = 'test-secret-key';
+    process.env.S3_BUCKET = 'digix-files';
+    process.env.STORAGE_UPLOAD_MAX_BYTES = '1048576';
+    process.env.STORAGE_UPLOAD_ALLOWED_CONTENT_TYPES = 'application/pdf';
+    process.env.WORKFLOW_BASE_URL = 'http://flowable:8080/flowable-rest';
+    process.env.WORKFLOW_USERNAME = 'admin';
+    process.env.WORKFLOW_PASSWORD = 'test-workflow-password';
+    process.env.WORKFLOW_REQUEST_TIMEOUT_MS = '5000';
   });
 
   beforeEach(async () => {
@@ -53,6 +81,17 @@ describe('AppController (e2e)', () => {
       query: jest.fn(),
       end: jest.fn().mockResolvedValue(undefined),
     };
+    keycloakAdmin = {
+      createUser: jest.fn(),
+      deleteUser: jest.fn(),
+    };
+    tenantAdminRepository = {
+      createTenantAdmin: jest.fn(),
+    };
+    s3Client = {
+      send: jest.fn().mockResolvedValue({}),
+      destroy: jest.fn(),
+    };
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
       controllers: [AuthorizationTestController],
@@ -61,6 +100,14 @@ describe('AppController (e2e)', () => {
       .useValue(tokenVerifier)
       .overrideProvider(DATABASE_POOL)
       .useValue(pool)
+      .overrideProvider(KEYCLOAK_ADMIN_CLIENT)
+      .useValue(keycloakAdmin)
+      .overrideProvider(TENANT_ADMIN_REPOSITORY)
+      .useValue(tenantAdminRepository)
+      .overrideProvider(TENANT_ADMIN_IDENTITY_ISSUER)
+      .useValue('http://localhost:8080/realms/digix')
+      .overrideProvider(S3_CLIENT)
+      .useValue(s3Client)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -72,6 +119,70 @@ describe('AppController (e2e)', () => {
       .get('/')
       .expect(200)
       .expect('Hello World!');
+  });
+
+  it('registers a tenant admin through the public onboarding endpoint', async () => {
+    keycloakAdmin.createUser.mockResolvedValue('keycloak-subject');
+    tenantAdminRepository.createTenantAdmin.mockResolvedValue({
+      tenantId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      identityUserId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+      membershipId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+      roleId: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+    });
+
+    const response = await request(app.getHttpServer())
+      .post('/v1/onboarding/tenant-admin')
+      .send({
+        companyName: 'Acme Corporation',
+        tenantSlug: 'acme_corp',
+        adminEmail: 'admin@example.com',
+        adminDisplayName: 'Nguyen Van A',
+        password: 'correct-horse-battery',
+        passwordConfirmation: 'correct-horse-battery',
+      })
+      .expect(201);
+
+    expect(response.body).toEqual({
+      tenantId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      membershipId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+      status: 'created',
+      role: 'tenant_admin',
+    });
+    expect(keycloakAdmin.createUser).toHaveBeenCalledWith({
+      username: 'admin@example.com',
+      email: 'admin@example.com',
+      displayName: 'Nguyen Van A',
+      password: 'correct-horse-battery',
+    });
+    expect(tenantAdminRepository.createTenantAdmin).toHaveBeenCalledWith({
+      tenantSlug: 'acme_corp',
+      tenantName: 'Acme Corporation',
+      identityIssuer: 'http://localhost:8080/realms/digix',
+      identitySubject: 'keycloak-subject',
+      email: 'admin@example.com',
+      displayName: 'Nguyen Van A',
+    });
+  });
+
+  it('rejects invalid tenant admin registration input', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/v1/onboarding/tenant-admin')
+      .send({
+        companyName: 'Acme Corporation',
+        tenantSlug: 'Acme Corporation',
+        adminEmail: 'not-an-email',
+        adminDisplayName: 'Nguyen Van A',
+        password: 'short',
+        passwordConfirmation: 'different',
+      })
+      .expect(400);
+
+    expect((response.body as { error: { code: string } }).error.code).toBe(
+      'INVALID_TENANT_ADMIN_REGISTRATION_INPUT',
+    );
+
+    expect(keycloakAdmin.createUser).not.toHaveBeenCalled();
+    expect(tenantAdminRepository.createTenantAdmin).not.toHaveBeenCalled();
   });
 
   it('/v1/me rejects a request without a Bearer token', async () => {
