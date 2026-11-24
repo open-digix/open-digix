@@ -4,13 +4,15 @@
 <#if section = "header">
   ${msg("updatePasswordTitle")}
 <#elseif section = "form">
-  <div class="stepper" aria-label="Tiến trình khôi phục">
-    <div class="st done" data-st="1"><b>✓</b>Tài khoản</div>
-    <div class="bar done" data-bar="1"></div>
-    <div class="st done" data-st="2"><b>✓</b>Kiểm tra email</div>
-    <div class="bar done" data-bar="2"></div>
-    <div class="st on" data-st="3"><b>3</b>Mật khẩu mới</div>
-  </div>
+  <#if !isAppInitiatedAction??>
+    <div class="stepper" aria-label="Tiến trình khôi phục">
+      <div class="st done" data-st="1"><b>✓</b>Tài khoản</div>
+      <div class="bar done" data-bar="1"></div>
+      <div class="st done" data-st="2"><b>✓</b>Kiểm tra email</div>
+      <div class="bar done" data-bar="2"></div>
+      <div class="st on" data-st="3"><b>3</b>Mật khẩu mới</div>
+    </div>
+  </#if>
 
   <div class="view-in">
     <h1 class="title">${msg("updatePasswordTitle")}</h1>

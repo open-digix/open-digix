@@ -842,6 +842,7 @@ button, input, select, textarea {
   color: var(--ink-2);
   margin-top: 14px;
 }
+.resend a,
 .resend button {
   border: 0;
   background: none;
@@ -850,10 +851,15 @@ button, input, select, textarea {
   font-weight: 600;
   color: var(--teal-strong);
   cursor: pointer;
+  text-decoration: underline;
 }
+.resend a[aria-disabled="true"],
+.resend a.is-disabled,
 .resend button[disabled] {
   color: var(--ink-2);
-  cursor: default;
+  cursor: not-allowed;
+  pointer-events: none;
+  text-decoration: none;
 }
 
 @media (max-width: 520px) {

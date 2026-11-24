@@ -117,28 +117,32 @@
   }
 
   // 6. Đếm ngược gửi lại email (khóa 60 giây) cho màn Kiểm tra email
-  var resendBtns = document.querySelectorAll('.js-resend');
-  if (resendBtns.length) {
-    resendBtns.forEach(function (b) {
-      var timer;
-      function startCountdown() {
-        var left = 60;
-        b.disabled = true;
-        clearInterval(timer);
-        b.textContent = 'Gửi lại sau ' + left + ' giây';
-        timer = setInterval(function () {
-          left -= 1;
-          if (left <= 0) {
-            clearInterval(timer);
-            b.disabled = false;
-            b.textContent = 'Gửi lại';
-          } else {
-            b.textContent = 'Gửi lại sau ' + left + ' giây';
-          }
-        }, 1000);
-      }
-      startCountdown();
-      b.addEventListener('click', startCountdown);
+  var resendLinks = document.querySelectorAll('.js-resend');
+  if (resendLinks.length) {
+    resendLinks.forEach(function (link) {
+      var left = 60;
+      var originalText = link.textContent.trim() || 'Gửi lại';
+      link.setAttribute('aria-disabled', 'true');
+      link.classList.add('is-disabled');
+      link.textContent = 'Gửi lại sau ' + left + 's';
+
+      link.addEventListener('click', function (e) {
+        if (link.getAttribute('aria-disabled') === 'true') {
+          e.preventDefault();
+        }
+      });
+
+      var timer = setInterval(function () {
+        left -= 1;
+        if (left <= 0) {
+          clearInterval(timer);
+          link.removeAttribute('aria-disabled');
+          link.classList.remove('is-disabled');
+          link.textContent = originalText;
+        } else {
+          link.textContent = 'Gửi lại sau ' + left + 's';
+        }
+      }, 1000);
     });
   }
 })();
