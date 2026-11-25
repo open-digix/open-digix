@@ -25,6 +25,13 @@ export class TenantSlugConflictError extends Error {
   }
 }
 
+export class DatabaseUnavailableError extends Error {
+  constructor() {
+    super('PostgreSQL is unavailable.');
+    this.name = 'DatabaseUnavailableError';
+  }
+}
+
 interface IdRow extends QueryResultRow {
   id: string;
 }
@@ -71,7 +78,12 @@ export class TenantAdminRepository {
   async createTenantAdmin(
     input: CreateTenantAdminInput,
   ): Promise<CreatedTenantAdmin> {
-    const client = await this.pool.connect();
+    let client: PoolClient;
+    try {
+      client = await this.pool.connect();
+    } catch {
+      throw new DatabaseUnavailableError();
+    }
 
     try {
       await client.query('BEGIN');
@@ -128,6 +140,9 @@ export class TenantAdminRepository {
       };
     } catch (error) {
       await client.query('ROLLBACK');
+      if (isDatabaseUnavailable(error)) {
+        throw new DatabaseUnavailableError();
+      }
       throw error;
     } finally {
       client.release();
@@ -142,6 +157,27 @@ function isUniqueViolation(error: unknown): boolean {
     'code' in error &&
     error.code === '23505'
   );
+}
+
+function isDatabaseUnavailable(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null || !('code' in error)) {
+    return false;
+  }
+
+  return [
+    '08000',
+    '08001',
+    '08003',
+    '08004',
+    '08006',
+    '08007',
+    '08P01',
+    '53300',
+    '57P01',
+    'ECONNREFUSED',
+    'ECONNRESET',
+    'ETIMEDOUT',
+  ].includes(String(error.code));
 }
 
 async function insertId(

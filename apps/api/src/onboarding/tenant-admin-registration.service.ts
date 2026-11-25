@@ -1,15 +1,22 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import type {
   CreateKeycloakUserInput,
   KeycloakAdminClient,
 } from '../auth/keycloak-admin.client';
 import { KeycloakUserConflictError } from '../auth/keycloak-admin.client';
+import { KeycloakAdminUnavailableError } from '../auth/keycloak-admin.client';
 import type {
   CreatedTenantAdmin,
   CreateTenantAdminInput,
   TenantAdminRepository,
 } from './tenant-admin.repository';
 import { TenantSlugConflictError } from './tenant-admin.repository';
+import { DatabaseUnavailableError } from './tenant-admin.repository';
 import type { TenantAdminRegistrationBody } from './tenant-admin-registration.input';
 
 export const KEYCLOAK_ADMIN_CLIENT = Symbol('KEYCLOAK_ADMIN_CLIENT');
@@ -101,6 +108,9 @@ function toKeycloakUserInput(
 }
 
 function mapKeycloakRegistrationError(error: unknown): unknown {
+  if (error instanceof KeycloakAdminUnavailableError) {
+    return unavailableError();
+  }
   if (!(error instanceof KeycloakUserConflictError)) return error;
 
   const code = `${error.field.toUpperCase()}_TAKEN`;
@@ -114,12 +124,24 @@ function mapKeycloakRegistrationError(error: unknown): unknown {
 }
 
 function mapPersistenceRegistrationError(error: unknown): unknown {
+  if (error instanceof DatabaseUnavailableError) {
+    return unavailableError();
+  }
   if (!(error instanceof TenantSlugConflictError)) return error;
 
   return new ConflictException({
     error: {
       code: 'TENANT_SLUG_TAKEN',
       message: 'Tenant slug is already taken.',
+    },
+  });
+}
+
+function unavailableError(): ServiceUnavailableException {
+  return new ServiceUnavailableException({
+    error: {
+      code: 'UNAVAILABLE',
+      message: 'Registration service is temporarily unavailable.',
     },
   });
 }

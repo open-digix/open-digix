@@ -22,6 +22,13 @@ export class KeycloakUserConflictError extends Error {
   }
 }
 
+export class KeycloakAdminUnavailableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'KeycloakAdminUnavailableError';
+  }
+}
+
 interface KeycloakTokenResponse {
   readonly access_token?: string;
 }
@@ -38,25 +45,32 @@ export class KeycloakAdminClient {
       `/admin/realms/${encodeURIComponent(this.config.realm)}/users`,
       this.config.internalUrl,
     );
-    const response = await this.fetchImplementation(userUrl, {
-      method: 'POST',
-      headers: this.jsonHeaders(accessToken),
-      body: JSON.stringify({
-        username: input.username,
-        enabled: true,
-        email: input.email,
-        emailVerified: false,
-        firstName: input.firstName,
-        lastName: input.lastName,
-        credentials: [
-          {
-            type: 'password',
-            value: input.password,
-            temporary: false,
-          },
-        ],
-      }),
-    });
+    let response: Response;
+    try {
+      response = await this.fetchImplementation(userUrl, {
+        method: 'POST',
+        headers: this.jsonHeaders(accessToken),
+        body: JSON.stringify({
+          username: input.username,
+          enabled: true,
+          email: input.email,
+          emailVerified: false,
+          firstName: input.firstName,
+          lastName: input.lastName,
+          credentials: [
+            {
+              type: 'password',
+              value: input.password,
+              temporary: false,
+            },
+          ],
+        }),
+      });
+    } catch {
+      throw new KeycloakAdminUnavailableError(
+        'Keycloak user creation request failed.',
+      );
+    }
 
     if (response.status === 409) {
       throw new KeycloakUserConflictError(
@@ -65,7 +79,7 @@ export class KeycloakAdminClient {
     }
 
     if (response.status !== 201) {
-      throw new Error(
+      throw new KeycloakAdminUnavailableError(
         `Keycloak user creation failed with HTTP ${response.status}: ${await response.text()}`,
       );
     }
@@ -73,7 +87,9 @@ export class KeycloakAdminClient {
     const location = response.headers.get('location');
     const subject = location?.split('/').filter(Boolean).at(-1);
     if (!subject) {
-      throw new Error('Keycloak user creation returned no user location');
+      throw new KeycloakAdminUnavailableError(
+        'Keycloak user creation returned no user location',
+      );
     }
     return subject;
   }
@@ -84,13 +100,20 @@ export class KeycloakAdminClient {
       `/admin/realms/${encodeURIComponent(this.config.realm)}/users/${encodeURIComponent(subject)}`,
       this.config.internalUrl,
     );
-    const response = await this.fetchImplementation(userUrl, {
-      method: 'DELETE',
-      headers: this.jsonHeaders(accessToken),
-    });
+    let response: Response;
+    try {
+      response = await this.fetchImplementation(userUrl, {
+        method: 'DELETE',
+        headers: this.jsonHeaders(accessToken),
+      });
+    } catch {
+      throw new KeycloakAdminUnavailableError(
+        'Keycloak user deletion request failed.',
+      );
+    }
 
     if (!response.ok) {
-      throw new Error(
+      throw new KeycloakAdminUnavailableError(
         `Keycloak user deletion failed with HTTP ${response.status}: ${await response.text()}`,
       );
     }
@@ -107,21 +130,30 @@ export class KeycloakAdminClient {
       username: this.config.adminUsername,
       password: this.config.adminPassword,
     });
-    const response = await this.fetchImplementation(tokenUrl, {
-      method: 'POST',
-      headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      body,
-    });
+    let response: Response;
+    try {
+      response = await this.fetchImplementation(tokenUrl, {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body,
+      });
+    } catch {
+      throw new KeycloakAdminUnavailableError(
+        'Keycloak admin login request failed.',
+      );
+    }
 
     if (!response.ok) {
-      throw new Error(
+      throw new KeycloakAdminUnavailableError(
         `Keycloak admin login failed with HTTP ${response.status}: ${await response.text()}`,
       );
     }
 
     const token = (await response.json()) as KeycloakTokenResponse;
     if (!token.access_token) {
-      throw new Error('Keycloak admin login returned no access token');
+      throw new KeycloakAdminUnavailableError(
+        'Keycloak admin login returned no access token',
+      );
     }
     return token.access_token;
   }

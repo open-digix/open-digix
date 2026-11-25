@@ -1,5 +1,6 @@
 import {
   KeycloakAdminClient,
+  KeycloakAdminUnavailableError,
   KeycloakUserConflictError,
   type KeycloakAdminClientConfig,
 } from './keycloak-admin.client';
@@ -85,6 +86,16 @@ describe('KeycloakAdminClient', () => {
 
     await expect(client.createUser(user)).rejects.toEqual(
       new KeycloakUserConflictError('email'),
+    );
+  });
+
+  it('reports a network failure as Keycloak unavailable', async () => {
+    const fetchImplementation = jest.fn() as jest.MockedFunction<typeof fetch>;
+    fetchImplementation.mockRejectedValue(new Error('connection refused'));
+    const client = new KeycloakAdminClient(config, fetchImplementation);
+
+    await expect(client.createUser(user)).rejects.toEqual(
+      new KeycloakAdminUnavailableError('Keycloak admin login request failed.'),
     );
   });
 

@@ -4,7 +4,9 @@ import {
 } from './tenant-admin-registration.service';
 import type { TenantAdminRegistrationBody } from './tenant-admin-registration.input';
 import { KeycloakUserConflictError } from '../auth/keycloak-admin.client';
+import { KeycloakAdminUnavailableError } from '../auth/keycloak-admin.client';
 import { TenantSlugConflictError } from './tenant-admin.repository';
+import { DatabaseUnavailableError } from './tenant-admin.repository';
 
 describe('TenantAdminRegistrationService', () => {
   const input: TenantAdminRegistrationBody = {
@@ -107,6 +109,22 @@ describe('TenantAdminRegistrationService', () => {
     expect(createTenantAdmin).not.toHaveBeenCalled();
   });
 
+  it('maps Keycloak unavailability to the public API error contract', async () => {
+    createUser.mockRejectedValue(
+      new KeycloakAdminUnavailableError('Keycloak unavailable'),
+    );
+
+    await expect(service.register(input)).rejects.toMatchObject({
+      response: {
+        error: {
+          code: 'UNAVAILABLE',
+          message: 'Registration service is temporarily unavailable.',
+        },
+      },
+    });
+    expect(createTenantAdmin).not.toHaveBeenCalled();
+  });
+
   it('reports a cleanup failure instead of hiding the orphaned account', async () => {
     createUser.mockResolvedValue('keycloak-subject');
     createTenantAdmin.mockRejectedValue(new Error('database unavailable'));
@@ -129,6 +147,21 @@ describe('TenantAdminRegistrationService', () => {
         error: {
           code: 'TENANT_SLUG_TAKEN',
           message: 'Tenant slug is already taken.',
+        },
+      },
+    });
+  });
+
+  it('maps PostgreSQL unavailability to the public API error contract', async () => {
+    createUser.mockResolvedValue('keycloak-subject');
+    createTenantAdmin.mockRejectedValue(new DatabaseUnavailableError());
+    deleteUser.mockResolvedValue(undefined);
+
+    await expect(service.register(input)).rejects.toMatchObject({
+      response: {
+        error: {
+          code: 'UNAVAILABLE',
+          message: 'Registration service is temporarily unavailable.',
         },
       },
     });

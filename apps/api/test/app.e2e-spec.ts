@@ -8,7 +8,10 @@ import { AppModule } from './../src/app.module';
 import { S3_CLIENT } from './../src/storage/storage.constants';
 import type { TenantContext } from './../src/identity/identity.types';
 import { RequireRoles } from './../src/identity/roles.decorator';
-import { KeycloakUserConflictError } from './../src/auth/keycloak-admin.client';
+import {
+  KeycloakAdminUnavailableError,
+  KeycloakUserConflictError,
+} from './../src/auth/keycloak-admin.client';
 import {
   CurrentTenantContext,
   TenantScoped,
@@ -18,7 +21,10 @@ import {
   TENANT_ADMIN_IDENTITY_ISSUER,
   TENANT_ADMIN_REPOSITORY,
 } from './../src/onboarding/tenant-admin-registration.service';
-import { TenantSlugConflictError } from './../src/onboarding/tenant-admin.repository';
+import {
+  DatabaseUnavailableError,
+  TenantSlugConflictError,
+} from './../src/onboarding/tenant-admin.repository';
 
 @Controller('__test/tenant')
 class AuthorizationTestController {
@@ -224,6 +230,24 @@ describe('AppController (e2e)', () => {
     expect(tenantAdminRepository.createTenantAdmin).not.toHaveBeenCalled();
   });
 
+  it('returns UNAVAILABLE when Keycloak cannot be reached', async () => {
+    keycloakAdmin.createUser.mockRejectedValue(
+      new KeycloakAdminUnavailableError('Keycloak unavailable'),
+    );
+
+    const response = await request(app.getHttpServer())
+      .post('/v1/public/tenant-registrations')
+      .send(validRegistrationBody())
+      .expect(503);
+
+    expect(response.body).toEqual({
+      error: {
+        code: 'UNAVAILABLE',
+        message: 'Registration service is temporarily unavailable.',
+      },
+    });
+  });
+
   it('returns TENANT_SLUG_TAKEN and cleans up Keycloak on a duplicate slug', async () => {
     keycloakAdmin.createUser.mockResolvedValue('keycloak-subject');
     tenantAdminRepository.createTenantAdmin.mockRejectedValue(
@@ -240,6 +264,27 @@ describe('AppController (e2e)', () => {
       error: {
         code: 'TENANT_SLUG_TAKEN',
         message: 'Tenant slug is already taken.',
+      },
+    });
+    expect(keycloakAdmin.deleteUser).toHaveBeenCalledWith('keycloak-subject');
+  });
+
+  it('returns UNAVAILABLE when PostgreSQL cannot be reached', async () => {
+    keycloakAdmin.createUser.mockResolvedValue('keycloak-subject');
+    tenantAdminRepository.createTenantAdmin.mockRejectedValue(
+      new DatabaseUnavailableError(),
+    );
+    keycloakAdmin.deleteUser.mockResolvedValue(undefined);
+
+    const response = await request(app.getHttpServer())
+      .post('/v1/public/tenant-registrations')
+      .send(validRegistrationBody())
+      .expect(503);
+
+    expect(response.body).toEqual({
+      error: {
+        code: 'UNAVAILABLE',
+        message: 'Registration service is temporarily unavailable.',
       },
     });
     expect(keycloakAdmin.deleteUser).toHaveBeenCalledWith('keycloak-subject');

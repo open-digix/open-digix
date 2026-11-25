@@ -70,6 +70,7 @@ Cac loi frontend can xu ly:
 - `409 EMAIL_TAKEN`: email Keycloak da ton tai.
 - `409 USERNAME_TAKEN`: username Keycloak da ton tai.
 - `429 RATE_LIMITED`: vuot gioi han request tai Gateway.
+- `503 UNAVAILABLE`: Keycloak hoac PostgreSQL tam thoi khong san sang.
 
 Neu tao PostgreSQL that bai sau khi Keycloak da tao user, backend se co gang xoa
 user Keycloak vua tao de tranh tai khoan mo coi.

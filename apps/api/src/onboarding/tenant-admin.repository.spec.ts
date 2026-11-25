@@ -1,6 +1,7 @@
 import type { Pool } from 'pg';
 import {
   TenantAdminRepository,
+  DatabaseUnavailableError,
   TenantSlugConflictError,
   type CreateTenantAdminInput,
 } from './tenant-admin.repository';
@@ -107,6 +108,18 @@ describe('TenantAdminRepository', () => {
 
     await expect(repository.createTenantAdmin(input)).rejects.toEqual(
       new TenantSlugConflictError('acme_corp'),
+    );
+    expect(query).toHaveBeenLastCalledWith('ROLLBACK');
+  });
+
+  it('reports a PostgreSQL connection failure as unavailable', async () => {
+    query
+      .mockResolvedValueOnce({ rows: [] })
+      .mockRejectedValueOnce({ code: 'ECONNREFUSED' })
+      .mockResolvedValueOnce({ rows: [] });
+
+    await expect(repository.createTenantAdmin(input)).rejects.toEqual(
+      new DatabaseUnavailableError(),
     );
     expect(query).toHaveBeenLastCalledWith('ROLLBACK');
   });
