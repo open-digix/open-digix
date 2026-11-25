@@ -83,6 +83,42 @@ describe("Workspace Layout Components", () => {
     expect(screen.getByText("Thiết kế quy trình")).toBeInTheDocument();
   });
 
+  it("Sidebar S2 renders Pin button and data-tip attributes on nav links", () => {
+    const onTogglePin = vi.fn();
+    render(
+      <Sidebar
+        roles={["employee"]}
+        isOpen={false}
+        onClose={vi.fn()}
+        isPinned={false}
+        onTogglePin={onTogglePin}
+      />,
+    );
+
+    const pinBtn = screen.getByRole("button", { name: /ghim thanh bên/i });
+    expect(pinBtn).toBeInTheDocument();
+    expect(pinBtn).toHaveAttribute("aria-pressed", "false");
+
+    const links = screen.getAllByRole("link");
+    const overviewLink = links.find((l) => l.getAttribute("data-tip") === "Tổng quan");
+    expect(overviewLink).toBeDefined();
+  });
+
+  it("Sidebar S2 shows unpin label when pinned", () => {
+    render(
+      <Sidebar
+        roles={["employee"]}
+        isOpen={false}
+        onClose={vi.fn()}
+        isPinned={true}
+      />,
+    );
+
+    const pinBtn = screen.getByRole("button", { name: /bỏ ghim/i });
+    expect(pinBtn).toBeInTheDocument();
+    expect(pinBtn).toHaveAttribute("aria-pressed", "true");
+  });
+
   it("Topbar renders initials from user display name and breadcrumb", () => {
     render(
       <Topbar

@@ -709,6 +709,169 @@ button, input, select, textarea {
   80% { transform: translateX(3px); }
 }
 
+/* === QUÊN MẬT KHẨU 3 BƯỚC (Q2) === */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 22px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.stepper .st {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+.stepper .st b {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  font-size: 11px;
+  color: var(--ink-2);
+  background: #fff;
+  transition: all 0.25s var(--ease);
+}
+.stepper .st.on {
+  color: var(--ink);
+  font-weight: 600;
+}
+.stepper .st.on b {
+  border-color: var(--teal-strong);
+  background: var(--teal-strong);
+  color: #fff;
+}
+.stepper .st.done b {
+  border-color: var(--teal-strong);
+  color: var(--teal-strong);
+}
+.stepper .bar {
+  flex: 1;
+  height: 2px;
+  background: var(--line);
+  border-radius: 2px;
+  min-width: 16px;
+}
+.stepper .bar.done {
+  background: var(--teal-strong);
+}
+
+/* Độ mạnh mật khẩu (Q2) */
+.meter {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-top: 8px;
+}
+.meter i {
+  height: 4px;
+  border-radius: 4px;
+  background: var(--line);
+  transition: background 0.25s var(--ease);
+}
+.meter[data-level="1"] i:nth-child(-n+1) { background: var(--danger); }
+.meter[data-level="2"] i:nth-child(-n+2) { background: #d97706; }
+.meter[data-level="3"] i:nth-child(-n+3) { background: var(--teal); }
+.meter[data-level="4"] i { background: var(--success); }
+
+.meter-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--ink-2);
+  margin-top: 6px;
+}
+
+.rules {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.rules li::before {
+  content: "○";
+  display: inline-block;
+  width: 16px;
+  color: var(--line);
+}
+.rules li.ok {
+  color: var(--success);
+}
+.rules li.ok::before {
+  content: "✓";
+  color: var(--success);
+  font-weight: 700;
+}
+
+/* Màn kiểm tra email (Q2) */
+.mail-ill {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: var(--soft);
+  color: var(--teal-strong);
+  margin: 0 0 18px;
+}
+.email-chip {
+  display: inline-block;
+  background: var(--soft);
+  border-radius: 8px;
+  padding: 2px 8px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.tips {
+  margin: 16px 0 20px;
+  padding-left: 18px;
+  color: var(--ink-2);
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+.resend {
+  font-size: 13.5px;
+  color: var(--ink-2);
+  margin-top: 14px;
+}
+.resend a,
+.resend button {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--teal-strong);
+  cursor: pointer;
+  text-decoration: underline;
+}
+.resend a[aria-disabled="true"],
+.resend a.is-disabled,
+.resend button[disabled] {
+  color: var(--ink-2);
+  cursor: not-allowed;
+  pointer-events: none;
+  text-decoration: none;
+}
+
+@media (max-width: 520px) {
+  .stepper .st:not(.on) {
+    font-size: 0;
+    gap: 0;
+  }
+  .stepper .st b {
+    font-size: 11px;
+  }
+}
+
 /* === RESPONSIVE: MẪU F CHO < 900px (Kính mờ) === */
 @media (max-width: 900px) {
   body {

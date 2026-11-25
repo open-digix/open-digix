@@ -85,4 +85,64 @@
       input.focus();
     });
   });
+
+  // 5. Độ mạnh mật khẩu và danh sách yêu cầu (cho màn login-update-password)
+  function scorePassword(v) {
+    var r = {
+      len: v.length >= 8,
+      up: /[A-ZÀ-Ỹ]/.test(v),
+      num: /\d/.test(v),
+      sym: /[^\w\sÀ-ỹ]/.test(v)
+    };
+    var n = Object.keys(r).filter(function (k) { return r[k]; }).length;
+    return { r: r, n: v ? Math.max(1, n) : 0 };
+  }
+  var TXT = ['—', 'Yếu', 'Trung bình', 'Khá', 'Mạnh'];
+  var passNew = document.getElementById('password-new');
+  if (passNew) {
+    passNew.addEventListener('input', function () {
+      var s = scorePassword(passNew.value);
+      var m = document.getElementById('meter');
+      if (m) m.dataset.level = s.n;
+      var t = document.getElementById('meter-text');
+      if (t) t.textContent = TXT[s.n];
+      var ruleItems = document.querySelectorAll('#rules li');
+      ruleItems.forEach(function (li) {
+        var req = li.getAttribute('data-r');
+        if (req && s.r[req] !== undefined) {
+          li.classList.toggle('ok', !!s.r[req]);
+        }
+      });
+    });
+  }
+
+  // 6. Đếm ngược gửi lại email (khóa 60 giây) cho màn Kiểm tra email
+  var resendLinks = document.querySelectorAll('.js-resend');
+  if (resendLinks.length) {
+    resendLinks.forEach(function (link) {
+      var left = 60;
+      var originalText = link.textContent.trim() || 'Gửi lại';
+      link.setAttribute('aria-disabled', 'true');
+      link.classList.add('is-disabled');
+      link.textContent = 'Gửi lại sau ' + left + 's';
+
+      link.addEventListener('click', function (e) {
+        if (link.getAttribute('aria-disabled') === 'true') {
+          e.preventDefault();
+        }
+      });
+
+      var timer = setInterval(function () {
+        left -= 1;
+        if (left <= 0) {
+          clearInterval(timer);
+          link.removeAttribute('aria-disabled');
+          link.classList.remove('is-disabled');
+          link.textContent = originalText;
+        } else {
+          link.textContent = 'Gửi lại sau ' + left + 's';
+        }
+      }, 1000);
+    });
+  }
 })();

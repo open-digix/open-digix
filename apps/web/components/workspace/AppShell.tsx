@@ -16,7 +16,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import type { MeMembership, MeUser } from "../../lib/tenant/types";
@@ -37,6 +37,24 @@ export default function AppShell({
   children,
 }: AppShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isPinned, setIsPinned] = useState(false);
+  const [isPeek, setIsPeek] = useState(false);
+  const [tip, setTip] = useState<{ text: string; top: number; left: number } | null>(null);
+  const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      try {
+        const saved = localStorage.getItem("digix_sidebar_pinned");
+        if (saved === "true") {
+          setIsPinned(true);
+        }
+      } catch {
+        // ignore
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -48,12 +66,83 @@ export default function AppShell({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isSidebarOpen]);
 
+  const handleTogglePin = () => {
+    setIsPinned((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("digix_sidebar_pinned", String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+    setIsPeek(false);
+    setTip(null);
+  };
+
+  const handleSidebarMouseEnter = () => {
+    if (isPinned) return;
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = setTimeout(() => {
+      setIsPeek(true);
+      setTip(null);
+    }, 120);
+  };
+
+  const handleSidebarMouseLeave = () => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    if (!isPinned) {
+      setIsPeek(false);
+    }
+    setTip(null);
+  };
+
+  const handleSidebarFocusIn = () => {
+    if (!isPinned) {
+      setIsPeek(true);
+      setTip(null);
+    }
+  };
+
+  const handleSidebarFocusOut = (e: React.FocusEvent<HTMLElement>) => {
+    const sidebarEl = document.getElementById("sidebar");
+    if (sidebarEl && !sidebarEl.contains(e.relatedTarget as Node) && !isPinned) {
+      setIsPeek(false);
+    }
+    setTip(null);
+  };
+
+  const handleShowTip = (text: string, target: HTMLElement) => {
+    if (isPinned || isPeek) return;
+    const r = target.getBoundingClientRect();
+    setTip({
+      text,
+      left: r.right + 10,
+      top: r.top + r.height / 2 - 14,
+    });
+  };
+
+  const handleHideTip = () => {
+    setTip(null);
+  };
+
+  const modeClass = isPinned ? "pinned" : isPeek ? "peek" : "mini";
+
   return (
-    <div className="ws-root app-shell">
+    <div className={`ws-root app-shell ${modeClass}`}>
       <Sidebar
         roles={roles}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
+        isPinned={isPinned}
+        isPeek={isPeek}
+        onTogglePin={handleTogglePin}
+        onMouseEnter={handleSidebarMouseEnter}
+        onMouseLeave={handleSidebarMouseLeave}
+        onFocusIn={handleSidebarFocusIn}
+        onFocusOut={handleSidebarFocusOut}
+        onShowTip={handleShowTip}
+        onHideTip={handleHideTip}
       />
 
       <div
@@ -76,6 +165,17 @@ export default function AppShell({
           {children}
         </main>
       </div>
+
+      {tip && (
+        <div
+          className="tip on"
+          id="tip"
+          role="tooltip"
+          style={{ left: `${tip.left}px`, top: `${tip.top}px` }}
+        >
+          {tip.text}
+        </div>
+      )}
 
       <div id="modal-root" />
       <div id="toast-root" role="status" aria-live="polite" />
