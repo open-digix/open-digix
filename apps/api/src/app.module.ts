@@ -9,6 +9,7 @@ import { AppService } from './app.service';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
 import { IdentityModule } from './identity/identity.module';
+import { AppPermissionGuard } from './identity/app-permission.guard';
 import { RolesGuard } from './identity/roles.guard';
 import { TenantContextGuard } from './identity/tenant-context.guard';
 import { OnboardingModule } from './onboarding/onboarding.module';
@@ -32,6 +33,7 @@ import { WorkflowModule } from './workflow/workflow.module';
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: TenantContextGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: AppPermissionGuard },
   ],
 })
 export class AppModule {}
