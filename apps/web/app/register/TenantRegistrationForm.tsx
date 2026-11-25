@@ -624,7 +624,28 @@ export default function TenantRegistrationForm({ onBackToChoice }: TenantRegistr
                         if (errors.terms) setErrors((p) => ({ ...p, terms: undefined }));
                       }}
                     />
-                    <span>Tôi đồng ý với điều khoản sử dụng và chính sách quyền riêng tư của DigiX</span>
+                    <span>
+                      Tôi đồng ý với{" "}
+                      <Link
+                        href="/dieu-khoan#dieu-khoan"
+                        target="_blank"
+                        rel="noopener"
+                        className="link"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Điều khoản sử dụng
+                      </Link>{" "}
+                      và{" "}
+                      <Link
+                        href="/dieu-khoan#quyen-rieng-tu"
+                        target="_blank"
+                        rel="noopener"
+                        className="link"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Chính sách quyền riêng tư
+                      </Link>
+                    </span>
                   </label>
                   {errors.terms && (
                     <p className="field-error" id="terms-err" aria-live="polite" style={{ marginTop: -12 }}>
