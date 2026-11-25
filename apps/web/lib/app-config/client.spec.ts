@@ -132,7 +132,10 @@ describe("app-config client", () => {
           lockVersion: 999, // wrong lockVersion
           features: [{ id: "erp.materials", version: 1 }],
         }),
-      ).rejects.toThrow(/phiên khác/);
+      ).rejects.toMatchObject({
+        status: 409,
+        code: "VERSION_CONFLICT",
+      });
     });
 
     it("validates draft: returns EMPTY_FEATURES when empty", async () => {

@@ -138,10 +138,11 @@ describe("AppSummaryView Component (v2.5 draft summary)", () => {
     expect(screen.getByText(/Thiếu chức năng phụ thuộc erp.materials/i)).toBeInTheDocument();
   });
 
-  it("handles 409 CONCURRENCY_CONFLICT when saving features", async () => {
+  it("handles 409 VERSION_CONFLICT when saving features", async () => {
     vi.mocked(actions.patchDraftFeaturesAction).mockResolvedValueOnce({
       ok: false,
-      code: "CONCURRENCY_CONFLICT",
+      status: 409,
+      code: "VERSION_CONFLICT",
       error: "Bản nháp đã thay đổi, vui lòng tải lại.",
     });
 
@@ -169,5 +170,34 @@ describe("AppSummaryView Component (v2.5 draft summary)", () => {
     expect(reloadBtn).toBeInTheDocument();
     fireEvent.click(reloadBtn);
     expect(mockRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("handles unknown custom 409 status code when saving features", async () => {
+    vi.mocked(actions.patchDraftFeaturesAction).mockResolvedValueOnce({
+      ok: false,
+      status: 409,
+      code: "UNKNOWN_CUSTOM_409",
+      error: "Bản nháp đã thay đổi, vui lòng tải lại.",
+    });
+
+    render(
+      <AppSummaryView
+        initialDraft={sampleDraft}
+        initialLockVersion={1}
+        catalogFeatures={MOCK_CATALOG_FEATURES}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Sửa chức năng" }));
+
+    const saveBtn = screen.getByRole("button", { name: "Lưu thay đổi" });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Bản nháp đã thay đổi, vui lòng tải lại/i)).toBeInTheDocument();
+    });
+
+    const reloadBtn = screen.getByRole("button", { name: "Tải lại trang ngay" });
+    expect(reloadBtn).toBeInTheDocument();
   });
 });

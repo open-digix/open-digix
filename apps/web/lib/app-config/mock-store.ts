@@ -244,7 +244,7 @@ export function patchMockDraft(
       "Bản nháp đã được chỉnh sửa bởi phiên khác. Vui lòng tải lại trang.",
     );
     (error as unknown as { status: number; code: string }).status = 409;
-    (error as unknown as { code: string }).code = "CONCURRENCY_CONFLICT";
+    (error as unknown as { code: string }).code = "VERSION_CONFLICT";
     throw error;
   }
 

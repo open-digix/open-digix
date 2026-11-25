@@ -147,8 +147,8 @@ export default function BuilderAppList({
                   </div>
                   <span className="status warning">
                     {app.status === "published"
-                      ? `Đã xuất bản v${app.version}`
-                      : `Bản nháp v${app.version}`}
+                      ? `Đã xuất bản · phiên bản ${app.version}`
+                      : `Nháp · phiên bản ${app.version}`}
                   </span>
                 </div>
                 <h3>{app.name}</h3>

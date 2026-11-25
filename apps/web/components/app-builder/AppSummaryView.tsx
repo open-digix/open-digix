@@ -100,7 +100,12 @@ export default function AppSummaryView({
     setIsSaving(false);
 
     if (!res.ok) {
-      if (res.code === "CONCURRENCY_CONFLICT") {
+      const isConflictError =
+        res.status === 409 ||
+        res.code === "VERSION_CONFLICT" ||
+        res.code === "CONCURRENCY_CONFLICT";
+
+      if (isConflictError) {
         setIsConflict(true);
       }
       setSaveError(res.error || "Không thể lưu cập nhật chức năng.");

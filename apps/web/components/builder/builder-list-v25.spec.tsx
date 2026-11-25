@@ -61,6 +61,7 @@ describe("BuilderAppList Component (v2.5 & legacy v1)", () => {
 
     expect(screen.getByText("ERP Vật tư v2.5")).toBeInTheDocument();
     expect(screen.getByText("CRM Khách hàng v2.5")).toBeInTheDocument();
+    expect(screen.getAllByText("Nháp · phiên bản 1")).toHaveLength(2);
     expect(screen.getByText(/MẪU THỬ/)).toBeInTheDocument();
   });
 

@@ -36,6 +36,7 @@ export interface CreateAppActionResult {
   ok: boolean;
   appId?: string;
   patchFailed?: boolean;
+  status?: number;
   code?: string;
   error?: string;
   message?: string;
@@ -81,9 +82,15 @@ export async function createAppWithFeaturesAction(input: {
       patchFailed: false,
     };
   } catch (err: unknown) {
-    const errorObj = err as { code?: string; message?: string };
+    const errorObj = err as {
+      status?: number;
+      code?: string;
+      message?: string;
+      kind?: string;
+    };
     return {
       ok: false,
+      status: errorObj.status,
       code: errorObj.code ?? "CREATE_FAILED",
       error: errorObj.message ?? "Không thể tạo ứng dụng.",
     };
@@ -97,6 +104,7 @@ export async function patchDraftFeaturesAction(
 ): Promise<{
   ok: boolean;
   newLockVersion?: number;
+  status?: number;
   code?: string;
   error?: string;
 }> {
@@ -110,14 +118,26 @@ export async function patchDraftFeaturesAction(
       newLockVersion: updated.lockVersion,
     };
   } catch (err: unknown) {
-    const errorObj = err as { code?: string; message?: string };
+    const errorObj = err as {
+      status?: number;
+      code?: string;
+      message?: string;
+      kind?: string;
+    };
+    const status = errorObj.status;
+    const isConflict =
+      status === 409 ||
+      errorObj.kind === "conflict" ||
+      errorObj.code === "VERSION_CONFLICT" ||
+      errorObj.code === "CONCURRENCY_CONFLICT";
+
     return {
       ok: false,
-      code: errorObj.code ?? "PATCH_FAILED",
-      error:
-        errorObj.code === "CONCURRENCY_CONFLICT"
-          ? "Bản nháp đã thay đổi, vui lòng tải lại."
-          : (errorObj.message ?? "Không thể cập nhật chức năng."),
+      status,
+      code: errorObj.code ?? (isConflict ? "VERSION_CONFLICT" : "PATCH_FAILED"),
+      error: isConflict
+        ? "Bản nháp đã thay đổi, vui lòng tải lại."
+        : (errorObj.message ?? "Không thể cập nhật chức năng."),
     };
   }
 }
