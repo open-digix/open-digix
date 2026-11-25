@@ -134,8 +134,51 @@ describe("AppSummaryView Component (v2.5 draft summary)", () => {
     });
 
     expect(screen.getByText(/Phát hiện vấn đề cần giải quyết/i)).toBeInTheDocument();
-    expect(screen.getByText(/\/features\/1:/i)).toBeInTheDocument();
+    expect(screen.getByText(/Chức năng Quản lý kho & Nhập hàng/i)).toBeInTheDocument();
+    expect(screen.getByText(/\(MISSING_DEPENDENCY\)/i)).toBeInTheDocument();
     expect(screen.getByText(/Thiếu chức năng phụ thuộc erp.materials/i)).toBeInTheDocument();
+  });
+
+  it("displays success message when validation passes", async () => {
+    vi.mocked(actions.validateDraftAction).mockResolvedValueOnce({
+      ok: true,
+      valid: true,
+      issues: [],
+    });
+
+    render(
+      <AppSummaryView
+        initialDraft={sampleDraft}
+        initialLockVersion={1}
+        catalogFeatures={MOCK_CATALOG_FEATURES}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Kiểm tra bản nháp" }));
+
+    await waitFor(() => {
+      expect(actions.validateDraftAction).toHaveBeenCalledWith("app-123");
+    });
+
+    expect(
+      screen.getByText(/Chức năng hợp lệ. Cần thiết kế trang giao diện trước khi xuất bản./i),
+    ).toBeInTheDocument();
+  });
+
+  it("closes edit modal on Escape key press", () => {
+    render(
+      <AppSummaryView
+        initialDraft={sampleDraft}
+        initialLockVersion={1}
+        catalogFeatures={MOCK_CATALOG_FEATURES}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Sửa chức năng" }));
+    expect(screen.getByRole("heading", { name: "Chỉnh sửa chức năng ứng dụng" })).toBeInTheDocument();
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByRole("heading", { name: "Chỉnh sửa chức năng ứng dụng" })).not.toBeInTheDocument();
   });
 
   it("handles 409 VERSION_CONFLICT when saving features", async () => {

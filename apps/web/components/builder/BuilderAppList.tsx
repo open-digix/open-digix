@@ -155,7 +155,7 @@ export default function BuilderAppList({
                 <p>
                   Mã: <code>{app.appKey}</code>
                 </p>
-                <div style={{ fontSize: 13, color: "var(--ws-text-secondary)", marginBottom: 12 }}>
+                <div style={{ fontSize: 13, color: "var(--ws-muted)", marginBottom: 12 }}>
                   <span>Lối vào: <strong>{spLabel}</strong></span>
                   {app.featureCount !== undefined && (
                     <span style={{ marginLeft: 12 }}>
@@ -164,7 +164,7 @@ export default function BuilderAppList({
                   )}
                 </div>
                 <div className="app-card-foot">
-                  <span style={{ fontSize: 12, color: "var(--ws-text-muted)" }}>
+                  <span style={{ fontSize: 12, color: "var(--ws-muted)" }}>
                     Cập nhật: {new Date(app.updatedAt).toLocaleDateString("vi-VN")}
                   </span>
                   <Link
@@ -189,14 +189,14 @@ export default function BuilderAppList({
           style={{
             marginTop: 40,
             paddingTop: 24,
-            borderTop: "1px dashed var(--ws-border)",
+            borderTop: "1px dashed var(--ws-line)",
           }}
         >
           <div style={{ marginBottom: 16 }}>
             <h2 id="local-v1-heading" style={{ fontSize: 18, margin: "0 0 4px" }}>
               Quy trình v1 (lưu trên trình duyệt này)
             </h2>
-            <p style={{ fontSize: 13, color: "var(--ws-text-muted)", margin: 0 }}>
+            <p style={{ fontSize: 13, color: "var(--ws-muted)", margin: 0 }}>
               Các bản nháp quy trình thiết kế theo kiến trúc v1.0 cũ, được lưu trong bộ nhớ trình duyệt (chỉ đọc). Bạn có thể tiếp tục mở để xem hoặc xuất khẩu.
             </p>
           </div>
@@ -209,10 +209,10 @@ export default function BuilderAppList({
                 style={{ opacity: 0.9, borderStyle: "dashed" }}
               >
                 <div className="app-card-top">
-                  <div className="app-icon" style={{ background: "var(--ws-bg-subtle)" }}>
+                  <div className="app-icon" style={{ background: "var(--ws-canvas)" }}>
                     {app.name.slice(0, 2).toUpperCase()}
                   </div>
-                  <span className="badge" style={{ fontSize: 11, background: "var(--ws-border)" }}>
+                  <span className="badge" style={{ fontSize: 11, background: "var(--ws-line)" }}>
                     Quy trình v1
                   </span>
                 </div>
@@ -221,7 +221,7 @@ export default function BuilderAppList({
                   Mã: <code>{app.appKey}</code>
                 </p>
                 <div className="app-card-foot">
-                  <span style={{ fontSize: 12, color: "var(--ws-text-muted)" }}>
+                  <span style={{ fontSize: 12, color: "var(--ws-muted)" }}>
                     Tạo lúc: {app.createdAt}
                   </span>
                   <Link

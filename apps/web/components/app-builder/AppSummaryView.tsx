@@ -21,6 +21,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type {
   AppDraftDefinitionV25,
+  AppDraftFeature,
   CatalogFeature,
   FeatureId,
   ValidateDraftIssue,
@@ -33,6 +34,23 @@ import {
   patchDraftFeaturesAction,
   validateDraftAction,
 } from "../../lib/app-config/actions";
+import ConfirmDialog from "../common/ConfirmDialog";
+
+function formatIssuePath(path: string, features: AppDraftFeature[]): string {
+  if (path === "/features") {
+    return "Danh sách chức năng";
+  }
+  const match = path.match(/^\/features\/(\d+)$/);
+  if (match) {
+    const idx = parseInt(match[1], 10);
+    const featureId = features[idx]?.id;
+    if (featureId) {
+      return `Chức năng ${getFeatureLabel(featureId)}`;
+    }
+    return `Chức năng #${idx + 1}`;
+  }
+  return path;
+}
 
 interface AppSummaryViewProps {
   initialDraft: AppDraftDefinitionV25;
@@ -101,6 +119,7 @@ export default function AppSummaryView({
 
     if (!res.ok) {
       const isConflictError =
+        res.kind === "conflict" ||
         res.status === 409 ||
         res.code === "VERSION_CONFLICT" ||
         res.code === "CONCURRENCY_CONFLICT";
@@ -168,12 +187,12 @@ export default function AppSummaryView({
         <div>
           <div className="eyebrow" style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <span>QUẢN TRỊ BẢN NHÁP v2.5</span>
-            <span className="badge" style={{ fontSize: 11, background: "var(--ws-primary-light)", color: "var(--ws-primary)" }}>
+            <span className="badge" style={{ fontSize: 11, background: "var(--ws-soft)", color: "var(--ws-teal)" }}>
               Khóa: v{lockVersion}
             </span>
           </div>
           <h1 style={{ margin: "4px 0" }}>{draft.name}</h1>
-          <p style={{ color: "var(--ws-text-secondary)", margin: 0 }}>
+          <p style={{ color: "var(--ws-muted)", margin: 0 }}>
             Lối vào khởi tạo: <strong>{startingPointLabel}</strong> · Phiên bản: <strong>v{draft.version}</strong>
           </p>
         </div>
@@ -209,15 +228,15 @@ export default function AppSummaryView({
             padding: 20,
             marginBottom: 24,
             borderRadius: 8,
-            border: validationResults.valid ? "1px solid var(--ws-success)" : "1px solid var(--ws-danger)",
-            background: validationResults.valid ? "var(--ws-success-light, #f0fdf4)" : "var(--ws-danger-light, #fef2f2)",
+            border: validationResults.valid ? "1px solid var(--ws-teal)" : "1px solid var(--ws-danger)",
+            background: validationResults.valid ? "var(--ws-soft, #f0fdf4)" : "rgba(220, 38, 38, 0.08)",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
             <span style={{ fontSize: 20 }}>{validationResults.valid ? "✅" : "❌"}</span>
             <h3 style={{ margin: 0, fontSize: 16 }}>
               {validationResults.valid
-                ? "Bản nháp hợp lệ và sẵn sàng xuất bản"
+                ? "Chức năng hợp lệ. Cần thiết kế trang giao diện trước khi xuất bản."
                 : "Phát hiện vấn đề cần giải quyết"}
             </h3>
           </div>
@@ -226,8 +245,10 @@ export default function AppSummaryView({
             <ul style={{ margin: "12px 0 0", paddingLeft: 20, color: "var(--ws-danger)" }}>
               {validationResults.issues.map((issue, idx) => (
                 <li key={idx} style={{ marginBottom: 6 }}>
-                  <strong>{issue.path}:</strong> {issue.message}{" "}
-                  <code style={{ fontSize: 12, opacity: 0.8 }}>({issue.code})</code>
+                  <strong>{formatIssuePath(issue.path, draft.features)}:</strong> {issue.message}{" "}
+                  <small style={{ fontSize: 11, opacity: 0.75 }} title={`Mã lỗi: ${issue.code}`}>
+                    ({issue.code})
+                  </small>
                 </li>
               ))}
             </ul>
@@ -251,7 +272,7 @@ export default function AppSummaryView({
         </div>
 
         {selectedIds.length === 0 ? (
-          <p style={{ color: "var(--ws-text-muted)", fontStyle: "italic", margin: "12px 0" }}>
+          <p style={{ color: "var(--ws-muted)", fontStyle: "italic", margin: "12px 0" }}>
             Chưa có chức năng nào được chọn. Nhấp vào nút &quot;Sửa chức năng&quot; để thêm chức năng nghiệp vụ.
           </p>
         ) : (
@@ -263,22 +284,22 @@ export default function AppSummaryView({
                   key={featId}
                   style={{
                     padding: 16,
-                    border: "1px solid var(--ws-border)",
+                    border: "1px solid var(--ws-line)",
                     borderRadius: 6,
-                    background: "var(--ws-panel-bg)",
+                    background: "var(--ws-surface)",
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
                     <span style={{ fontWeight: 600, fontSize: 16 }}>
                       {feat?.label || getFeatureLabel(featId)}
                     </span>
-                    <code style={{ fontSize: 12, color: "var(--ws-text-muted)" }}>{featId}</code>
+                    <code style={{ fontSize: 12, color: "var(--ws-muted)" }}>{featId}</code>
                   </div>
-                  <p style={{ margin: "0 0 8px", fontSize: 14, color: "var(--ws-text-secondary)" }}>
+                  <p style={{ margin: "0 0 8px", fontSize: 14, color: "var(--ws-muted)" }}>
                     {feat?.description || getFeatureDescription(featId)}
                   </p>
                   {feat && (
-                    <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12, color: "var(--ws-text-muted)" }}>
+                    <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12, color: "var(--ws-muted)" }}>
                       <span>📁 <strong>Tài nguyên:</strong> {feat.resources.join(", ")}</span>
                       <span>⚡ <strong>Hành động:</strong> {feat.actions.join(", ")}</span>
                       {feat.dependencies.length > 0 && (
@@ -294,155 +315,116 @@ export default function AppSummaryView({
       </section>
 
       {/* Thông tin kỹ thuật */}
-      <section className="panel" style={{ padding: 20, borderRadius: 8, background: "var(--ws-panel-bg)" }}>
-        <h3 style={{ margin: "0 0 10px", fontSize: 14, color: "var(--ws-text-muted)" }}>THÔNG TIN KỸ THUẬT BẢN NHÁP</h3>
+      <section className="panel" style={{ padding: 20, borderRadius: 8, background: "var(--ws-surface)" }}>
+        <h3 style={{ margin: "0 0 10px", fontSize: 14, color: "var(--ws-muted)" }}>THÔNG TIN KỸ THUẬT BẢN NHÁP</h3>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12, fontSize: 13 }}>
           <div>
-            <span style={{ color: "var(--ws-text-secondary)" }}>Mã ứng dụng (ID): </span>
+            <span style={{ color: "var(--ws-muted)" }}>Mã ứng dụng (ID): </span>
             <code>{draft.appId}</code>
           </div>
           <div>
-            <span style={{ color: "var(--ws-text-secondary)" }}>Phiên bản Schema: </span>
+            <span style={{ color: "var(--ws-muted)" }}>Phiên bản Schema: </span>
             <code>{draft.schemaVersion}</code>
           </div>
           <div>
-            <span style={{ color: "var(--ws-text-secondary)" }}>Phiên bản khóa: </span>
+            <span style={{ color: "var(--ws-muted)" }}>Phiên bản khóa: </span>
             <code>v{lockVersion}</code>
           </div>
         </div>
       </section>
 
       {/* MODAL SỬA CHỨC NĂNG */}
-      {isEditingFeatures && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="edit-features-modal-title"
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-            padding: 16,
-          }}
-        >
-          <div
-            className="panel"
-            style={{
-              maxWidth: 640,
-              width: "100%",
-              maxHeight: "90vh",
-              overflowY: "auto",
-              padding: 24,
-              borderRadius: 8,
-              background: "var(--ws-panel-bg)",
-              boxShadow: "0 8px 30px rgba(0,0,0,0.25)",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <h2 id="edit-features-modal-title" style={{ margin: 0, fontSize: 18 }}>
-                Chỉnh sửa chức năng ứng dụng
-              </h2>
-              <button
-                type="button"
-                className="button"
-                style={{ background: "transparent", border: "none", fontSize: 18, cursor: "pointer" }}
-                onClick={() => setIsEditingFeatures(false)}
-                disabled={isSaving}
-              >
-                ✕
-              </button>
-            </div>
-
-            {saveError && (
-              <div
-                className="info-banner"
-                role="alert"
-                style={{ borderColor: "var(--ws-danger)", marginBottom: 16 }}
-              >
-                <div style={{ color: "var(--ws-danger)" }}>
-                  <strong>Lỗi:</strong> {saveError}
-                </div>
-                {isConflict && (
-                  <button
-                    type="button"
-                    className="button secondary"
-                    style={{ marginTop: 8 }}
-                    onClick={() => router.refresh()}
-                  >
-                    Tải lại trang ngay
-                  </button>
-                )}
+      <ConfirmDialog
+        isOpen={isEditingFeatures}
+        onClose={() => setIsEditingFeatures(false)}
+        title="Chỉnh sửa chức năng ứng dụng"
+        showCloseButton={!isSaving}
+        maxWidth={640}
+      >
+        <div>
+          {saveError && (
+            <div
+              className="info-banner"
+              role="alert"
+              style={{ borderColor: "var(--ws-danger)", marginBottom: 16 }}
+            >
+              <div style={{ color: "var(--ws-danger)" }}>
+                <strong>Lỗi:</strong> {saveError}
               </div>
-            )}
+              {isConflict && (
+                <button
+                  type="button"
+                  className="button secondary"
+                  style={{ marginTop: 8 }}
+                  onClick={() => router.refresh()}
+                >
+                  Tải lại trang ngay
+                </button>
+              )}
+            </div>
+          )}
 
-            <div style={{ display: "grid", gap: 12, marginBottom: 24 }}>
-              {catalogFeatures.map((feat) => {
-                const isSelected = editingSelectedFeatures.includes(feat.id);
-                const isSupported = feat.status === "supported";
+          <div style={{ display: "grid", gap: 12, marginBottom: 24, maxHeight: "55vh", overflowY: "auto" }}>
+            {catalogFeatures.map((feat) => {
+              const isSelected = editingSelectedFeatures.includes(feat.id);
+              const isSupported = feat.status === "supported";
 
-                return (
-                  <label
-                    key={feat.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: 12,
-                      padding: 12,
-                      border: "1px solid var(--ws-border)",
-                      borderRadius: 6,
-                      background: isSelected ? "var(--ws-primary-light, #f0fdfa)" : "var(--ws-panel-bg)",
-                      cursor: isSupported ? "pointer" : "not-allowed",
-                      opacity: isSupported ? 1 : 0.6,
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      disabled={!isSupported}
-                      onChange={() => handleToggleEditFeature(feat.id)}
-                      style={{ marginTop: 4, width: 16, height: 16 }}
-                    />
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: 15 }}>
-                        {feat.label || getFeatureLabel(feat.id)}
-                      </div>
-                      <div style={{ fontSize: 13, color: "var(--ws-text-secondary)" }}>
-                        {feat.description || getFeatureDescription(feat.id)}
-                      </div>
+              return (
+                <label
+                  key={feat.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 12,
+                    padding: 12,
+                    border: "1px solid var(--ws-line)",
+                    borderRadius: 6,
+                    background: isSelected ? "var(--ws-soft, #f0fdfa)" : "var(--ws-surface)",
+                    cursor: isSupported ? "pointer" : "not-allowed",
+                    opacity: isSupported ? 1 : 0.6,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    disabled={!isSupported}
+                    onChange={() => handleToggleEditFeature(feat.id)}
+                    style={{ marginTop: 4, width: 16, height: 16 }}
+                  />
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 15 }}>
+                      {feat.label || getFeatureLabel(feat.id)}
                     </div>
-                  </label>
-                );
-              })}
-            </div>
+                    <div style={{ fontSize: 13, color: "var(--ws-muted)" }}>
+                      {feat.description || getFeatureDescription(feat.id)}
+                    </div>
+                  </div>
+                </label>
+              );
+            })}
+          </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}>
-              <button
-                type="button"
-                className="button secondary"
-                onClick={() => setIsEditingFeatures(false)}
-                disabled={isSaving}
-              >
-                Hủy
-              </button>
-              <button
-                type="button"
-                className="button primary"
-                onClick={handleSaveFeatures}
-                disabled={isSaving}
-              >
-                {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
-              </button>
-            </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => setIsEditingFeatures(false)}
+              disabled={isSaving}
+              data-autofocus="true"
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              className="button primary"
+              onClick={handleSaveFeatures}
+              disabled={isSaving}
+            >
+              {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
+            </button>
           </div>
         </div>
-      )}
+      </ConfirmDialog>
     </div>
   );
 }

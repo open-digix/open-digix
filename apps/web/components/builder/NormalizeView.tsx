@@ -209,7 +209,7 @@ export default function NormalizeView({
                       transition: "all 0.2s ease",
                       border: isHighlighted
                         ? "2px solid var(--ws-teal, #1c7c7d)"
-                        : "1px solid var(--ws-border, #d9e2ec)",
+                        : "1px solid var(--ws-line, #d9e2ec)",
                       backgroundColor: isHighlighted
                         ? "var(--ws-soft, #f0fdfa)"
                         : undefined,

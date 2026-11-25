@@ -36,6 +36,8 @@ import {
   getAffectedDependents,
 } from "../../lib/app-config/dependencies";
 import { createAppWithFeaturesAction } from "../../lib/app-config/actions";
+import { useUnsavedChangesGuard } from "../../lib/tenant/useUnsavedChangesGuard";
+import ConfirmDialog from "../common/ConfirmDialog";
 
 interface NewAppWizardProps {
   initialFeatures: CatalogFeature[];
@@ -101,6 +103,16 @@ export default function NewAppWizard({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [appKeyConflict, setAppKeyConflict] = useState<boolean>(false);
   const [patchWarning, setPatchWarning] = useState<string | null>(null);
+
+  // Guard against accidental tenant switch or page navigation when wizard has selections
+  const hasUnsavedSelections =
+    !isSubmitting &&
+    (selectedFeatures.length > 0 || appName.trim().length > 0 || isDirty);
+  useUnsavedChangesGuard({
+    isDirty: hasUnsavedSelections,
+    message:
+      "Bạn có thay đổi chưa lưu trong ứng dụng đang tạo. Bạn có chắc muốn rời đi không?",
+  });
 
   // Group features by domain
   const domains = Array.from(
@@ -325,8 +337,8 @@ export default function NewAppWizard({
             </div>
           </header>
 
-          <div className="panel" style={{ padding: 16, marginBottom: 24, background: "var(--ws-panel-bg)" }}>
-            <p style={{ margin: 0, fontSize: 14, color: "var(--ws-text-secondary)" }}>
+          <div className="panel" style={{ padding: 16, marginBottom: 24, background: "var(--ws-surface)" }}>
+            <p style={{ margin: 0, fontSize: 14, color: "var(--ws-muted)" }}>
               💡 <strong>Lưu ý:</strong> Các lối vào dưới đây là <strong>gợi ý ban đầu</strong> giúp bạn thiết lập nhanh danh sách chức năng cần dùng. Lối vào này <em>không cố định hay khóa loại ứng dụng</em>, bạn hoàn toàn có thể tự do thêm hoặc bỏ bớt bất kỳ chức năng nào ở bước tiếp theo.
             </p>
           </div>
@@ -346,8 +358,8 @@ export default function NewAppWizard({
               style={{
                 padding: 24,
                 cursor: "pointer",
-                border: startingPoint === "erp" ? "2px solid var(--ws-primary)" : "1px solid var(--ws-border)",
-                boxShadow: startingPoint === "erp" ? "0 0 0 1px var(--ws-primary)" : undefined,
+                border: startingPoint === "erp" ? "2px solid var(--ws-teal)" : "1px solid var(--ws-line)",
+                boxShadow: startingPoint === "erp" ? "0 0 0 1px var(--ws-teal)" : undefined,
                 borderRadius: 8,
               }}
               tabIndex={0}
@@ -365,10 +377,10 @@ export default function NewAppWizard({
                 <span style={{ fontSize: 24 }}>📦</span>
                 <h3 style={{ margin: 0, fontSize: 18 }}>Bắt đầu với ERP</h3>
               </div>
-              <p style={{ fontSize: 14, color: "var(--ws-text-secondary)", marginBottom: 16 }}>
+              <p style={{ fontSize: 14, color: "var(--ws-muted)", marginBottom: 16 }}>
                 Gợi ý sẵn bộ 3 chức năng quản lý nguồn lực cơ bản: Vật tư, Yêu cầu mua hàng và Quản lý kho.
               </p>
-              <ul style={{ fontSize: 13, paddingLeft: 18, color: "var(--ws-text-muted)" }}>
+              <ul style={{ fontSize: 13, paddingLeft: 18, color: "var(--ws-muted)" }}>
                 <li>Quản lý danh mục vật tư</li>
                 <li>Đề xuất & duyệt mua hàng</li>
                 <li>Phiếu nhập kho & tồn kho</li>
@@ -386,8 +398,8 @@ export default function NewAppWizard({
               style={{
                 padding: 24,
                 cursor: "pointer",
-                border: startingPoint === "crm" ? "2px solid var(--ws-primary)" : "1px solid var(--ws-border)",
-                boxShadow: startingPoint === "crm" ? "0 0 0 1px var(--ws-primary)" : undefined,
+                border: startingPoint === "crm" ? "2px solid var(--ws-teal)" : "1px solid var(--ws-line)",
+                boxShadow: startingPoint === "crm" ? "0 0 0 1px var(--ws-teal)" : undefined,
                 borderRadius: 8,
               }}
               tabIndex={0}
@@ -405,10 +417,10 @@ export default function NewAppWizard({
                 <span style={{ fontSize: 24 }}>🤝</span>
                 <h3 style={{ margin: 0, fontSize: 18 }}>Bắt đầu với CRM</h3>
               </div>
-              <p style={{ fontSize: 14, color: "var(--ws-text-secondary)", marginBottom: 16 }}>
+              <p style={{ fontSize: 14, color: "var(--ws-muted)", marginBottom: 16 }}>
                 Gợi ý sẵn bộ 2 chức năng quản lý quan hệ khách hàng và quy trình cơ hội bán hàng.
               </p>
-              <ul style={{ fontSize: 13, paddingLeft: 18, color: "var(--ws-text-muted)" }}>
+              <ul style={{ fontSize: 13, paddingLeft: 18, color: "var(--ws-muted)" }}>
                 <li>Quản lý khách hàng & liên hệ</li>
                 <li>Theo dõi cơ hội & giai đoạn bán</li>
               </ul>
@@ -425,8 +437,8 @@ export default function NewAppWizard({
               style={{
                 padding: 24,
                 cursor: "pointer",
-                border: startingPoint === "blank" ? "2px solid var(--ws-primary)" : "1px solid var(--ws-border)",
-                boxShadow: startingPoint === "blank" ? "0 0 0 1px var(--ws-primary)" : undefined,
+                border: startingPoint === "blank" ? "2px solid var(--ws-teal)" : "1px solid var(--ws-line)",
+                boxShadow: startingPoint === "blank" ? "0 0 0 1px var(--ws-teal)" : undefined,
                 borderRadius: 8,
               }}
               tabIndex={0}
@@ -444,10 +456,10 @@ export default function NewAppWizard({
                 <span style={{ fontSize: 24 }}>✨</span>
                 <h3 style={{ margin: 0, fontSize: 18 }}>Tạo từ trống</h3>
               </div>
-              <p style={{ fontSize: 14, color: "var(--ws-text-secondary)", marginBottom: 16 }}>
+              <p style={{ fontSize: 14, color: "var(--ws-muted)", marginBottom: 16 }}>
                 Không chọn sẵn chức năng nào. Bạn tự do chọn chính xác các mô-đun phù hợp với nhu cầu.
               </p>
-              <ul style={{ fontSize: 13, paddingLeft: 18, color: "var(--ws-text-muted)" }}>
+              <ul style={{ fontSize: 13, paddingLeft: 18, color: "var(--ws-muted)" }}>
                 <li>Danh sách chức năng hoàn toàn rỗng</li>
                 <li>Tự chọn chức năng và kiểm tra phụ thuộc</li>
               </ul>
@@ -498,7 +510,7 @@ export default function NewAppWizard({
 
             return (
               <div key={dom} style={{ marginBottom: 32 }}>
-                <h3 style={{ fontSize: 16, borderBottom: "1px solid var(--ws-border)", paddingBottom: 8, marginBottom: 16 }}>
+                <h3 style={{ fontSize: 16, borderBottom: "1px solid var(--ws-line)", paddingBottom: 8, marginBottom: 16 }}>
                   {getDomainLabel(dom)}
                 </h3>
 
@@ -514,8 +526,8 @@ export default function NewAppWizard({
                         style={{
                           padding: 16,
                           borderRadius: 8,
-                          border: isSelected ? "2px solid var(--ws-primary)" : "1px solid var(--ws-border)",
-                          background: isSupported ? "var(--ws-panel-bg)" : "var(--ws-bg-subtle)",
+                          border: isSelected ? "2px solid var(--ws-teal)" : "1px solid var(--ws-line)",
+                          background: isSupported ? "var(--ws-surface)" : "var(--ws-canvas)",
                           opacity: isSupported ? 1 : 0.6,
                         }}
                       >
@@ -540,7 +552,7 @@ export default function NewAppWizard({
                               >
                                 {feat.label || getFeatureLabel(feat.id)}
                               </label>
-                              <code style={{ fontSize: 12, color: "var(--ws-text-muted)" }}>{feat.id}</code>
+                              <code style={{ fontSize: 12, color: "var(--ws-muted)" }}>{feat.id}</code>
                               {!isSupported && (
                                 <span className="badge warning" style={{ fontSize: 11 }}>
                                   {feat.status}
@@ -548,11 +560,11 @@ export default function NewAppWizard({
                               )}
                             </div>
 
-                            <p style={{ margin: "4px 0 10px", fontSize: 14, color: "var(--ws-text-secondary)" }}>
+                            <p style={{ margin: "4px 0 10px", fontSize: 14, color: "var(--ws-muted)" }}>
                               {feat.description || getFeatureDescription(feat.id)}
                             </p>
 
-                            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 12, color: "var(--ws-text-muted)" }}>
+                            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 12, color: "var(--ws-muted)" }}>
                               <span>
                                 📁 <strong>Tài nguyên:</strong> {feat.resources.join(", ")}
                               </span>
@@ -562,7 +574,7 @@ export default function NewAppWizard({
                               {feat.dependencies.length > 0 && (
                                 <span>
                                   🔗 <strong>Phụ thuộc:</strong>{" "}
-                                  <span style={{ color: "var(--ws-primary)" }}>
+                                  <span style={{ color: "var(--ws-teal)" }}>
                                     {feat.dependencies.map((d) => getFeatureLabel(d)).join(", ")}
                                   </span>
                                 </span>
@@ -613,7 +625,7 @@ export default function NewAppWizard({
             <h3 style={{ margin: "0 0 10px", fontSize: 15 }}>Tóm tắt lựa chọn:</h3>
             <div style={{ display: "flex", gap: 20, flexWrap: "wrap", fontSize: 14, marginBottom: 12 }}>
               <div>
-                <span style={{ color: "var(--ws-text-secondary)" }}>Lối vào: </span>
+                <span style={{ color: "var(--ws-muted)" }}>Lối vào: </span>
                 <strong>
                   {startingPoint === "erp"
                     ? "Bắt đầu với ERP"
@@ -623,7 +635,7 @@ export default function NewAppWizard({
                 </strong>
               </div>
               <div>
-                <span style={{ color: "var(--ws-text-secondary)" }}>Số chức năng đã chọn: </span>
+                <span style={{ color: "var(--ws-muted)" }}>Số chức năng đã chọn: </span>
                 <strong>{selectedFeatures.length} chức năng</strong>
               </div>
             </div>
@@ -634,7 +646,7 @@ export default function NewAppWizard({
                   <span
                     key={id}
                     className="badge"
-                    style={{ background: "var(--ws-border)", fontSize: 12, padding: "4px 8px" }}
+                    style={{ background: "var(--ws-soft)", color: "var(--ws-ink)", fontSize: 12, padding: "4px 8px" }}
                   >
                     ✓ {getFeatureLabel(id)}
                   </span>
@@ -683,7 +695,7 @@ export default function NewAppWizard({
                 style={{ width: "100%", padding: "10px 12px", fontSize: 15 }}
                 disabled={isSubmitting}
               />
-              <span style={{ fontSize: 12, color: "var(--ws-text-muted)", marginTop: 4, display: "block" }}>
+              <span style={{ fontSize: 12, color: "var(--ws-muted)", marginTop: 4, display: "block" }}>
                 Tối đa 120 ký tự.
               </span>
             </div>
@@ -719,7 +731,7 @@ export default function NewAppWizard({
                   Mã ứng dụng không hợp lệ. Cần từ 2-64 ký tự, chữ thường không dấu, bắt đầu bằng chữ (ví dụ: <code>quan_ly_vat_tu</code>).
                 </span>
               ) : (
-                <span style={{ fontSize: 12, color: "var(--ws-text-muted)", marginTop: 4, display: "block" }}>
+                <span style={{ fontSize: 12, color: "var(--ws-muted)", marginTop: 4, display: "block" }}>
                   Mã định danh duy nhất trong doanh nghiệp. Tự sinh từ tên và có thể chỉnh sửa tự do.
                 </span>
               )}
@@ -747,107 +759,53 @@ export default function NewAppWizard({
       )}
 
       {/* MODAL 1: XÁC NHẬN ĐỔI LỐI VÀO SAU KHI ĐÃ SỬA CHỨC NĂNG */}
-      {pendingStartingPoint && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="confirm-change-sp-title"
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-            padding: 16,
-          }}
-        >
-          <div
-            className="panel"
-            style={{
-              maxWidth: 480,
-              width: "100%",
-              padding: 24,
-              borderRadius: 8,
-              background: "var(--ws-panel-bg)",
-              boxShadow: "0 8px 30px rgba(0,0,0,0.2)",
-            }}
+      <ConfirmDialog
+        isOpen={Boolean(pendingStartingPoint)}
+        title="Thay đổi lối vào khởi tạo"
+        onClose={() => setPendingStartingPoint(null)}
+      >
+        <p style={{ fontSize: 14, color: "var(--ws-muted)", marginBottom: 20, lineHeight: 1.5 }}>
+          Bạn đã tùy chỉnh danh sách chức năng khác với gợi ý ban đầu. Khi chuyển sang lối vào mới, bạn muốn giữ cấu hình hiện tại hay đặt lại theo gợi ý của lối vào mới?
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <button
+            type="button"
+            className="button primary"
+            onClick={handleKeepCurrentChoices}
+            data-autofocus="true"
           >
-            <h3 id="confirm-change-sp-title" style={{ margin: "0 0 12px", fontSize: 18 }}>
-              Thay đổi lối vào khởi tạo
-            </h3>
-            <p style={{ fontSize: 14, color: "var(--ws-text-secondary)", marginBottom: 20, lineHeight: 1.5 }}>
-              Bạn đã tùy chỉnh danh sách chức năng khác với gợi ý ban đầu. Khi chuyển sang lối vào mới, bạn muốn giữ cấu hình hiện tại hay đặt lại theo gợi ý của lối vào mới?
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <button
-                type="button"
-                className="button primary"
-                onClick={handleKeepCurrentChoices}
-              >
-                Giữ lựa chọn hiện tại
-              </button>
-              <button
-                type="button"
-                className="button secondary"
-                onClick={handleResetToPreset}
-              >
-                Đặt lại theo gợi ý lối vào mới
-              </button>
-              <button
-                type="button"
-                className="button"
-                style={{ background: "transparent", border: "none", color: "var(--ws-text-muted)" }}
-                onClick={() => setPendingStartingPoint(null)}
-              >
-                Hủy thay đổi
-              </button>
-            </div>
-          </div>
+            Giữ lựa chọn hiện tại
+          </button>
+          <button
+            type="button"
+            className="button secondary"
+            onClick={handleResetToPreset}
+          >
+            Đặt lại theo gợi ý lối vào mới
+          </button>
+          <button
+            type="button"
+            className="button"
+            style={{ background: "transparent", border: "none", color: "var(--ws-muted)" }}
+            onClick={() => setPendingStartingPoint(null)}
+          >
+            Hủy thay đổi
+          </button>
         </div>
-      )}
+      </ConfirmDialog>
 
       {/* MODAL 2: GỢI Ý BẬT KÈM PHỤ THUỘC */}
-      {missingDepPrompt && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="missing-dep-title"
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-            padding: 16,
-          }}
-        >
-          <div
-            className="panel"
-            style={{
-              maxWidth: 460,
-              width: "100%",
-              padding: 24,
-              borderRadius: 8,
-              background: "var(--ws-panel-bg)",
-            }}
-          >
-            <h3 id="missing-dep-title" style={{ margin: "0 0 12px", fontSize: 18 }}>
-              Gợi ý bật kèm chức năng phụ thuộc
-            </h3>
-            <p style={{ fontSize: 14, color: "var(--ws-text-secondary)", marginBottom: 16, lineHeight: 1.5 }}>
+      <ConfirmDialog
+        isOpen={Boolean(missingDepPrompt)}
+        title="Gợi ý bật kèm chức năng phụ thuộc"
+        onClose={() => setMissingDepPrompt(null)}
+      >
+        {missingDepPrompt && (
+          <div>
+            <p style={{ fontSize: 14, color: "var(--ws-muted)", marginBottom: 16, lineHeight: 1.5 }}>
               Chức năng <strong>{getFeatureLabel(missingDepPrompt.feature)}</strong> yêu cầu các chức năng phụ thuộc sau để hoạt động hoàn chỉnh:
             </p>
-            <ul style={{ fontSize: 14, marginBottom: 20, paddingLeft: 20, color: "var(--ws-primary)" }}>
+            <ul style={{ fontSize: 14, marginBottom: 20, paddingLeft: 20, color: "var(--ws-teal)" }}>
               {missingDepPrompt.missing.map((dep) => (
                 <li key={dep}>
                   <strong>{getFeatureLabel(dep)}</strong> (<code>{dep}</code>)
@@ -866,49 +824,25 @@ export default function NewAppWizard({
                 type="button"
                 className="button primary"
                 onClick={confirmAddWithDependencies}
+                data-autofocus="true"
               >
                 Bật kèm phụ thuộc
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </ConfirmDialog>
 
       {/* MODAL 3: CẢNH BÁO BỎ CHỨC NĂNG ĐANG LÀ PHỤ THUỘC */}
-      {removalWarning && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="removal-warning-title"
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-            padding: 16,
-          }}
-        >
-          <div
-            className="panel"
-            style={{
-              maxWidth: 460,
-              width: "100%",
-              padding: 24,
-              borderRadius: 8,
-              background: "var(--ws-panel-bg)",
-              border: "1px solid var(--ws-warning)",
-            }}
-          >
-            <h3 id="removal-warning-title" style={{ margin: "0 0 12px", fontSize: 18, color: "var(--ws-warning)" }}>
-              ⚠️ Cảnh báo phụ thuộc
-            </h3>
-            <p style={{ fontSize: 14, color: "var(--ws-text-secondary)", marginBottom: 16, lineHeight: 1.5 }}>
+      <ConfirmDialog
+        isOpen={Boolean(removalWarning)}
+        title="⚠️ Cảnh báo phụ thuộc"
+        onClose={() => setRemovalWarning(null)}
+        style={{ borderColor: "var(--ws-warning)" }}
+      >
+        {removalWarning && (
+          <div>
+            <p style={{ fontSize: 14, color: "var(--ws-muted)", marginBottom: 16, lineHeight: 1.5 }}>
               Bỏ chọn <strong>{getFeatureLabel(removalWarning.feature)}</strong> sẽ ảnh hưởng đến các chức năng sau đang phụ thuộc vào nó:
             </p>
             <ul style={{ fontSize: 14, marginBottom: 20, paddingLeft: 20, color: "var(--ws-danger)" }}>
@@ -923,6 +857,7 @@ export default function NewAppWizard({
                 type="button"
                 className="button secondary"
                 onClick={() => setRemovalWarning(null)}
+                data-autofocus="true"
               >
                 Giữ lại
               </button>
@@ -935,8 +870,8 @@ export default function NewAppWizard({
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </ConfirmDialog>
     </div>
   );
 }

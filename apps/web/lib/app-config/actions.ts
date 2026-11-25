@@ -105,6 +105,7 @@ export async function patchDraftFeaturesAction(
   ok: boolean;
   newLockVersion?: number;
   status?: number;
+  kind?: string;
   code?: string;
   error?: string;
 }> {
@@ -134,6 +135,7 @@ export async function patchDraftFeaturesAction(
     return {
       ok: false,
       status,
+      kind: isConflict ? "conflict" : errorObj.kind,
       code: errorObj.code ?? (isConflict ? "VERSION_CONFLICT" : "PATCH_FAILED"),
       error: isConflict
         ? "Bản nháp đã thay đổi, vui lòng tải lại."

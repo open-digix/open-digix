@@ -271,4 +271,34 @@ describe("NewAppWizard Component (TC-START)", () => {
       expect(screen.getByText(/Mã ứng dụng "trung_ma" đã tồn tại/i)).toBeInTheDocument();
     });
   });
+
+  it("closes dialog on Escape key without changing choices", async () => {
+    render(
+      <NewAppWizard
+        initialFeatures={MOCK_CATALOG_FEATURES}
+        initialPresets={MOCK_CATALOG_PRESETS}
+      />,
+    );
+
+    // Step 1: ERP
+    fireEvent.click(screen.getByText("Bắt đầu với ERP"));
+
+    // Step 2: uncheck inventory
+    const inventoryCheckbox = screen.getByLabelText(/Quản lý kho/i);
+    fireEvent.click(inventoryCheckbox);
+
+    // Back to Step 1
+    fireEvent.click(screen.getByRole("button", { name: /Quay lại lối vào/i }));
+
+    // Click CRM -> dialog appears
+    fireEvent.click(screen.getByText("Bắt đầu với CRM"));
+    expect(screen.getByRole("heading", { name: "Thay đổi lối vào khởi tạo" })).toBeInTheDocument();
+
+    // Press Escape
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByRole("heading", { name: "Thay đổi lối vào khởi tạo" })).not.toBeInTheDocument();
+
+    // Still at step 1
+    expect(screen.getByRole("heading", { name: "Chọn lối vào khởi tạo" })).toBeInTheDocument();
+  });
 });
