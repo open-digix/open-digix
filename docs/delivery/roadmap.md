@@ -6,6 +6,11 @@ title: DigiX Lab --- Roadmap triển khai theo SRS v2.4 (đã duyệt, đang th�
 
 # DIGIX LAB --- ROADMAP TRIỂN KHAI DỰ ÁN
 
+> **Baseline lịch sử theo SRS v2.4.** SRS v2.5 đề xuất chuyển demo sang ERP/CRM lắp ghép và nhiều ứng dụng trong một tenant;
+> xem [roadmap v2.5 đề xuất](roadmap-v2.5.md). Liên kết “SRS v2.4” bên dưới trỏ tới đường dẫn tài liệu nay đã được nâng thành v2.5;
+> muốn đối chiếu nội dung v2.4 phải xem lịch sử Git.
+> Giữ các mốc/owner/biên bản dưới đây để đối chiếu lịch sử, không coi là kế hoạch hoặc bằng chứng nghiệm thu phạm vi v2.5 khi chưa được đội rebaseline.
+
 ## Hướng tới vòng thi quốc gia \| 11/11/2026 -- 10/12/2026
 
 **Căn cứ:** [SRS DigiX Lab v2.4](../product/requirements/SRS%20DigiX%20Lab%20-%20%C4%90%E1%BA%B7c%20t%E1%BA%A3%20y%C3%AAu%20c%E1%BA%A7u%20ph%E1%BA%A7n%20m%E1%BB%81m.md),
@@ -14,16 +19,32 @@ v1.5 chỉ là bản kế thừa để đối chiếu, không còn lấy mua s�
 định nghĩa toàn bộ nền tảng. Mức A/B/C là cam kết **của DigiX**,
 không phải danh sách bắt buộc của đề thi.
 
-**Trạng thái cập nhật (16/11/2026): Đã duyệt, đang thực hiện**, theo xác nhận
-của người yêu cầu. Ngày/giờ duyệt, biên bản và xác nhận riêng của từng thành
-viên chưa được cung cấp trong repo; bổ sung đường dẫn khi có, không hồi tố.
-Đây là trạng thái **kế hoạch**, không đồng nghĩa mọi đầu ra/mốc đã nghiệm thu.
-Theo [báo cáo tiến độ 15/11](bao-cao-tien-do.md), nhóm báo đã hoàn thiện lõi
-Tầng 1 và đang làm Builder frontend/backend. Báo cáo này chưa kèm test report
-đối chiếu đầy đủ điều kiện M1/M2: M1 (hạn 09/11) cần ghi ngày đạt thực tế
-và bằng chứng smoke test; M2 (hạn 16/11) đang triển khai, chưa đánh dấu đạt.
-Các tài liệu GĐ0 cũ ghi “chờ duyệt” phản ánh thời điểm biên soạn, không phải
-trạng thái hiện tại của roadmap.
+**Trạng thái cập nhật (24/11/2026): Đang thực hiện, cần rebaseline.** Nhóm báo
+đang chậm khoảng **1 tuần do thiếu nhân sự**; nhân sự phụ trách UI chuyển từ
+**Tú sang Duy Anh**. Đây là cập nhật từ người yêu cầu, chưa có biên bản/issue
+xác nhận nội bộ trong repo. Lịch và owner bên dưới là đề xuất điều chỉnh,
+không phải xác nhận nghiệm thu hay phê duyệt thay đổi phạm vi.
+
+Theo [báo cáo tiến độ 15/11](bao-cao-tien-do.md), nhóm báo hoàn thiện lõi
+Tầng 1 và đang làm Builder frontend/backend. Chưa có báo cáo/test report mới
+để xác nhận trạng thái thực tế M1–M4; do đó không suy ra các mốc đã đạt.
+Hạn gửi bài **17:00 06/12/2026** và chung kết 10/12 là hạn ngoài, không tự
+điều chỉnh.
+
+### Rebaseline đề xuất (24/11)
+
+| Thời gian đề xuất | Ưu tiên / cửa kiểm soát                                                     | Owner đề xuất                                              | Tiêu chí thoát / lưu ý                                               |
+| ----------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------- |
+| 24–26/11          | Kiểm kê; chốt Builder tối thiểu và luồng app A chạy được; xử lý blocker lõi | Dũng (API/Builder), Duy Anh (UI), An (nền tảng/quyền)      | Báo cáo TC/commit/log; M1/M2 chỉ đạt khi có bằng chứng, không hồi tố |
+| 27–30/11          | Tích hợp, publish và test app A; dựng app B nếu cửa app A đạt               | Dũng + Duy Anh; An review isolation/deploy                 | Nếu app A chưa qua E2E ngày 28/11, cả đội quyết định phạm vi         |
+| 01–03/12          | Hardening, quyền, môi trường sạch; feature freeze/RC                        | An điều phối; Dũng test backend; Duy Anh UI/demo           | Go/no-go 03/12; đổi phạm vi/SRS cần quyết định của cả đội            |
+| 04–06/12          | Chỉ regression, đóng gói, phát hành và gửi bài                              | Cả đội; An release, Dũng build/test, Duy Anh demo/tài liệu | Release và email trước 17:00 06/12; không bù tính năng mới           |
+
+**Rủi ro đường găng:** độ trễ 1 tuần khiến mục tiêu hai app + v1/v2 + AI mức A
+trước freeze 03/12 có rủi ro cao. Đề xuất khóa trước lõi và ít nhất một app
+Tầng 2 có thể demo; app thứ hai và AI là cổng quyết định ưu tiên sau kết quả
+app A. Không tự tuyên bố đã cắt khỏi SRS hoặc đã đạt; cả đội cần xác nhận phạm
+vi, ngày hoàn tất thực tế, owner/reviewer và biên bản.
 
 **Mục tiêu thực hiện:** Hoàn tất tính năng trước **03/12/2026**, dành 04–06/12
 cho kiểm thử, đóng gói, phát hành và gửi bài **trước 17:00 06/12/2026**.
@@ -119,14 +140,15 @@ bao gồm demo, giải pháp,
 giới hạn và định hướng.
 ------------------------------------------------------------------------
 
-**Theo dõi tiến độ tại 16/11 (khác với trạng thái duyệt kế hoạch):**
+**Theo dõi tiến độ tại 24/11 (khác với trạng thái duyệt kế hoạch):**
 
-| Mốc        | Trạng thái                                                      | Căn cứ / bước tiếp theo                                                                                                          |
-| ---------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| GĐ0        | Roadmap đã duyệt; hồ sơ quyết định chưa cập nhật                | Bổ sung biên bản, ngày chốt và xác nhận từng người; không hồi tố tài liệu chuẩn bị.                                              |
-| M1 (09/11) | Nhóm báo hoàn thiện lõi Tầng 1; **chưa xác nhận nghiệm thu M1** | [Báo cáo 15/11](bao-cao-tien-do.md) chưa kèm smoke test đủ SSO/Gateway, kho tệp và workflow; ghi ngày đạt và kết quả kiểm chứng. |
-| M2 (16/11) | Đang triển khai Builder; **chưa xác nhận đạt M2**               | Đối chiếu TC-BLD-01..03, UI/API và bằng chứng trước khi chốt ngày hoàn tất.                                                      |
-| M3–M8      | Theo lịch, chưa đến cổng nghiệm thu                             | Theo dõi bằng test report và quyết định tại từng mốc; không đánh dấu hoàn thành theo ngày dự kiến.                               |
+| Mốc        | Trạng thái                                                                  | Căn cứ / bước tiếp theo                                                                        |
+| ---------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| GĐ0        | Kế hoạch đã được người yêu cầu báo là duyệt; hồ sơ quyết định chưa cập nhật | Bổ sung biên bản/ngày chốt và xác nhận từng người; không hồi tố.                               |
+| M1 (09/11) | Trễ theo lịch; nghiệm thu chưa được xác nhận                                | Báo cáo 15/11 không kèm smoke test đủ SSO/Gateway, kho tệp, workflow; ghi ngày thực tế và log. |
+| M2 (16/11) | Trễ theo lịch; Builder chưa có báo cáo nghiệm thu mới                       | Đối chiếu TC-BLD-01..03, UI/API và bằng chứng; rà owner bàn giao Tú → Duy Anh.                 |
+| M3–M4      | Trễ khoảng 1 tuần theo thông tin nhóm; chưa xác nhận hoàn tất               | Theo rebaseline đề xuất ở đầu tài liệu; ưu tiên app A, app B theo cổng quyết định.             |
+| M5–M8      | Hạn cuối 03–10/12 giữ nguyên                                                | Freeze/go-no-go 03/12; release trước 17:00 06/12; không đánh dấu đạt nếu thiếu test report.    |
 
 ## Luồng demo cốt lõi
 
@@ -182,7 +204,7 @@ toàn bộ đầu ra GĐ0, máy chủ hay ngân sách đã được nghiệm thu
   logging cơ bản.
 - **Dũng:** NestJS, PostgreSQL migration, guard/tenant checks,
   endpoint `/me`.
-- **Tú:** Khung Next.js, màn hình đăng nhập, layout, trạng thái
+- **Duy Anh (tiếp nhận từ Tú ngày 24/11):** Khung Next.js, màn hình đăng nhập, layout, trạng thái
   loading/error.
 
 **Điều kiện hoàn tất:** Đăng nhập được; frontend gọi API qua Gateway; DB
@@ -190,13 +212,14 @@ khởi tạo từ đầu được.
 
 ## GĐ2 · Builder tối thiểu và bản nháp mẫu --- 10/11--16/11
 
-**Phụ trách theo kế hoạch:** Dũng (schema/compiler), Tú (UX), An (quyền)
+**Phụ trách theo kế hoạch ban đầu:** Dũng (schema/compiler), Tú (UX), An (quyền).
+**Owner UI cập nhật từ 24/11:** Duy Anh; cần xác nhận bàn giao và phạm vi nhận việc.
 
 - **Dũng:** API dự án ứng dụng/nháp theo tenant; lưu mô tả quy trình
   gốc và nguồn, ánh xạ sang schema trung gian có phiên bản (bước, vai
   trò, điều kiện, dữ liệu, ngoại lệ), đánh dấu dữ liệu thiếu/mâu thuẫn;
   validator chặn nhánh vô đích, vai trò thiếu, trường bắt buộc sai.
-- **Tú:** Trình nhập mô tả có cấu trúc, hiển thị ánh xạ về nguồn và
+- **Duy Anh (tiếp nhận từ Tú):** Trình nhập mô tả có cấu trúc, hiển thị ánh xạ về nguồn và
   điểm chưa rõ; biên tập thủ công vai trò, biểu mẫu, bước, tuyến xử lý;
   nhãn rõ nháp/chạy thử/đã xuất bản. Không phụ thuộc AI để chỉnh nháp.
 - **An:** Quyền designer/publisher trên API và audit nháp/sửa quyền;
@@ -217,7 +240,7 @@ kiểm thử nghỉ phép tenant B ở GĐ4.
   workflow vào hồ sơ; xử lý gửi lặp, trạng thái bền vững, approve/reject
   có lý do, chặn tự duyệt/xử lý lại. Mẫu mua sắm A chạy từ cấu hình,
   không lấy controller mua sắm viết cứng làm bằng chứng tính tổng quát.
-- Tú: UI chạy thử và ứng dụng sinh từ mẫu danh sách, biểu mẫu, chi
+- Duy Anh (tiếp nhận UI từ Tú): UI chạy thử và ứng dụng sinh từ mẫu danh sách, biểu mẫu, chi
   tiết, hộp việc, lịch sử, dashboard. Ứng dụng đã xuất bản hiển thị
   H/P/D/I; khi chưa có nguồn AI, I báo rõ chưa khả dụng.
 - An: triển khai, SSO/Gateway, kiểm tra hợp đồng ba tầng trước publish
@@ -232,7 +255,8 @@ Chưa coi TC-PUB-02 (v1/v2 đang chạy) đạt cho tới khi thử ở GĐ4. Kh
 
 ## GĐ4 · Hai tenant, tích hợp & hardening --- 24/11--30/11
 
-**Phụ trách:** Cả đội
+**Phụ trách:** Cả đội. UI/demo do Duy Anh tiếp nhận từ Tú theo cập nhật 24/11;
+reviewer và tình trạng bàn giao cần được xác nhận.
 
 - Trước **27/11**: tenant A mua sắm; tenant B nghỉ phép dựng từ JSON v1
   qua luồng nhập/chỉnh/preview/publish của builder, không có controller/flow
@@ -279,7 +303,7 @@ những FR/TC đã được kiểm thật, không lấy trạng thái I tắt th
 
 **Điều kiện hoàn tất:** Release candidate chạy được từ môi trường sạch;
 không nhận tính năng mới. An lập biên bản go/no-go ngày **03/12**;
-Dũng và Tú review bằng chứng, cả ba xác nhận hoặc ghi rõ blocker/điều
+Dũng và Duy Anh review bằng chứng, cả ba xác nhận hoặc ghi rõ blocker/điều
 chỉnh phạm vi. Chưa có xác nhận thì mốc vẫn ở trạng thái chờ.
 
 ## GĐ6 · Regression, release & gửi bài --- 04/12--06/12 trước 17:00
@@ -293,7 +317,7 @@ chỉnh phạm vi. Chưa có xác nhận thì mốc vẫn ở trạng thái ch�
   bật; nếu tắt AI, kiểm TC-HPDI-02/TC-AI-OFF-01 và công bố giới hạn.
 - Chốt slide, kịch bản, video dự phòng/screenshot và checklist PoF.
 - An đối chiếu thể lệ và chuẩn bị email theo mẫu; Dũng review bản build,
-  migration/test report; Tú review demo/ảnh và tài khoản. Phát hành
+  migration/test report; Duy Anh review demo/ảnh và tài khoản. Phát hành
   release có phiên bản **trước** khi gửi email tới địa chỉ trong đề;
   lưu dấu thời gian release và bằng chứng gửi trước hạn.
 
@@ -324,17 +348,17 @@ và khối lượng, không chỉ đếm số đầu việc. Bảng dưới là 
 roadmap đã duyệt**; tình trạng nhận việc, review và hoàn tất từng đầu ra
 cần theo dõi bằng issue/bằng chứng riêng.
 
-| Đầu ra / hạn kế hoạch                                                         | Owner | Reviewer                               | Bằng chứng giao việc/hoàn tất                                                                     |
-| ----------------------------------------------------------------------------- | ----- | -------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| GĐ0: kiến trúc, backlog, phạm vi & biên bản; bổ sung hồ sơ chốt               | An    | Dũng, Tú                               | Quyết định + lý do + xác nhận/ngày của cả ba; điều chỉnh hạn đã qua, cập nhật SRS nếu cắt phạm vi |
-| M1: SSO/Gateway, máy chung, kho tệp, workflow, CI/setup; hạn cũ 09/11         | An    | Dũng (API/DB), Tú (UI/setup)           | Smoke test và hai người thử setup độc lập; ghi ngày đạt thực tế                                   |
-| M2: schema, mô tả nguồn, chuẩn hóa/chỉnh tay, validator và API nháp; 16/11    | Dũng  | An (tenant/quyền), Tú (hợp đồng UI)    | TC-BLD-01..03, fixture hợp lệ/lỗi, test API trực tiếp                                             |
-| M2: UI nhập mô tả, ánh xạ nguồn, trình biên tập; 16/11                        | Tú    | Dũng (schema), An (quyền)              | Demo sửa nháp khi AI tắt, báo trường/nhánh thiếu                                                  |
-| M3: compiler, chạy thử, publish guard & pin version; app mua sắm A E2E; 23/11 | Dũng  | An (isolation/deploy), Tú (runtime UI) | TC-PUB-01, TC-ARC-01..03, audit, test không quyền                                                 |
-| M3: UI preview và mẫu UI ứng dụng H/P/D/I; 23/11                              | Tú    | Dũng (contract), An (quyền)            | App A chạy từ cấu hình qua Gateway, không chỉ mockup builder                                      |
-| M4: hai tenant, app B không code cứng, v1/v2, TC-LEAVE/TEN/HPDI; 27/11        | Dũng  | Tú (UI/nhánh), An (API/policy)         | Test report có kết quả âm, hồ sơ giữ version và link log/ảnh                                      |
-| M4b: kiểm thử tích hợp, máy sạch, AI go/no-go theo FR-AI; 30/11               | An    | Dũng (backend/AI), Tú (demo)           | Chi phí, license, quyền thu hồi/nguồn; quyết định bật/tắt và FR-AI chưa đạt                       |
-| M5–M6: RC, freeze, release, gửi bài; 03–06/12                                 | An    | Dũng (build/test), Tú (demo/tài liệu)  | Biên bản go/no-go, tag/release và bằng chứng email                                                |
+| Đầu ra / hạn kế hoạch                                                      | Owner             | Reviewer                                   | Bằng chứng giao việc/hoàn tất                                                                     |
+| -------------------------------------------------------------------------- | ----------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| GĐ0: kiến trúc, backlog, phạm vi & biên bản; bổ sung hồ sơ chốt            | An                | Dũng, Tú                                   | Quyết định + lý do + xác nhận/ngày của cả ba; điều chỉnh hạn đã qua, cập nhật SRS nếu cắt phạm vi |
+| M1: SSO/Gateway, máy chung, kho tệp, workflow, CI/setup; hạn cũ 09/11      | An                | Dũng (API/DB), Tú (UI/setup)               | Smoke test và hai người thử setup độc lập; ghi ngày đạt thực tế                                   |
+| M2: schema, mô tả nguồn, chuẩn hóa/chỉnh tay, validator và API nháp; 16/11 | Dũng              | An (tenant/quyền), Tú (hợp đồng UI)        | TC-BLD-01..03, fixture hợp lệ/lỗi, test API trực tiếp                                             |
+| M2: UI nhập mô tả, ánh xạ nguồn, trình biên tập; hạn cũ 16/11              | Duy Anh (thay Tú) | Dũng (schema), An (quyền)                  | Demo sửa nháp khi AI tắt; ghi ngày đạt thực tế                                                    |
+| M3: compiler, chạy thử, publish guard & pin version; app mua sắm A E2E     | Dũng              | An (isolation/deploy), Duy Anh (UI)        | TC-PUB-01, TC-ARC-01..03, audit, test không quyền                                                 |
+| M3: UI preview và mẫu UI ứng dụng H/P/D/I                                  | Duy Anh (thay Tú) | Dũng (contract), An (quyền)                | App A chạy từ cấu hình qua Gateway, không chỉ mockup builder                                      |
+| M4: hai tenant, app B không code cứng, v1/v2, TC-LEAVE/TEN/HPDI            | Dũng              | Duy Anh (UI/nhánh), An (API/policy)        | Test report có kết quả âm, hồ sơ giữ version; hạn rebaseline xem bảng trên                        |
+| M4b/M5: hardening, máy sạch, AI go/no-go, RC/freeze; 01–03/12              | An                | Dũng (backend/AI), Duy Anh (demo)          | Go/no-go; ghi license, quyết định và FR-AI chưa đạt                                               |
+| M6: regression, release, gửi bài; 04–06/12                                 | An                | Dũng (build/test), Duy Anh (demo/tài liệu) | Tag/release và bằng chứng email trước 17:00 06/12                                                 |
 
 **Hồ sơ phê duyệt cần bổ sung:** Roadmap đã được người yêu cầu xác nhận
 đã duyệt và đang thực hiện (cập nhật 16/11); chưa có ngày/giờ duyệt,
@@ -344,11 +368,11 @@ không tự ký thay Dũng/Tú hoặc hồi tố ngày soạn roadmap. Rà lại
 đã qua và ghi ngày đạt thực tế, không lấy việc duyệt kế hoạch làm bằng
 chứng nghiệm thu M1/M2. Phê duyệt chi phí/máy chủ là quyết định riêng.
 
-| Người cần ghi nhận hồ sơ xác nhận | Vai trò xác nhận                            | Ngày/giờ xác nhận thực tế | Dẫn chứng        |
-| --------------------------------- | ------------------------------------------- | ------------------------- | ---------------- |
-| An                                | Điều phối, hạ tầng/chi phí, lịch release    | Chưa ghi trong repo       | Chưa có liên kết |
-| Dũng                              | API, dữ liệu, workflow, khả năng kiểm thử   | Chưa ghi trong repo       | Chưa có liên kết |
-| Tú                                | UI/builder, hai luồng demo và tài khoản thử | Chưa ghi trong repo       | Chưa có liên kết |
+| Người cần ghi nhận hồ sơ xác nhận     | Vai trò xác nhận                                     | Ngày/giờ xác nhận thực tế | Dẫn chứng        |
+| ------------------------------------- | ---------------------------------------------------- | ------------------------- | ---------------- |
+| An                                    | Điều phối, hạ tầng/chi phí, lịch release             | Chưa ghi trong repo       | Chưa có liên kết |
+| Dũng                                  | API, dữ liệu, workflow, khả năng kiểm thử            | Chưa ghi trong repo       | Chưa có liên kết |
+| Duy Anh (thay Tú theo cập nhật 24/11) | UI/builder, demo và tài khoản thử; xác nhận bàn giao | Chưa ghi trong repo       | Chưa có liên kết |
 
 ## An --- Platform & Security
 
@@ -359,7 +383,7 @@ chứng nghiệm thu M1/M2. Phê duyệt chi phí/máy chủ là quyết định
 - Kiểm tra license; release và tài liệu cài đặt.
 
 **Phối hợp:** Review quyền truy cập với Dũng; kiểm thử đăng nhập và lỗi
-UI cùng Tú.
+UI cùng Duy Anh (tiếp nhận từ Tú).
 
 ## Dũng --- Backend & Business Logic
 
@@ -371,12 +395,13 @@ UI cùng Tú.
 - Mẫu mua sắm A và fixture nghỉ phép B, kiểm thử version/tenant;
   connector mô phỏng chỉ sau cổng lõi/builder; API dashboard.
 
-**Phối hợp:** Chốt API contract với Tú; phối hợp An về auth, gateway và
+**Phối hợp:** Chốt API contract với Duy Anh; phối hợp An về auth, gateway và
 cấu hình môi trường.
 
-## Tú --- Frontend & UX
+## Duy Anh --- Frontend & UX (tiếp nhận từ Tú, 24/11)
 
-**Phạm vi:** Giao diện builder, ứng dụng xuất bản, trải nghiệm và demo.
+**Phạm vi đề xuất:** Tiếp nhận giao diện builder, ứng dụng xuất bản, trải nghiệm
+và demo từ Tú; xác nhận lại với Duy Anh trước khi xem là phân công đã chốt.
 
 - Mockup; Next.js layout; login; nhập mô tả nguồn, chỉnh nháp, preview.
 - Danh sách/form/chi tiết/hộp việc từ mẫu UI ứng dụng xuất bản; upload
@@ -400,16 +425,16 @@ An.
 
 ## Đầu việc liên đới không được bỏ trống
 
-- **API contract:** Dũng định nghĩa schema/request/response; Tú xác
+- **API contract:** Dũng định nghĩa schema/request/response; Duy Anh xác
   nhận UI dùng được; An xác nhận đường đi qua Gateway và cách xác
   thực.
 - **Tenant isolation:** Dũng triển khai kiểm tra backend; An rà soát
-  token/policy; Tú kiểm thử UI không lộ dữ liệu tenant khác.
+  token/policy; Duy Anh kiểm thử UI không lộ dữ liệu tenant khác.
 - **Release:** An điều phối; Dũng chịu trách nhiệm migration/dữ liệu
-  mẫu; Tú kiểm tra luồng UI đầu-cuối và ảnh minh chứng.
+  mẫu; Duy Anh kiểm tra luồng UI đầu-cuối và ảnh minh chứng.
 - **Builder/AI:** Dũng chịu trách nhiệm ánh xạ nguồn, compiler, quyền publish và
   truy vấn tri thức theo nguồn; An review isolation, máy suy luận và
-  license; Tú review luồng dựng **và vận hành** app, trạng thái AI
+  license; Duy Anh review luồng dựng **và vận hành** app, trạng thái AI
   tắt/không có nguồn.
 - **Không có "xong trên máy tôi":** mọi tính năng phải chạy trên môi
   trường chung và được ít nhất một thành viên khác review.
@@ -421,7 +446,7 @@ An.
 Không có kiểm kê máy, báo giá hay cam kết cấp tiền trong repo. Các con
 số dưới đây là **ngưỡng dự trù để thử tải**, không phải cấu hình đã mua
 hoặc số tiền đã được cấp. An lấy thông số máy sẵn có và hai báo giá (nếu
-cần thuê) trước buổi chốt; Dũng đo tải DB/Flowable; Tú thử tốc độ UI/demo.
+cần thuê) trước buổi chốt; Dũng đo tải DB/Flowable; Duy Anh thử tốc độ UI/demo.
 
 | Hạng mục                                     | Phương án đề xuất / cách kiểm chứng                                                                                                                                                               | Owner / reviewer                                 | Chi phí dự trù; quyết định                                                                                       |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
@@ -469,7 +494,7 @@ viết cứng thay cho app nghỉ phép cấu hình được.
 
 ## Bộ test tối thiểu trước feature freeze
 
-**Cửa kiểm thử hai tenant đề xuất 27/11:** Dũng chạy seed A/B, Tú chứng
+**Cửa kiểm thử hai tenant đề xuất 27/11:** Dũng chạy seed A/B, Duy Anh chứng
 kiến hai luồng UI, An chạy thử âm API/tệp/quyền; lưu kết quả từng case,
 commit/phiên bản app, môi trường, log/ảnh, lỗi còn mở vào test report.
 TC-LEAVE-01..07 phải chạy trên app nghỉ phép xuất bản từ builder; riêng
@@ -494,7 +519,7 @@ FR-BLD-06 không đồng nghĩa phải có supplier portal hay connector chạy 
 
 **Cửa freeze đề xuất 03/12:** An tổng hợp RC/test report và tài nguyên,
 Dũng xác nhận test builder/nghiệp vụ/tenant/AI không có blocker bị che
-giấu, Tú xác nhận cả builder **và hai ứng dụng đã xuất bản** trên máy
+giấu, Duy Anh xác nhận cả builder **và hai ứng dụng đã xuất bản** trên máy
 chung. Cả ba ký go/no-go có ngày/giờ + link bằng chứng;
 no-go thì chỉ sửa blocker và chạy lại regression, công bố phạm vi thực tế
 trước hạn nộp, không lặng lẽ bỏ kiểm thử bảo mật.
@@ -558,13 +583,13 @@ phải ghi vào báo cáo và xin quyết định phạm vi.
 
 ## Kịch bản demo đề xuất (15 phút tổng, cần chạy bấm giờ)
 
-| Thời lượng dự kiến | Nội dung / bằng chứng                                                                                          | Người dẫn đề xuất                      |
-| ------------------ | -------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| 0:00–2:00          | Vấn đề SME, kiến trúc ba tầng và ngưỡng đề; đăng nhập SSO                                                      | An                                     |
-| 2:00–5:00          | A: mô tả nguồn → nháp chuẩn hóa/chỉnh tay → preview/publish mẫu mua sắm v1; tạo/gửi/duyệt, audit               | Tú (builder/UI), Dũng (workflow)       |
-| 5:00–9:00          | B: mô tả nghỉ phép, tự cấu hình nhánh manager/HR, chạy thử/xuất bản v1; gửi/duyệt trên app, không sửa lõi      | Tú (builder/runtime), Dũng (nghiệp vụ) |
-| 9:00–11:00         | Publish v2; hồ sơ v1 còn theo v1; H/P/D/I ở hai app, dashboard truy nguồn; API/tệp chặn truy cập chéo tenant   | Dũng (version/test), An (quyền)        |
-| 11:00–15:00        | Bằng chứng PoF, agent theo app/tenant nếu đạt test hoặc trạng thái I tắt và FR-AI chưa đạt; giới hạn, kết luận | An + cả đội                            |
+| Thời lượng dự kiến | Nội dung / bằng chứng                                                                                          | Người dẫn đề xuất                           |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| 0:00–2:00          | Vấn đề SME, kiến trúc ba tầng và ngưỡng đề; đăng nhập SSO                                                      | An                                          |
+| 2:00–5:00          | A: mô tả nguồn → nháp chuẩn hóa/chỉnh tay → preview/publish mẫu mua sắm v1; tạo/gửi/duyệt, audit               | Duy Anh (builder/UI), Dũng (workflow)       |
+| 5:00–9:00          | B: mô tả nghỉ phép, tự cấu hình nhánh manager/HR, chạy thử/xuất bản v1; gửi/duyệt trên app, không sửa lõi      | Duy Anh (builder/runtime), Dũng (nghiệp vụ) |
+| 9:00–11:00         | Publish v2; hồ sơ v1 còn theo v1; H/P/D/I ở hai app, dashboard truy nguồn; API/tệp chặn truy cập chéo tenant   | Dũng (version/test), An (quyền)             |
+| 11:00–15:00        | Bằng chứng PoF, agent theo app/tenant nếu đạt test hoặc trạng thái I tắt và FR-AI chưa đạt; giới hạn, kết luận | An + cả đội                                 |
 
 Đây là phân bổ **đề xuất**, cần cả đội thử bấm giờ trước 30/11. Nếu
 không đủ 15 phút, dùng video/ảnh và test report để chứng minh version,
