@@ -5,12 +5,26 @@ import { App } from 'supertest/types';
 import { OidcTokenVerifier } from './../src/auth/oidc-token.verifier';
 import { DATABASE_POOL } from './../src/database/database.module';
 import { AppModule } from './../src/app.module';
+import { S3_CLIENT } from './../src/storage/storage.constants';
 import type { TenantContext } from './../src/identity/identity.types';
 import { RequireRoles } from './../src/identity/roles.decorator';
+import {
+  KeycloakAdminUnavailableError,
+  KeycloakUserConflictError,
+} from './../src/auth/keycloak-admin.client';
 import {
   CurrentTenantContext,
   TenantScoped,
 } from './../src/identity/tenant-context.decorator';
+import {
+  KEYCLOAK_ADMIN_CLIENT,
+  TENANT_ADMIN_IDENTITY_ISSUER,
+  TENANT_ADMIN_REPOSITORY,
+} from './../src/onboarding/tenant-admin-registration.service';
+import {
+  DatabaseUnavailableError,
+  TenantSlugConflictError,
+} from './../src/onboarding/tenant-admin.repository';
 
 @Controller('__test/tenant')
 class AuthorizationTestController {
@@ -31,12 +45,46 @@ describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
   let tokenVerifier: { verify: jest.Mock };
   let pool: { query: jest.Mock; end: jest.Mock };
+  let keycloakAdmin: {
+    createUser: jest.Mock;
+    deleteUser: jest.Mock;
+  };
+  let tenantAdminRepository: { createTenantAdmin: jest.Mock };
+  let s3Client: { send: jest.Mock; destroy: jest.Mock };
 
   beforeAll(() => {
     process.env.OIDC_ISSUER = 'http://localhost:8080/realms/digix';
     process.env.OIDC_AUDIENCE = 'digix-api';
     process.env.OIDC_JWKS_URI =
       'http://localhost:8080/realms/digix/protocol/openid-connect/certs';
+    process.env.KEYCLOAK_INTERNAL_URL = 'http://keycloak:8080';
+    process.env.KEYCLOAK_REALM = 'digix';
+    process.env.KEYCLOAK_ADMIN = 'admin';
+    process.env.KEYCLOAK_ADMIN_PASSWORD = 'test-admin-password';
+    process.env.S3_BUCKET = 'digix-files';
+    process.env.S3_ENDPOINT = 'http://object-storage:8333';
+    process.env.S3_REGION = 'us-east-1';
+    process.env.S3_FORCE_PATH_STYLE = 'true';
+    process.env.S3_ACCESS_KEY_ID = 'test-access-key';
+    process.env.S3_SECRET_ACCESS_KEY = 'test-secret-key';
+    process.env.STORAGE_UPLOAD_MAX_BYTES = '1048576';
+    process.env.STORAGE_UPLOAD_ALLOWED_CONTENT_TYPES = 'application/pdf';
+    process.env.WORKFLOW_BASE_URL = 'http://workflow-engine:8080/flowable-rest';
+    process.env.WORKFLOW_USERNAME = 'rest-admin';
+    process.env.WORKFLOW_PASSWORD = 'test-workflow-password';
+    process.env.WORKFLOW_REQUEST_TIMEOUT_MS = '5000';
+    process.env.S3_ENDPOINT = 'http://minio:9000';
+    process.env.S3_REGION = 'us-east-1';
+    process.env.S3_FORCE_PATH_STYLE = 'true';
+    process.env.S3_ACCESS_KEY_ID = 'test-access-key';
+    process.env.S3_SECRET_ACCESS_KEY = 'test-secret-key';
+    process.env.S3_BUCKET = 'digix-files';
+    process.env.STORAGE_UPLOAD_MAX_BYTES = '1048576';
+    process.env.STORAGE_UPLOAD_ALLOWED_CONTENT_TYPES = 'application/pdf';
+    process.env.WORKFLOW_BASE_URL = 'http://flowable:8080/flowable-rest';
+    process.env.WORKFLOW_USERNAME = 'admin';
+    process.env.WORKFLOW_PASSWORD = 'test-workflow-password';
+    process.env.WORKFLOW_REQUEST_TIMEOUT_MS = '5000';
   });
 
   beforeEach(async () => {
@@ -53,6 +101,17 @@ describe('AppController (e2e)', () => {
       query: jest.fn(),
       end: jest.fn().mockResolvedValue(undefined),
     };
+    keycloakAdmin = {
+      createUser: jest.fn(),
+      deleteUser: jest.fn(),
+    };
+    tenantAdminRepository = {
+      createTenantAdmin: jest.fn(),
+    };
+    s3Client = {
+      send: jest.fn().mockResolvedValue({}),
+      destroy: jest.fn(),
+    };
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
       controllers: [AuthorizationTestController],
@@ -61,6 +120,14 @@ describe('AppController (e2e)', () => {
       .useValue(tokenVerifier)
       .overrideProvider(DATABASE_POOL)
       .useValue(pool)
+      .overrideProvider(KEYCLOAK_ADMIN_CLIENT)
+      .useValue(keycloakAdmin)
+      .overrideProvider(TENANT_ADMIN_REPOSITORY)
+      .useValue(tenantAdminRepository)
+      .overrideProvider(TENANT_ADMIN_IDENTITY_ISSUER)
+      .useValue('http://localhost:8080/realms/digix')
+      .overrideProvider(S3_CLIENT)
+      .useValue(s3Client)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -72,6 +139,177 @@ describe('AppController (e2e)', () => {
       .get('/')
       .expect(200)
       .expect('Hello World!');
+  });
+
+  it('registers a tenant admin through the public onboarding endpoint', async () => {
+    keycloakAdmin.createUser.mockResolvedValue('keycloak-subject');
+    tenantAdminRepository.createTenantAdmin.mockResolvedValue({
+      tenantId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      identityUserId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+      membershipId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+      roleId: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+    });
+
+    const response = await request(app.getHttpServer())
+      .post('/v1/public/tenant-registrations')
+      .send({
+        tenantName: 'Acme Corporation',
+        tenantSlug: 'acme-corp',
+        admin: {
+          firstName: 'Nguyen',
+          lastName: 'Van A',
+          email: 'admin@example.com',
+          username: 'admin',
+          password: 'correct-horse-battery',
+        },
+      })
+      .expect(201);
+
+    expect(response.body).toEqual({
+      tenantId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      tenantSlug: 'acme-corp',
+      username: 'admin',
+    });
+    expect(keycloakAdmin.createUser).toHaveBeenCalledWith({
+      username: 'admin',
+      email: 'admin@example.com',
+      firstName: 'Nguyen',
+      lastName: 'Van A',
+      password: 'correct-horse-battery',
+    });
+    expect(tenantAdminRepository.createTenantAdmin).toHaveBeenCalledWith({
+      tenantSlug: 'acme-corp',
+      tenantName: 'Acme Corporation',
+      identityIssuer: 'http://localhost:8080/realms/digix',
+      identitySubject: 'keycloak-subject',
+      email: 'admin@example.com',
+      displayName: 'Nguyen Van A',
+    });
+  });
+
+  it('rejects invalid tenant admin registration input', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/v1/public/tenant-registrations')
+      .send({
+        tenantName: 'Acme Corporation',
+        tenantSlug: 'Acme Corporation',
+        admin: {
+          firstName: 'Nguyen',
+          lastName: 'Van A',
+          email: 'not-an-email',
+          username: 'admin',
+          password: 'short',
+        },
+      })
+      .expect(400);
+
+    expect((response.body as { error: { code: string } }).error.code).toBe(
+      'VALIDATION_FAILED',
+    );
+
+    expect(keycloakAdmin.createUser).not.toHaveBeenCalled();
+    expect(tenantAdminRepository.createTenantAdmin).not.toHaveBeenCalled();
+  });
+
+  it('returns EMAIL_TAKEN when Keycloak rejects a duplicate email', async () => {
+    keycloakAdmin.createUser.mockRejectedValue(
+      new KeycloakUserConflictError('email'),
+    );
+
+    const response = await request(app.getHttpServer())
+      .post('/v1/public/tenant-registrations')
+      .send(validRegistrationBody())
+      .expect(409);
+
+    expect(response.body).toEqual({
+      error: {
+        code: 'EMAIL_TAKEN',
+        message: 'Email is already taken.',
+      },
+    });
+    expect(tenantAdminRepository.createTenantAdmin).not.toHaveBeenCalled();
+  });
+
+  it('returns UNAVAILABLE when Keycloak cannot be reached', async () => {
+    keycloakAdmin.createUser.mockRejectedValue(
+      new KeycloakAdminUnavailableError('Keycloak unavailable'),
+    );
+
+    const response = await request(app.getHttpServer())
+      .post('/v1/public/tenant-registrations')
+      .send(validRegistrationBody())
+      .expect(503);
+
+    expect(response.body).toEqual({
+      error: {
+        code: 'UNAVAILABLE',
+        message: 'Registration service is temporarily unavailable.',
+      },
+    });
+  });
+
+  it('returns TENANT_SLUG_TAKEN and cleans up Keycloak on a duplicate slug', async () => {
+    keycloakAdmin.createUser.mockResolvedValue('keycloak-subject');
+    tenantAdminRepository.createTenantAdmin.mockRejectedValue(
+      new TenantSlugConflictError('acme-corp'),
+    );
+    keycloakAdmin.deleteUser.mockResolvedValue(undefined);
+
+    const response = await request(app.getHttpServer())
+      .post('/v1/public/tenant-registrations')
+      .send(validRegistrationBody())
+      .expect(409);
+
+    expect(response.body).toEqual({
+      error: {
+        code: 'TENANT_SLUG_TAKEN',
+        message: 'Tenant slug is already taken.',
+      },
+    });
+    expect(keycloakAdmin.deleteUser).toHaveBeenCalledWith('keycloak-subject');
+  });
+
+  it('returns UNAVAILABLE when PostgreSQL cannot be reached', async () => {
+    keycloakAdmin.createUser.mockResolvedValue('keycloak-subject');
+    tenantAdminRepository.createTenantAdmin.mockRejectedValue(
+      new DatabaseUnavailableError(),
+    );
+    keycloakAdmin.deleteUser.mockResolvedValue(undefined);
+
+    const response = await request(app.getHttpServer())
+      .post('/v1/public/tenant-registrations')
+      .send(validRegistrationBody())
+      .expect(503);
+
+    expect(response.body).toEqual({
+      error: {
+        code: 'UNAVAILABLE',
+        message: 'Registration service is temporarily unavailable.',
+      },
+    });
+    expect(keycloakAdmin.deleteUser).toHaveBeenCalledWith('keycloak-subject');
+  });
+
+  it('returns UNAVAILABLE when Keycloak cleanup also fails', async () => {
+    keycloakAdmin.createUser.mockResolvedValue('keycloak-subject');
+    tenantAdminRepository.createTenantAdmin.mockRejectedValue(
+      new DatabaseUnavailableError(),
+    );
+    keycloakAdmin.deleteUser.mockRejectedValue(
+      new KeycloakAdminUnavailableError('Keycloak cleanup unavailable'),
+    );
+
+    const response = await request(app.getHttpServer())
+      .post('/v1/public/tenant-registrations')
+      .send(validRegistrationBody())
+      .expect(503);
+
+    expect(response.body).toEqual({
+      error: {
+        code: 'UNAVAILABLE',
+        message: 'Registration service is temporarily unavailable.',
+      },
+    });
   });
 
   it('/v1/me rejects a request without a Bearer token', async () => {
@@ -241,5 +479,19 @@ function identityRow(tenantId: string, roles: string[]) {
     tenant_name: 'Tenant Alpha',
     tenant_status: 'active',
     roles,
+  };
+}
+
+function validRegistrationBody() {
+  return {
+    tenantName: 'Acme Corporation',
+    tenantSlug: 'acme-corp',
+    admin: {
+      firstName: 'Nguyen',
+      lastName: 'Van A',
+      email: 'admin@example.com',
+      username: 'admin',
+      password: 'correct-horse-battery',
+    },
   };
 }

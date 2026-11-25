@@ -7,6 +7,19 @@ routes:
       type: roundrobin
       nodes:
         "api:3000": 1
+  - id: digix-tenant-admin-registration
+    uri: /v1/public/tenant-registrations
+    methods: [POST]
+    plugins:
+      limit-req:
+        rate: 2
+        burst: 5
+        key: remote_addr
+        rejected_code: 429
+    upstream:
+      type: roundrobin
+      nodes:
+        "api:3000": 1
   - id: digix-api-v1
     uri: /v1/*
     plugins:

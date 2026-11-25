@@ -158,6 +158,11 @@ services:
       OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:8080/realms/digix}
       OIDC_AUDIENCE: ${OIDC_AUDIENCE:-digix-api}
       OIDC_JWKS_URI: ${OIDC_JWKS_URI:-http://keycloak:8080/realms/digix/protocol/openid-connect/certs}
+      KEYCLOAK_INTERNAL_URL: http://keycloak:8080
+      KEYCLOAK_REALM: digix
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Copy .env.example to .env and set KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_ADMIN_REQUEST_TIMEOUT_MS: ${KEYCLOAK_ADMIN_REQUEST_TIMEOUT_MS:-5000}
       S3_ENDPOINT: ${S3_ENDPOINT:-http://object-storage:8333}
       S3_REGION: ${S3_REGION:-us-east-1}
       S3_BUCKET: ${S3_BUCKET:-digix-files}
@@ -176,6 +181,8 @@ services:
       object-storage:
         condition: service_healthy
       workflow-engine:
+        condition: service_healthy
+      keycloak:
         condition: service_healthy
     healthcheck:
       test:
