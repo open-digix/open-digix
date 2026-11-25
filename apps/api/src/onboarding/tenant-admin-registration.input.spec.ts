@@ -5,20 +5,26 @@ describe('parseTenantAdminRegistrationBody', () => {
   it('normalizes a valid tenant admin registration request', () => {
     expect(
       parseTenantAdminRegistrationBody({
-        companyName: '  Acme Corporation  ',
-        tenantSlug: '  acme_corp  ',
-        adminEmail: '  ADMIN@EXAMPLE.COM ',
-        adminDisplayName: '  Nguyen Van A  ',
-        password: 'correct-horse-battery',
-        passwordConfirmation: 'correct-horse-battery',
+        tenantName: '  Acme Corporation  ',
+        tenantSlug: '  Acme_Corp  ',
+        admin: {
+          firstName: '  Nguyen ',
+          lastName: ' Van A ',
+          email: ' ADMIN@EXAMPLE.COM ',
+          username: ' Admin.User ',
+          password: 'correct-horse-battery',
+        },
       }),
     ).toEqual({
-      companyName: 'Acme Corporation',
+      tenantName: 'Acme Corporation',
       tenantSlug: 'acme_corp',
-      adminEmail: 'admin@example.com',
-      adminDisplayName: 'Nguyen Van A',
-      password: 'correct-horse-battery',
-      passwordConfirmation: 'correct-horse-battery',
+      admin: {
+        firstName: 'Nguyen',
+        lastName: 'Van A',
+        email: 'admin@example.com',
+        username: 'admin.user',
+        password: 'correct-horse-battery',
+      },
     });
   });
 
@@ -26,62 +32,76 @@ describe('parseTenantAdminRegistrationBody', () => {
     expectInvalid(body, '/');
   });
 
-  it('rejects unknown properties', () => {
+  it('rejects unknown top-level and admin properties', () => {
     expectInvalid(
       {
-        companyName: 'Acme Corporation',
+        tenantName: 'Acme Corporation',
         tenantSlug: 'acme_corp',
-        adminEmail: 'admin@example.com',
-        adminDisplayName: 'Nguyen Van A',
-        password: 'correct-horse-battery',
-        passwordConfirmation: 'correct-horse-battery',
         tenantId: 'client-controlled',
+        admin: {
+          firstName: 'Nguyen',
+          lastName: 'Van A',
+          email: 'admin@example.com',
+          username: 'admin',
+          password: 'correct-horse-battery',
+          tenantRole: 'tenant_admin',
+        },
       },
       '/tenantId',
+      '/admin/tenantRole',
     );
   });
 
-  it('rejects invalid tenant and email identifiers', () => {
+  it('rejects invalid tenant, email, and username identifiers', () => {
     expectInvalid(
       {
-        companyName: 'Acme Corporation',
+        tenantName: 'Acme Corporation',
         tenantSlug: 'Acme Corporation',
-        adminEmail: 'not-an-email',
-        adminDisplayName: 'Nguyen Van A',
-        password: 'correct-horse-battery',
-        passwordConfirmation: 'correct-horse-battery',
+        admin: {
+          firstName: 'Nguyen',
+          lastName: 'Van A',
+          email: 'not-an-email',
+          username: 'Admin User',
+          password: 'correct-horse-battery',
+        },
       },
       '/tenantSlug',
-      '/adminEmail',
+      '/admin/email',
+      '/admin/username',
     );
   });
 
-  it('rejects a weak or mismatched password', () => {
+  it('rejects a weak or missing password', () => {
     expectInvalid(
       {
-        companyName: 'Acme Corporation',
+        tenantName: 'Acme Corporation',
         tenantSlug: 'acme_corp',
-        adminEmail: 'admin@example.com',
-        adminDisplayName: 'Nguyen Van A',
-        password: 'short',
-        passwordConfirmation: 'different',
+        admin: {
+          firstName: 'Nguyen',
+          lastName: 'Van A',
+          email: 'admin@example.com',
+          username: 'admin',
+          password: 'short',
+        },
       },
-      '/password',
-      '/passwordConfirmation',
+      '/admin/password',
     );
   });
 
-  it('rejects missing required fields', () => {
+  it('requires the nested admin object and all account fields', () => {
     expectInvalid(
       {
-        companyName: ' ',
+        tenantName: ' ',
         tenantSlug: 'acme_corp',
-        adminEmail: 'admin@example.com',
-        adminDisplayName: 'Nguyen Van A',
-        password: 'correct-horse-battery',
+        admin: {
+          firstName: 'Nguyen',
+          email: 'admin@example.com',
+          password: 'correct-horse-battery',
+        },
       },
-      '/companyName',
-      '/passwordConfirmation',
+      '/tenantName',
+      '/admin/lastName',
+      '/admin/username',
     );
   });
 });
@@ -95,7 +115,7 @@ function expectInvalid(body: unknown, ...paths: string[]): void {
     const response = (error as BadRequestException).getResponse() as {
       error: { code: string; issues: Array<{ path: string }> };
     };
-    expect(response.error.code).toBe('INVALID_TENANT_ADMIN_REGISTRATION_INPUT');
+    expect(response.error.code).toBe('VALIDATION_FAILED');
     expect(response.error.issues.map(({ path }) => path)).toEqual(
       expect.arrayContaining(paths),
     );

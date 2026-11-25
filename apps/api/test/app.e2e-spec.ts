@@ -145,12 +145,15 @@ describe('AppController (e2e)', () => {
     const response = await request(app.getHttpServer())
       .post('/v1/onboarding/tenant-admin')
       .send({
-        companyName: 'Acme Corporation',
+        tenantName: 'Acme Corporation',
         tenantSlug: 'acme_corp',
-        adminEmail: 'admin@example.com',
-        adminDisplayName: 'Nguyen Van A',
-        password: 'correct-horse-battery',
-        passwordConfirmation: 'correct-horse-battery',
+        admin: {
+          firstName: 'Nguyen',
+          lastName: 'Van A',
+          email: 'admin@example.com',
+          username: 'admin',
+          password: 'correct-horse-battery',
+        },
       })
       .expect(201);
 
@@ -161,7 +164,7 @@ describe('AppController (e2e)', () => {
       role: 'tenant_admin',
     });
     expect(keycloakAdmin.createUser).toHaveBeenCalledWith({
-      username: 'admin@example.com',
+      username: 'admin',
       email: 'admin@example.com',
       displayName: 'Nguyen Van A',
       password: 'correct-horse-battery',
@@ -180,17 +183,20 @@ describe('AppController (e2e)', () => {
     const response = await request(app.getHttpServer())
       .post('/v1/onboarding/tenant-admin')
       .send({
-        companyName: 'Acme Corporation',
+        tenantName: 'Acme Corporation',
         tenantSlug: 'Acme Corporation',
-        adminEmail: 'not-an-email',
-        adminDisplayName: 'Nguyen Van A',
-        password: 'short',
-        passwordConfirmation: 'different',
+        admin: {
+          firstName: 'Nguyen',
+          lastName: 'Van A',
+          email: 'not-an-email',
+          username: 'admin',
+          password: 'short',
+        },
       })
       .expect(400);
 
     expect((response.body as { error: { code: string } }).error.code).toBe(
-      'INVALID_TENANT_ADMIN_REGISTRATION_INPUT',
+      'VALIDATION_FAILED',
     );
 
     expect(keycloakAdmin.createUser).not.toHaveBeenCalled();

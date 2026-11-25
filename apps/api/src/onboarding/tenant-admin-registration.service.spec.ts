@@ -6,12 +6,15 @@ import type { TenantAdminRegistrationBody } from './tenant-admin-registration.in
 
 describe('TenantAdminRegistrationService', () => {
   const input: TenantAdminRegistrationBody = {
-    companyName: 'Acme Corporation',
+    tenantName: 'Acme Corporation',
     tenantSlug: 'acme_corp',
-    adminEmail: 'admin@example.com',
-    adminDisplayName: 'Nguyen Van A',
-    password: 'correct-horse-battery',
-    passwordConfirmation: 'correct-horse-battery',
+    admin: {
+      firstName: 'Nguyen',
+      lastName: 'Van A',
+      email: 'admin@example.com',
+      username: 'admin',
+      password: 'correct-horse-battery',
+    },
   };
   const created: TenantAdminRegistrationResult = {
     keycloakSubject: 'keycloak-subject',
@@ -49,18 +52,18 @@ describe('TenantAdminRegistrationService', () => {
     await expect(service.register(input)).resolves.toEqual(created);
 
     expect(createUser).toHaveBeenCalledWith({
-      username: input.adminEmail,
-      email: input.adminEmail,
-      displayName: input.adminDisplayName,
-      password: input.password,
+      username: input.admin.username,
+      email: input.admin.email,
+      displayName: 'Nguyen Van A',
+      password: input.admin.password,
     });
     expect(createTenantAdmin).toHaveBeenCalledWith({
       tenantSlug: input.tenantSlug,
-      tenantName: input.companyName,
+      tenantName: input.tenantName,
       identityIssuer: 'http://localhost:8080/realms/digix',
       identitySubject: 'keycloak-subject',
-      email: input.adminEmail,
-      displayName: input.adminDisplayName,
+      email: input.admin.email,
+      displayName: 'Nguyen Van A',
     });
     expect(deleteUser).not.toHaveBeenCalled();
   });

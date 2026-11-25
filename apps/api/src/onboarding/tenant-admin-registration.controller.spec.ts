@@ -7,12 +7,15 @@ import type { TenantAdminRegistrationService } from './tenant-admin-registration
 
 describe('TenantAdminRegistrationController', () => {
   const input = {
-    companyName: 'Acme Corporation',
+    tenantName: 'Acme Corporation',
     tenantSlug: 'acme_corp',
-    adminEmail: 'admin@example.com',
-    adminDisplayName: 'Nguyen Van A',
-    password: 'correct-horse-battery',
-    passwordConfirmation: 'correct-horse-battery',
+    admin: {
+      firstName: 'Nguyen',
+      lastName: 'Van A',
+      email: 'admin@example.com',
+      username: 'admin',
+      password: 'correct-horse-battery',
+    },
   };
   const serviceResult = {
     keycloakSubject: 'keycloak-subject',
@@ -49,11 +52,11 @@ describe('TenantAdminRegistrationController', () => {
     } as unknown as TenantAdminRegistrationService);
 
     await expect(
-      controller.register({ ...input, passwordConfirmation: 'different' }),
+      controller.register({ ...input, tenantSlug: 'Acme Corporation' }),
     ).rejects.toMatchObject({
       response: {
         error: {
-          code: 'INVALID_TENANT_ADMIN_REGISTRATION_INPUT',
+          code: 'VALIDATION_FAILED',
         },
       },
     });

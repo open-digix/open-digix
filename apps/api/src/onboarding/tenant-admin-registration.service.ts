@@ -78,10 +78,10 @@ function toKeycloakUserInput(
   input: TenantAdminRegistrationBody,
 ): CreateKeycloakUserInput {
   return {
-    username: input.adminEmail,
-    email: input.adminEmail,
-    displayName: input.adminDisplayName,
-    password: input.password,
+    username: input.admin.username,
+    email: input.admin.email,
+    displayName: `${input.admin.firstName} ${input.admin.lastName}`,
+    password: input.admin.password,
   };
 }
 
@@ -92,10 +92,10 @@ function toRepositoryInput(
 ): CreateTenantAdminInput {
   return {
     tenantSlug: input.tenantSlug,
-    tenantName: input.companyName,
+    tenantName: input.tenantName,
     identityIssuer,
     identitySubject,
-    email: input.adminEmail,
-    displayName: input.adminDisplayName,
+    email: input.admin.email,
+    displayName: `${input.admin.firstName} ${input.admin.lastName}`,
   };
 }

@@ -1,23 +1,29 @@
 import { BadRequestException } from '@nestjs/common';
 
 const TENANT_SLUG_PATTERN = /^[a-z][a-z0-9_-]{1,63}$/;
+const USERNAME_PATTERN = /^[a-z][a-z0-9._-]{2,63}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const ALLOWED_KEYS = new Set([
-  'companyName',
-  'tenantSlug',
-  'adminEmail',
-  'adminDisplayName',
+const ALLOWED_KEYS = new Set(['tenantName', 'tenantSlug', 'admin']);
+const ADMIN_ALLOWED_KEYS = new Set([
+  'firstName',
+  'lastName',
+  'email',
+  'username',
   'password',
-  'passwordConfirmation',
 ]);
 
 export interface TenantAdminRegistrationBody {
-  readonly companyName: string;
+  readonly tenantName: string;
   readonly tenantSlug: string;
-  readonly adminEmail: string;
-  readonly adminDisplayName: string;
+  readonly admin: TenantAdminAccountInput;
+}
+
+export interface TenantAdminAccountInput {
+  readonly firstName: string;
+  readonly lastName: string;
+  readonly email: string;
+  readonly username: string;
   readonly password: string;
-  readonly passwordConfirmation: string;
 }
 
 interface InputIssue {
@@ -35,29 +41,12 @@ export function parseTenantAdminRegistrationBody(
   }
 
   const issues: InputIssue[] = [];
-  Object.keys(body).forEach((key) => {
-    if (!ALLOWED_KEYS.has(key)) {
-      issues.push({ path: `/${key}`, message: 'Property is not allowed.' });
-    }
-  });
+  collectUnknownProperties(body, ALLOWED_KEYS, '', issues);
 
-  const companyName = requiredString(body, 'companyName', 160, issues);
-  const tenantSlug = requiredString(body, 'tenantSlug', 64, issues);
-  const adminEmail = requiredString(body, 'adminEmail', 320, issues);
-  const adminDisplayName = requiredString(
-    body,
-    'adminDisplayName',
-    160,
-    issues,
-  );
-  const password = requiredString(body, 'password', 128, issues, false);
-  const passwordConfirmation = requiredString(
-    body,
-    'passwordConfirmation',
-    128,
-    issues,
-    false,
-  );
+  const tenantName = requiredString(body, 'tenantName', 160, issues);
+  const tenantSlugValue = requiredString(body, 'tenantSlug', 64, issues);
+  const tenantSlug = tenantSlugValue?.toLowerCase();
+  const admin = parseAdmin(body.admin, issues);
 
   if (tenantSlug && !TENANT_SLUG_PATTERN.test(tenantSlug)) {
     issues.push({
@@ -67,40 +56,63 @@ export function parseTenantAdminRegistrationBody(
     });
   }
 
-  if (adminEmail && !EMAIL_PATTERN.test(adminEmail)) {
+  if (issues.length > 0) throw invalidInput(issues);
+
+  return {
+    tenantName: tenantName!,
+    tenantSlug: tenantSlug!,
+    admin: admin!,
+  };
+}
+
+function parseAdmin(
+  value: unknown,
+  issues: InputIssue[],
+): TenantAdminAccountInput | undefined {
+  if (!isRecord(value)) {
     issues.push({
-      path: '/adminEmail',
-      message: 'adminEmail must be a valid email address.',
+      path: '/admin',
+      message: 'admin must be a JSON object.',
     });
+    return undefined;
   }
 
+  collectUnknownProperties(value, ADMIN_ALLOWED_KEYS, '/admin', issues);
+
+  const firstName = requiredString(value, 'firstName', 80, issues, '/admin');
+  const lastName = requiredString(value, 'lastName', 80, issues, '/admin');
+  const emailValue = requiredString(value, 'email', 320, issues, '/admin');
+  const usernameValue = requiredString(value, 'username', 64, issues, '/admin');
+  const password = requiredSecret(value, 'password', 128, issues, '/admin');
+  const email = emailValue?.toLowerCase();
+  const username = usernameValue?.toLowerCase();
+
+  if (email && !EMAIL_PATTERN.test(email)) {
+    issues.push({
+      path: '/admin/email',
+      message: 'email must be a valid email address.',
+    });
+  }
+  if (username && !USERNAME_PATTERN.test(username)) {
+    issues.push({
+      path: '/admin/username',
+      message:
+        'username must start with a lowercase letter and contain only lowercase letters, digits, dots, underscores or hyphens.',
+    });
+  }
   if (password && password.length < 8) {
     issues.push({
-      path: '/password',
+      path: '/admin/password',
       message: 'password must contain at least 8 characters.',
     });
   }
 
-  if (
-    password !== undefined &&
-    passwordConfirmation !== undefined &&
-    password !== passwordConfirmation
-  ) {
-    issues.push({
-      path: '/passwordConfirmation',
-      message: 'passwordConfirmation must match password.',
-    });
-  }
-
-  if (issues.length > 0) throw invalidInput(issues);
-
   return {
-    companyName: companyName!,
-    tenantSlug: tenantSlug!,
-    adminEmail: adminEmail!.toLowerCase(),
-    adminDisplayName: adminDisplayName!,
+    firstName: firstName!,
+    lastName: lastName!,
+    email: email!,
+    username: username!,
     password: password!,
-    passwordConfirmation: passwordConfirmation!,
   };
 }
 
@@ -109,40 +121,74 @@ function requiredString(
   key: string,
   maxLength: number,
   issues: InputIssue[],
-  trim = true,
+  pathPrefix = '',
 ): string | undefined {
+  const path = `${pathPrefix}/${key}`;
   const value = body[key];
-  if (typeof value !== 'string' || (trim && value.trim().length === 0)) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
     issues.push({
-      path: `/${key}`,
+      path,
       message: `${key} must be a non-empty string.`,
     });
     return undefined;
   }
 
-  if (!trim && value.length === 0) {
-    issues.push({
-      path: `/${key}`,
-      message: `${key} must be a non-empty string.`,
-    });
-    return undefined;
-  }
-
-  const normalized = trim ? value.trim() : value;
+  const normalized = value.trim();
   if (normalized.length > maxLength) {
     issues.push({
-      path: `/${key}`,
+      path,
       message: `${key} must contain at most ${maxLength} characters.`,
     });
   }
   return normalized;
 }
 
+function requiredSecret(
+  body: Record<string, unknown>,
+  key: string,
+  maxLength: number,
+  issues: InputIssue[],
+  pathPrefix: string,
+): string | undefined {
+  const path = `${pathPrefix}/${key}`;
+  const value = body[key];
+  if (typeof value !== 'string' || value.length === 0) {
+    issues.push({
+      path,
+      message: `${key} must be a non-empty string.`,
+    });
+    return undefined;
+  }
+  if (value.length > maxLength) {
+    issues.push({
+      path,
+      message: `${key} must contain at most ${maxLength} characters.`,
+    });
+  }
+  return value;
+}
+
+function collectUnknownProperties(
+  body: Record<string, unknown>,
+  allowedKeys: ReadonlySet<string>,
+  pathPrefix: string,
+  issues: InputIssue[],
+): void {
+  Object.keys(body).forEach((key) => {
+    if (!allowedKeys.has(key)) {
+      issues.push({
+        path: `${pathPrefix}/${key}`,
+        message: 'Property is not allowed.',
+      });
+    }
+  });
+}
+
 function invalidInput(issues: readonly InputIssue[]): BadRequestException {
   return new BadRequestException({
     error: {
-      code: 'INVALID_TENANT_ADMIN_REGISTRATION_INPUT',
-      message: 'Tenant admin registration input is invalid.',
+      code: 'VALIDATION_FAILED',
+      message: 'Tenant registration input is invalid.',
       issues,
     },
   });
