@@ -18,15 +18,10 @@ import crypto from "crypto";
 
 export interface JWTToken {
   accessToken?: string;
-  access_token?: string;
   refreshToken?: string;
-  refresh_token?: string;
   idToken?: string;
-  id_token?: string;
   expiresAt?: number;
-  expires_at?: number;
   refreshExpiresAt?: number;
-  refresh_expires_at?: number;
   error?: string;
   [key: string]: unknown;
 }
@@ -58,35 +53,53 @@ export function clearRefreshCache(): void {
  * Deduplicates simultaneous requests using hash of refresh token.
  */
 export async function refreshAccessToken(token: JWTToken): Promise<JWTToken> {
+  const rawToken = token as Record<string, unknown>;
+
+  // Migration: migrate old snake_case keys if present, then delete them
+  if (rawToken.access_token && !token.accessToken) {
+    token.accessToken = rawToken.access_token as string;
+  }
+  if (rawToken.refresh_token && !token.refreshToken) {
+    token.refreshToken = rawToken.refresh_token as string;
+  }
+  if (rawToken.id_token && !token.idToken) {
+    token.idToken = rawToken.id_token as string;
+  }
+  if (rawToken.expires_at && !token.expiresAt) {
+    token.expiresAt = Number(rawToken.expires_at);
+  }
+  if (rawToken.refresh_expires_at && !token.refreshExpiresAt) {
+    token.refreshExpiresAt = Number(rawToken.refresh_expires_at);
+  }
+  delete rawToken.access_token;
+  delete rawToken.refresh_token;
+  delete rawToken.id_token;
+  delete rawToken.expires_at;
+  delete rawToken.refresh_expires_at;
+
   // If token already has an error, do not attempt refresh
   if (token.error) {
     return token;
   }
 
   const now = Math.floor(Date.now() / 1000);
-  const refreshExpiresAt = Number(
-    token.refreshExpiresAt ?? token.refresh_expires_at ?? 0,
-  );
+  const refreshExpiresAt = Number(token.refreshExpiresAt ?? 0);
 
   // If refresh token has expired, return error immediately
   if (refreshExpiresAt > 0 && now >= refreshExpiresAt) {
     const rest = { ...token };
     delete rest.accessToken;
-    delete rest.access_token;
     return {
       ...rest,
       error: "RefreshTokenError",
     };
   }
 
-  const refreshToken = (token.refreshToken ?? token.refresh_token) as
-    | string
-    | undefined;
+  const refreshToken = token.refreshToken;
 
   if (!refreshToken || typeof refreshToken !== "string") {
     const rest = { ...token };
     delete rest.accessToken;
-    delete rest.access_token;
     return {
       ...rest,
       error: "RefreshTokenError",
@@ -126,7 +139,6 @@ export async function refreshAccessToken(token: JWTToken): Promise<JWTToken> {
         refreshCache.delete(hash);
         const rest = { ...token };
         delete rest.accessToken;
-        delete rest.access_token;
         return {
           ...rest,
           error: "RefreshTokenError",
@@ -154,17 +166,20 @@ export async function refreshAccessToken(token: JWTToken): Promise<JWTToken> {
       const updatedToken: JWTToken = {
         ...token,
         accessToken: data.access_token,
-        access_token: data.access_token,
         expiresAt: newExpiresAt,
-        expires_at: newExpiresAt,
         refreshToken: newRefreshToken,
-        refresh_token: newRefreshToken,
         refreshExpiresAt: newRefreshExpiresAt,
-        refresh_expires_at: newRefreshExpiresAt,
-        idToken: data.id_token ?? token.idToken ?? token.id_token,
-        id_token: data.id_token ?? token.idToken ?? token.id_token,
+        idToken: data.id_token ?? token.idToken,
         error: undefined,
       };
+
+      // Ensure no snake_case keys remain
+      const rawUpdated = updatedToken as Record<string, unknown>;
+      delete rawUpdated.access_token;
+      delete rawUpdated.refresh_token;
+      delete rawUpdated.id_token;
+      delete rawUpdated.expires_at;
+      delete rawUpdated.refresh_expires_at;
 
       // Keep cache for ~60s (or until new token has ~60s remaining)
       const cacheDurationMs = Math.min(
@@ -181,7 +196,6 @@ export async function refreshAccessToken(token: JWTToken): Promise<JWTToken> {
       refreshCache.delete(hash);
       const rest = { ...token };
       delete rest.accessToken;
-      delete rest.access_token;
       return {
         ...rest,
         error: "RefreshTokenError",

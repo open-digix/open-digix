@@ -98,12 +98,13 @@ export function clearClientTenantData(): void {
     // ignore
   }
 
-  // Remove any active toast elements from DOM
+  // Notify client components (toasts, filters, caches) to clean up state without mutating React DOM
   try {
-    const toastElements = document.querySelectorAll(
-      ".toast, [role='status'], .alert-toast",
+    window.dispatchEvent(
+      new CustomEvent("digix:context-switched", {
+        detail: { kind: "tenant" },
+      }),
     );
-    toastElements.forEach((el) => el.remove());
   } catch {
     // ignore
   }

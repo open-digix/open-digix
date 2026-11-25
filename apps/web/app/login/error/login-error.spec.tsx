@@ -19,6 +19,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import LoginErrorView, {
   classifyAuthError,
   getErrorContentInfo,
+  sanitizeCallbackUrl,
   AUTH_RETRY_SESSION_KEY,
 } from "./LoginErrorView";
 import * as nextAuthReact from "next-auth/react";
@@ -191,5 +192,55 @@ describe("LoginErrorView Component", () => {
 
     // Prevent infinite loop: signIn was not called on mount
     expect(nextAuthReact.signIn).not.toHaveBeenCalled();
+  });
+
+  describe("sanitizeCallbackUrl helper", () => {
+    it("allows safe internal relative paths", () => {
+      expect(sanitizeCallbackUrl("/")).toBe("/");
+      expect(sanitizeCallbackUrl("/dashboard")).toBe("/dashboard");
+      expect(sanitizeCallbackUrl("/builder?step=2&tab=api#section")).toBe("/builder?step=2&tab=api#section");
+    });
+
+    it("sanitizes unsafe, external, or malformed paths to /dashboard", () => {
+      expect(sanitizeCallbackUrl(null)).toBe("/dashboard");
+      expect(sanitizeCallbackUrl("")).toBe("/dashboard");
+      expect(sanitizeCallbackUrl("   ")).toBe("/dashboard");
+      expect(sanitizeCallbackUrl("//evil.example")).toBe("/dashboard");
+      expect(sanitizeCallbackUrl("https://evil.example")).toBe("/dashboard");
+      expect(sanitizeCallbackUrl("/\\evil.example")).toBe("/dashboard");
+      expect(sanitizeCallbackUrl("javascript:alert(1)")).toBe("/dashboard");
+    });
+  });
+
+  describe("LoginErrorView with callbackUrl parameter", () => {
+    it("preserves valid callbackUrl on auto-retry", () => {
+      mockSearchParams = new URLSearchParams("error=CallbackRouteError&callbackUrl=/builder?step=2");
+      render(<LoginErrorView />);
+
+      expect(nextAuthReact.signIn).toHaveBeenCalledWith("keycloak", {
+        callbackUrl: "/builder?step=2",
+      });
+    });
+
+    it("sanitizes malicious callbackUrl to /dashboard on auto-retry", () => {
+      mockSearchParams = new URLSearchParams("error=CallbackRouteError&callbackUrl=//evil.example");
+      render(<LoginErrorView />);
+
+      expect(nextAuthReact.signIn).toHaveBeenCalledWith("keycloak", {
+        callbackUrl: "/dashboard",
+      });
+    });
+
+    it("preserves valid callbackUrl on manual retry click", () => {
+      mockSearchParams = new URLSearchParams("error=CallbackRouteError&retry=1&callbackUrl=/settings");
+      render(<LoginErrorView />);
+
+      const retryBtn = screen.getByRole("button", { name: /Đăng nhập lại/i });
+      fireEvent.click(retryBtn);
+
+      expect(nextAuthReact.signIn).toHaveBeenCalledWith("keycloak", {
+        callbackUrl: "/settings",
+      });
+    });
   });
 });

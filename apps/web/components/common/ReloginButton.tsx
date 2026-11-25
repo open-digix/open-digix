@@ -24,8 +24,25 @@ interface ReloginButtonProps {
   label?: string;
 }
 
+/**
+ * Sanitizes callback URL to ensure it is a safe internal relative path.
+ * Disallows protocol-relative URLs (e.g. //evil.example) and absolute external schemes.
+ */
+export function sanitizeCallbackUrl(url?: string | null): string {
+  if (!url) return "";
+  const trimmed = url.trim();
+  if (
+    trimmed.startsWith("/") &&
+    !trimmed.startsWith("//") &&
+    !trimmed.includes("\\")
+  ) {
+    return trimmed;
+  }
+  return "";
+}
+
 export default function ReloginButton({
-  callbackUrl = "/dashboard",
+  callbackUrl,
   className = "button primary",
   label = "Đăng nhập lại",
 }: ReloginButtonProps) {
@@ -34,7 +51,15 @@ export default function ReloginButton({
       type="button"
       className={className}
       onClick={() => {
-        void signIn("keycloak", { callbackUrl });
+        let target = sanitizeCallbackUrl(callbackUrl);
+        if (!target && typeof window !== "undefined") {
+          const current = window.location.pathname + window.location.search;
+          target = sanitizeCallbackUrl(current);
+        }
+        if (!target) {
+          target = "/dashboard";
+        }
+        void signIn("keycloak", { callbackUrl: target });
       }}
     >
       {label}

@@ -45,7 +45,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   callbacks: {
     async jwt({ token, account }) {
-      // Initial sign-in: capture all tokens and expiration times
+      const rawToken = token as Record<string, unknown>;
+
+      // Initial sign-in: capture tokens and expiration in camelCase only
       if (account) {
         const now = Math.floor(Date.now() / 1000);
         const expiresIn = account.expires_in
@@ -62,18 +64,43 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const refreshExpiresAt = now + refreshExpiresIn;
 
         token.accessToken = account.access_token;
-        token.access_token = account.access_token;
         token.refreshToken = account.refresh_token;
-        token.refresh_token = account.refresh_token;
         token.idToken = account.id_token;
-        token.id_token = account.id_token;
         token.expiresAt = expiresAt;
-        token.expires_at = expiresAt;
         token.refreshExpiresAt = refreshExpiresAt;
-        token.refresh_expires_at = refreshExpiresAt;
         token.error = undefined;
+
+        // Clean up any snake_case keys from the token
+        delete rawToken.access_token;
+        delete rawToken.refresh_token;
+        delete rawToken.id_token;
+        delete rawToken.expires_at;
+        delete rawToken.refresh_expires_at;
+
         return token;
       }
+
+      // Migration: convert existing snake_case keys to camelCase once, then delete old keys
+      if (rawToken.access_token && !token.accessToken) {
+        token.accessToken = rawToken.access_token as string;
+      }
+      if (rawToken.refresh_token && !token.refreshToken) {
+        token.refreshToken = rawToken.refresh_token as string;
+      }
+      if (rawToken.id_token && !token.idToken) {
+        token.idToken = rawToken.id_token as string;
+      }
+      if (rawToken.expires_at && !token.expiresAt) {
+        token.expiresAt = Number(rawToken.expires_at);
+      }
+      if (rawToken.refresh_expires_at && !token.refreshExpiresAt) {
+        token.refreshExpiresAt = Number(rawToken.refresh_expires_at);
+      }
+      delete rawToken.access_token;
+      delete rawToken.refresh_token;
+      delete rawToken.id_token;
+      delete rawToken.expires_at;
+      delete rawToken.refresh_expires_at;
 
       // If token already has an error, skip refresh
       if (token.error) {
@@ -81,20 +108,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       const now = Math.floor(Date.now() / 1000);
-      const refreshExpiresAt = Number(
-        token.refreshExpiresAt ?? token.refresh_expires_at ?? 0,
-      );
+      const refreshExpiresAt = Number(token.refreshExpiresAt ?? 0);
 
       // If refresh token has expired, mark as error and clear access token
       if (refreshExpiresAt > 0 && now >= refreshExpiresAt) {
         delete token.accessToken;
-        delete token.access_token;
         token.error = "RefreshTokenError";
         return token;
       }
 
       // Check if access token is still valid (> 30 seconds remaining)
-      const expiresAt = Number(token.expiresAt ?? token.expires_at ?? 0);
+      const expiresAt = Number(token.expiresAt ?? 0);
       if (expiresAt > 0 && expiresAt - now > 30) {
         return token;
       }

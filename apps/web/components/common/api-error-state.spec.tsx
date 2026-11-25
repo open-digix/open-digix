@@ -78,7 +78,7 @@ describe("ApiErrorState (v2.5 §3)", () => {
 
     fireEvent.click(reloginBtn);
     expect(signIn).toHaveBeenCalledWith("keycloak", {
-      callbackUrl: "/dashboard",
+      callbackUrl: "/",
     });
   });
 

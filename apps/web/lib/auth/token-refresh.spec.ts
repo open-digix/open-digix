@@ -195,4 +195,79 @@ describe("token-refresh (WEB-F00 / AUTH-01)", () => {
     expect(res1.accessToken).toBe("shared-refreshed-token");
     expect(res2.accessToken).toBe("shared-refreshed-token");
   });
+
+  it("never returns snake_case token properties in returned object on success", async () => {
+    const now = Math.floor(Date.now() / 1000);
+    const mockResponse = {
+      access_token: "new-access",
+      expires_in: 300,
+      refresh_token: "new-refresh",
+      refresh_expires_in: 1800,
+      id_token: "new-id",
+    };
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockResponse,
+    });
+    global.fetch = fetchMock;
+
+    const legacyToken: JWTToken & Record<string, unknown> = {
+      accessToken: "old-access",
+      refreshToken: "old-refresh",
+      access_token: "legacy-access",
+      refresh_token: "legacy-refresh",
+      id_token: "legacy-id",
+      expires_at: now - 10,
+      refresh_expires_at: now + 500,
+      expiresAt: now - 10,
+      refreshExpiresAt: now + 500,
+    };
+
+    const result = await refreshAccessToken(legacyToken) as Record<string, unknown>;
+
+    expect(result.accessToken).toBe("new-access");
+    expect(result.refreshToken).toBe("new-refresh");
+    expect(result.idToken).toBe("new-id");
+    expect(result.expiresAt).toBeDefined();
+    expect(result.refreshExpiresAt).toBeDefined();
+
+    // Verify absolutely no snake_case keys exist
+    expect(result.access_token).toBeUndefined();
+    expect(result.refresh_token).toBeUndefined();
+    expect(result.id_token).toBeUndefined();
+    expect(result.expires_at).toBeUndefined();
+    expect(result.refresh_expires_at).toBeUndefined();
+  });
+
+  it("never returns snake_case token properties in returned object on error", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      statusText: "Bad Request",
+    });
+    global.fetch = fetchMock;
+
+    const legacyToken: JWTToken & Record<string, unknown> = {
+      accessToken: "old-access",
+      refreshToken: "old-refresh",
+      access_token: "legacy-access",
+      refresh_token: "legacy-refresh",
+      id_token: "legacy-id",
+      expires_at: 100,
+      refresh_expires_at: 200,
+      expiresAt: 100,
+      refreshExpiresAt: 200,
+    };
+
+    const result = await refreshAccessToken(legacyToken) as Record<string, unknown>;
+
+    expect(result.error).toBe("RefreshTokenError");
+    expect(result.accessToken).toBeUndefined();
+    expect(result.access_token).toBeUndefined();
+    expect(result.refresh_token).toBeUndefined();
+    expect(result.id_token).toBeUndefined();
+    expect(result.expires_at).toBeUndefined();
+    expect(result.refresh_expires_at).toBeUndefined();
+  });
 });

@@ -24,6 +24,23 @@ import { signIn } from "next-auth/react";
 
 export const AUTH_RETRY_SESSION_KEY = "digix_auth_retry_flag";
 
+/**
+ * Sanitizes callback URL to ensure it is a safe internal relative path.
+ * Disallows protocol-relative URLs (//evil.example) and absolute external schemes (https://evil.example).
+ */
+export function sanitizeCallbackUrl(url: string | null | undefined): string {
+  if (!url) return "/dashboard";
+  const trimmed = url.trim();
+  if (
+    trimmed.startsWith("/") &&
+    !trimmed.startsWith("//") &&
+    !trimmed.includes("\\")
+  ) {
+    return trimmed;
+  }
+  return "/dashboard";
+}
+
 export type AuthErrorKind =
   | "state_pkce"
   | "configuration"
@@ -145,6 +162,7 @@ export default function LoginErrorView() {
   const searchParams = useSearchParams();
   const errorCode = searchParams.get("error");
   const retryParam = searchParams.get("retry");
+  const callbackUrl = sanitizeCallbackUrl(searchParams.get("callbackUrl"));
 
   // Determine if retry has already happened via query param or sessionStorage
   const [alreadyRetried] = useState<boolean>(() => {
@@ -168,9 +186,9 @@ export default function LoginErrorView() {
       } catch {
         // ignore
       }
-      void signIn("keycloak", { callbackUrl: "/dashboard" });
+      void signIn("keycloak", { callbackUrl });
     }
-  }, [errorCode, alreadyRetried]);
+  }, [errorCode, alreadyRetried, callbackUrl]);
 
   const content = getErrorContentInfo(errorCode, alreadyRetried);
 
@@ -180,7 +198,7 @@ export default function LoginErrorView() {
     } catch {
       // ignore
     }
-    void signIn("keycloak", { callbackUrl: "/dashboard" });
+    void signIn("keycloak", { callbackUrl });
   };
 
   const handleGoHome = () => {

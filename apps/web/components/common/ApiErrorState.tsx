@@ -177,7 +177,7 @@ export default function ApiErrorState({
           {customMessage ??
             "Phiên làm việc của bạn không còn hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại."}
         </p>
-        <ReloginButton callbackUrl="/dashboard" />
+        <ReloginButton />
       </div>
     );
   }

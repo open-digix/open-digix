@@ -75,9 +75,19 @@ describe("Safe Tenant Switching (WEB-F00)", () => {
     expect(hasUnsavedChanges()).toBe(false);
   });
 
-  it("clearClientTenantData aborts ongoing requests and clears sessionStorage/localStorage filters", () => {
+  it("clearClientTenantData aborts ongoing requests, clears storage filters, dispatches event and preserves DOM", () => {
     const signal = getTenantAbortSignal();
     expect(signal.aborted).toBe(false);
+
+    // Create a mock DOM node to verify DOM nodes are preserved
+    const testNode = document.createElement("div");
+    testNode.id = "test-tenant-dom-node";
+    testNode.textContent = "Tenant content";
+    document.body.appendChild(testNode);
+
+    // Spy on digix:context-switched event
+    const eventSpy = vi.fn();
+    window.addEventListener("digix:context-switched", eventSpy);
 
     sessionStorage.setItem("filter_status", "pending");
     sessionStorage.setItem("table_page", "2");
@@ -91,6 +101,18 @@ describe("Safe Tenant Switching (WEB-F00)", () => {
     expect(sessionStorage.getItem("table_page")).toBeNull();
     expect(sessionStorage.getItem("other_key")).toBe("keep-me");
     expect(localStorage.getItem("filter_draft")).toBeNull();
+
+    // Verifies custom event dispatch
+    expect(eventSpy).toHaveBeenCalledTimes(1);
+    const customEvent = eventSpy.mock.calls[0][0] as CustomEvent;
+    expect(customEvent.detail).toEqual({ kind: "tenant" });
+
+    // Verifies DOM element is preserved (not removed)
+    expect(document.getElementById("test-tenant-dom-node")).toBe(testNode);
+
+    // Cleanup
+    testNode.remove();
+    window.removeEventListener("digix:context-switched", eventSpy);
   });
 
   it("TenantSelect prompts confirmation when dirty before switching tenant", async () => {
