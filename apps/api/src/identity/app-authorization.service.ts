@@ -1,12 +1,14 @@
 import {
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type {
-  AppAuthorizationInput,
-  AppAuthorizationRepository,
-  AppAuthorizationResult,
+import {
+  APP_AUTHORIZATION_REPOSITORY,
+  type AppAuthorizationInput,
+  type AppAuthorizationDataSource,
+  type AppAuthorizationResult,
 } from './app-authorization.types';
 
 function appNotFound(): NotFoundException {
@@ -38,7 +40,10 @@ function appPermissionRequired(permission: string): ForbiddenException {
 
 @Injectable()
 export class AppAuthorizationService {
-  constructor(private readonly repository: AppAuthorizationRepository) {}
+  constructor(
+    @Inject(APP_AUTHORIZATION_REPOSITORY)
+    private readonly repository: AppAuthorizationDataSource,
+  ) {}
 
   async requireAppAccess(
     input: AppAuthorizationInput,

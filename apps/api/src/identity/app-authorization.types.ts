@@ -8,7 +8,7 @@ export interface AppAuthorizationMembership {
   readonly permissions: readonly string[];
 }
 
-export interface AppAuthorizationRepository {
+export interface AppAuthorizationDataSource {
   findApplication(
     tenantId: string,
     applicationId: string,
@@ -34,3 +34,7 @@ export interface AppAuthorizationResult {
   readonly roleCodes: readonly string[];
   readonly permissions: readonly string[];
 }
+
+export const APP_AUTHORIZATION_REPOSITORY = Symbol(
+  'APP_AUTHORIZATION_REPOSITORY',
+);
