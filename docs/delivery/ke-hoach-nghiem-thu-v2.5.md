@@ -29,6 +29,14 @@ Tạo dữ liệu tổng hợp riêng từng app (vật tư/đề nghị/nhập 
 | TC-APP-01 | Tạo ERP A và CRM A trong cùng tenant, publish cả hai; đăng nhập role có quyền một hoặc cả hai. | Liệt kê/chọn đúng app theo role; có ID, cấu hình, version riêng. |
 | TC-APP-02 | Dùng token/URL/API ERP A đọc CRM A và ngược lại: bản ghi, tệp, task, dashboard, tìm kiếm, trợ lý; thử A ↔ B. | Từ chối mặc định khi chưa cấu hình chia sẻ, không lộ nội dung/metadata; audit. |
 | TC-APP-03 | Publish CRM A v2, tạo dữ liệu mới và tải lại/khởi động API. | ERP A và B không đổi; dữ liệu/v1 còn đọc được theo quyền, workflow cũ không bị chuyển phiên bản ngầm. |
+| TC-SHARE-01 | Trong tenant A, trước khi cấp liên kết, CRM A thử đọc/ghi bản ghi ERP A bằng UI và API trực tiếp; thử tương tự từ tenant B. | Từ chối theo mặc định; không lộ nội dung/metadata; có audit; không cho tạo liên kết chéo tenant. |
+| TC-SHARE-02 | Người có quyền cấp liên kết ERP A → CRM A cho **một loại dữ liệu, một phạm vi bản ghi, quyền đọc/ghi xác định**; thử bản ghi trong/ngoài phạm vi, người dùng đủ/thiếu quyền, hành động ghi được/không được phép và truy cập tệp/task/dashboard/AI. | Chỉ thao tác được trên bản ghi, loại dữ liệu, hành động và quyền được cấp; liên kết không mở tệp/task/dashboard/nguồn AI ngầm; audit cấp và sử dụng, không vượt quyền tenant/app. |
+| TC-SHARE-03 | Thu hồi liên kết; thử truy cập mới với cùng token, URL/API, cache và tìm kiếm; kiểm lịch sử. | Mọi truy cập mới dựa trên liên kết bị chặn; không còn nội dung từ cache/search; audit thu hồi và lịch sử vẫn còn. |
+| TC-AI-01 | Chọn nguồn AI theo tenant/app, hỏi câu có và không có chứng cứ với hai app/role. | Chỉ dẫn nguồn được phép theo quyền hiện hành hoặc nói không biết; không trộn nguồn tenant/app. |
+| TC-AI-02 | Thu hồi quyền người hỏi hoặc xóa/thu hồi nguồn khi worker chỉ mục tạm dừng; hỏi lại và kiểm trích dẫn/log. | Truy vấn mới không truy xuất nguồn bị thu hồi; không lộ qua câu trả lời, trích dẫn, tìm kiếm hoặc log. |
+| TC-AI-03 | Yêu cầu AI đề xuất quy trình rồi thử xuất bản/thao tác có tác động mà không có người xác nhận. | Chỉ tạo đề xuất nháp; không tự xuất bản, cấp quyền hoặc thực hiện hành động có tác động. |
+| TC-AI-04 | Cấp liên kết chia sẻ dữ liệu ERP A → CRM A rồi hỏi trợ lý CRM A về bản ghi chia sẻ trước và sau khi chọn nguồn AI/kiểm quyền riêng; thử B. | Liên kết dữ liệu không tự đưa nguồn vào chỉ mục/phạm vi AI; chỉ nguồn được chọn và được phép mới xuất hiện; B không thấy nguồn của A. |
+| TC-AI-05 | Tắt AI/adapter suy luận rồi thao tác H/P/D ở ERP A và CRM A. | I báo không khả dụng, không bịa kết quả; tạo/xử lý hồ sơ, việc và dashboard vẫn hoạt động. |
 | TC-PUB/ARC/HPDI | Thử nháp, quyền publisher, version pin, Gateway/SSO, H/P/D/I trong từng app; tắt AI. | Nháp không chạy thật; quyền và audit đúng; H/P/D vẫn chạy khi I không khả dụng. |
 
 **Mỗi dòng khi chạy phải ghi:** Đạt/Không đạt/Chưa thử; kết quả thực tế; thời điểm/môi trường/commit; đường dẫn ảnh/video/log/API; người chạy và người chứng kiến. Không đánh dấu đạt vì đã có tài liệu, JSON Schema, fixture, mock UI hay unit test đơn lẻ.
@@ -36,5 +44,5 @@ Tạo dữ liệu tổng hợp riêng từng app (vật tư/đề nghị/nhập 
 ## Cổng quyết định
 
 - Đội xác nhận lại phạm vi A, owner và hạn trên [roadmap v2.5](roadmap-v2.5.md) trước khi dùng tài liệu này làm kế hoạch chính thức.
-- Nếu demo không đạt ca nghiệp vụ/runtime hoặc thử âm cách ly, báo **chưa đạt SRS v2.5** và quyết định sửa phạm vi có phê duyệt; không quay về TC-LEAVE để thay bằng chứng.
+- Nếu demo không đạt ca nghiệp vụ/runtime, chia sẻ liên app theo quyền, AI theo nguồn/quyền hoặc thử âm cách ly, báo **chưa đạt SRS v2.5** và quyết định sửa phạm vi có phê duyệt; không quay về TC-LEAVE để thay bằng chứng.
 - Các ca TC-START kiểm hành vi khởi tạo/lắp ghép, **không thay thế** các ca ERP A/CRM B/CRM A E2E hay bằng chứng quyền, phiên bản và tách dữ liệu.
