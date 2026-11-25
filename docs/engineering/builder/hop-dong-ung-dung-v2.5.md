@@ -8,13 +8,13 @@ Mỗi chức năng công bố `id`, `version`, tên, miền ERP/CRM, thực th�
 
 | ID minh họa | Dữ liệu/hành động tối thiểu | Phụ thuộc |
 | --- | --- | --- |
-| `erp.materials` | danh mục vật tư, tạo/xem | không |
+| `erp.materials` | danh mục vật tư, tạo/xem; `update_note` là hành động ghi có giới hạn dùng trong demo chia sẻ ERP A → CRM A | không |
 | `erp.purchase_requests` | yêu cầu mua, gửi/duyệt/từ chối | `erp.materials` |
 | `erp.inventory` | chứng từ nhập, nhập/xem tồn | `erp.materials` |
 | `crm.customers` | khách hàng/liên hệ, tạo/xem | không |
 | `crm.opportunities` | cơ hội gắn khách hàng, chuyển giai đoạn | `crm.customers` |
 
-ID này là **đề xuất**, chưa có endpoint được xác nhận. Quy tắc tính tồn, chống nhập trùng, vòng đời cơ hội và xóa dữ liệu phải được chốt trước khi làm API.
+Các mã này là **hợp đồng mục tiêu đã được người yêu cầu chốt cho demo**, chưa có endpoint/runtime triển khai. `update_note` chỉ sửa trường ghi chú của đúng bản ghi vật tư được cấp, không sửa tồn kho hoặc các trường khác. Quy tắc tính tồn, chống nhập trùng, vòng đời cơ hội và xóa dữ liệu đã được ghi ở [quyết định khởi công code](../architecture/quyet-dinh-khoi-cong-code-v2.5.md); không tự mở rộng nghiệp vụ ngoài lát cắt đó.
 
 ## Ba lối vào, một cơ chế
 
@@ -26,7 +26,7 @@ ID này là **đề xuất**, chưa có endpoint được xác nhận. Quy tắc
 
 [Schema v2.5](../../reference/schema/digix-app-v2.5.schema.json) đề xuất `(tenantId, appId, version)` cho bản cấu hình; `features` chọn chức năng/phiên bản; `roles` gắn quyền; `pages` chứa menu/bố cục/component tham chiếu `featureId`, `resource`, `action`; `workflows` liên kết hành động với quy trình. Có thể có nhiều app trong tenant, cùng chọn một chức năng nhưng dữ liệu/quyền không tự chia sẻ. [ERP A](../../examples/erp-a-app-v2.5.json), [CRM A từ trống](../../examples/crm-a-app-v2.5.json), [CRM B](../../examples/crm-b-app-v2.5.json) và [app kết hợp ERP/CRM](../../examples/hybrid-app-v2.5.json) chỉ là fixture thiết kế, không sao chép dữ liệu giữa app.
 
-Builder cần tạo/đổi thứ tự/ẩn trang và thành phần, preview theo vai trò/mobile, lưu nháp, xem diff. Không chấp nhận JavaScript, SQL hoặc URL API tùy ý trong cấu hình. Cần chốt thư viện thành phần, biểu thức an toàn, version component, migration dữ liệu và chính sách chia sẻ giữa app trước triển khai.
+Builder cần tạo/đổi thứ tự/ẩn trang và thành phần, preview theo vai trò/mobile, lưu nháp, xem diff. Không chấp nhận JavaScript, SQL hoặc URL API tùy ý trong cấu hình. [Hợp đồng kỹ thuật v2.5 đã được người yêu cầu chốt](hop-dong-ky-thuat-v2.5.md) cụ thể hóa thư viện thành phần/bố cục, ACL, route danh mục–draft–preview–publish, chia sẻ và AI; **chưa có OpenAPI/migration/API triển khai**. Đội cần review kỹ thuật, đồng bộ schema draft/fixture và kiểm chứng quyền trước phát hành.
 
 ## Kiểm tra ngữ nghĩa trước xuất bản
 
