@@ -15,8 +15,28 @@
  */
 
 export interface ApiIssue {
+  readonly code?: string;
   readonly path: string;
   readonly message: string;
+}
+
+export type ApiErrorKind =
+  | "unauthenticated"
+  | "forbidden"
+  | "not_found"
+  | "conflict"
+  | "unprocessable"
+  | "rate_limited"
+  | "unavailable";
+
+export function determineErrorKind(status: number): ApiErrorKind {
+  if (status === 401) return "unauthenticated";
+  if (status === 403) return "forbidden";
+  if (status === 404) return "not_found";
+  if (status === 409) return "conflict";
+  if (status === 422) return "unprocessable";
+  if (status === 429) return "rate_limited";
+  return "unavailable";
 }
 
 export interface FormattedApiError {
@@ -44,8 +64,8 @@ export const ERROR_CODE_MESSAGES: Record<string, string> = {
   INVALID_APP_INPUT: "Thông tin ứng dụng chưa hợp lệ",
   APP_KEY_CONFLICT:
     "Mã ứng dụng này đã tồn tại trong doanh nghiệp. Vui lòng chọn mã khác.",
-  APP_NOT_FOUND: "Không tìm thấy ứng dụng.",
-  SOURCE_REVISION_NOT_FOUND: "Không tìm thấy bản sửa đổi mô tả nguồn.",
+  APP_NOT_FOUND: "Không tìm thấy hoặc bạn không có quyền xem.",
+  SOURCE_REVISION_NOT_FOUND: "Không tìm thấy hoặc bạn không có quyền xem.",
   CANNOT_NORMALIZE_NON_DRAFT: "Chỉ có thể chuẩn hóa bản nháp quy trình.",
   MISSING_LOCK_VERSION: "Thiếu phiên bản khóa (lockVersion) khi cập nhật.",
   INVALID_LOCK_VERSION: "Phiên bản khóa không hợp lệ.",

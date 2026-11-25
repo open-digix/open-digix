@@ -19,11 +19,12 @@ import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import {
-  getServerAccessToken,
+  getServerSessionToken,
   getMeCached,
   getTenantContext,
 } from "../../lib/api/server";
 import AppShell from "../../components/workspace/AppShell";
+import ReloginButton from "../../components/common/ReloginButton";
 
 export async function WorkspaceLayoutContent({
   children,
@@ -32,9 +33,55 @@ export async function WorkspaceLayoutContent({
 }) {
   await connection();
 
-  const token = await getServerAccessToken();
-  if (!token) {
+  const sessionToken = await getServerSessionToken();
+  if (!sessionToken) {
     redirect("/login");
+  }
+
+  if (sessionToken.error || !sessionToken.accessToken) {
+    return (
+      <div
+        className="ws-root"
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+          background: "var(--ws-canvas)",
+        }}
+      >
+        <div
+          className="card"
+          style={{
+            maxWidth: 460,
+            width: "100%",
+            textAlign: "center",
+            padding: 32,
+          }}
+        >
+          <div
+            className="info-banner"
+            style={{ borderColor: "var(--ws-danger)", marginBottom: 16 }}
+            role="alert"
+          >
+            <b>Phiên đăng nhập đã hết hạn</b>
+          </div>
+          <p
+            style={{
+              color: "var(--ws-muted)",
+              marginBottom: 24,
+              fontSize: 13,
+              lineHeight: 1.5,
+            }}
+          >
+            Phiên làm việc của bạn không còn hợp lệ hoặc đã hết hạn. Vui lòng
+            đăng nhập lại.
+          </p>
+          <ReloginButton callbackUrl="/dashboard" />
+        </div>
+      </div>
+    );
   }
 
   const meResult = await getMeCached();
@@ -79,9 +126,7 @@ export async function WorkspaceLayoutContent({
               Phiên làm việc của bạn không còn hợp lệ hoặc đã hết hạn. Vui lòng
               đăng nhập lại.
             </p>
-            <a href="/login" className="button primary">
-              Đăng nhập lại
-            </a>
+            <ReloginButton callbackUrl="/dashboard" />
           </div>
         </div>
       );
