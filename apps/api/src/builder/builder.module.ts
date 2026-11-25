@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { IdentityModule } from '../identity/identity.module';
 import { BuilderApplicationController } from './builder-application.controller';
 import { BuilderApplicationRepository } from './builder-application.repository';
 import { BuilderApplicationService } from './builder-application.service';
@@ -13,6 +14,7 @@ import { BuilderSourceRepository } from './builder-source.repository';
 import { BuilderSourceService } from './builder-source.service';
 
 @Module({
+  imports: [IdentityModule],
   controllers: [
     BuilderApplicationController,
     BuilderSourceController,
