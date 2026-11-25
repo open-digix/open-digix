@@ -1,4 +1,5 @@
 import type { TenantContext } from '../identity/identity.types';
+import { REQUIRED_APP_PERMISSION } from '../identity/app-permission.decorator';
 import { REQUIRED_ROLES } from '../identity/roles.decorator';
 import { TENANT_CONTEXT_REQUIRED } from '../identity/tenant-context.decorator';
 import { BuilderDraftController } from './builder-draft.controller';
@@ -136,6 +137,10 @@ describe('BuilderDraftController', () => {
         'tenant_admin',
       ]);
       expect(Reflect.getMetadata(TENANT_CONTEXT_REQUIRED, handler)).toBe(true);
+      expect(Reflect.getMetadata(REQUIRED_APP_PERMISSION, handler)).toEqual({
+        permission: 'app.draft.read',
+        appIdParam: 'appId',
+      });
     });
   });
 
@@ -175,6 +180,10 @@ describe('BuilderDraftController', () => {
         'tenant_admin',
       ]);
       expect(Reflect.getMetadata(TENANT_CONTEXT_REQUIRED, handler)).toBe(true);
+      expect(Reflect.getMetadata(REQUIRED_APP_PERMISSION, handler)).toEqual({
+        permission: 'app.draft.write',
+        appIdParam: 'appId',
+      });
     });
   });
 
@@ -220,6 +229,10 @@ describe('BuilderDraftController', () => {
         'tenant_admin',
       ]);
       expect(Reflect.getMetadata(TENANT_CONTEXT_REQUIRED, handler)).toBe(true);
+      expect(Reflect.getMetadata(REQUIRED_APP_PERMISSION, handler)).toEqual({
+        permission: 'app.draft.write',
+        appIdParam: 'appId',
+      });
     });
   });
 
@@ -251,6 +264,10 @@ describe('BuilderDraftController', () => {
         'tenant_admin',
       ]);
       expect(Reflect.getMetadata(TENANT_CONTEXT_REQUIRED, handler)).toBe(true);
+      expect(Reflect.getMetadata(REQUIRED_APP_PERMISSION, handler)).toEqual({
+        permission: 'app.draft.validate',
+        appIdParam: 'appId',
+      });
     });
   });
 });

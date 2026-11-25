@@ -1,4 +1,5 @@
 import type { TenantContext } from '../identity/identity.types';
+import { REQUIRED_APP_PERMISSION } from '../identity/app-permission.decorator';
 import { REQUIRED_ROLES } from '../identity/roles.decorator';
 import { TENANT_CONTEXT_REQUIRED } from '../identity/tenant-context.decorator';
 import { BuilderSourceController } from './builder-source.controller';
@@ -74,5 +75,9 @@ describe('BuilderSourceController', () => {
       'tenant_admin',
     ]);
     expect(Reflect.getMetadata(TENANT_CONTEXT_REQUIRED, handler)).toBe(true);
+    expect(Reflect.getMetadata(REQUIRED_APP_PERMISSION, handler)).toEqual({
+      permission: 'app.source.write',
+      appIdParam: 'appId',
+    });
   });
 });
