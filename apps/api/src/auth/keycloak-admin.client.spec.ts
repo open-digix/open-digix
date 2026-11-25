@@ -11,6 +11,7 @@ describe('KeycloakAdminClient', () => {
     realm: 'digix',
     adminUsername: 'admin',
     adminPassword: 'admin-password',
+    requestTimeoutMs: 5000,
   };
   const user = {
     username: 'admin',
@@ -99,6 +100,33 @@ describe('KeycloakAdminClient', () => {
     );
   });
 
+  it('aborts a Keycloak request that exceeds the configured timeout', async () => {
+    jest.useFakeTimers();
+    const fetchImplementation = jest.fn(
+      (_input: URL, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () =>
+            reject(new DOMException('Aborted', 'AbortError')),
+          );
+        }),
+    ) as jest.MockedFunction<typeof fetch>;
+    const client = new KeycloakAdminClient(
+      { ...config, requestTimeoutMs: 10 },
+      fetchImplementation,
+    );
+
+    const registration = expect(client.createUser(user)).rejects.toEqual(
+      new KeycloakAdminUnavailableError('Keycloak admin login timed out.'),
+    );
+    await jest.advanceTimersByTimeAsync(10);
+
+    try {
+      await registration;
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('fails when Keycloak admin login returns no token', async () => {
     const fetchImplementation = jest.fn() as jest.MockedFunction<typeof fetch>;
     fetchImplementation.mockResolvedValue(
@@ -146,13 +174,13 @@ describe('KeycloakAdminClient', () => {
     expect(fetchImplementation).toHaveBeenNthCalledWith(
       2,
       new URL('http://keycloak:8080/admin/realms/digix/users/keycloak-subject'),
-      {
+      expect.objectContaining({
         method: 'DELETE',
         headers: {
           authorization: 'Bearer admin-token',
           'content-type': 'application/json',
         },
-      },
+      }),
     );
   });
 });

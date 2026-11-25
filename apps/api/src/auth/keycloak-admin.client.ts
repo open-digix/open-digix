@@ -3,6 +3,7 @@ export interface KeycloakAdminClientConfig {
   readonly realm: string;
   readonly adminUsername: string;
   readonly adminPassword: string;
+  readonly requestTimeoutMs: number;
 }
 
 export interface CreateKeycloakUserInput {
@@ -45,9 +46,9 @@ export class KeycloakAdminClient {
       `/admin/realms/${encodeURIComponent(this.config.realm)}/users`,
       this.config.internalUrl,
     );
-    let response: Response;
-    try {
-      response = await this.fetchImplementation(userUrl, {
+    const response = await this.fetchWithTimeout(
+      userUrl,
+      {
         method: 'POST',
         headers: this.jsonHeaders(accessToken),
         body: JSON.stringify({
@@ -65,12 +66,9 @@ export class KeycloakAdminClient {
             },
           ],
         }),
-      });
-    } catch {
-      throw new KeycloakAdminUnavailableError(
-        'Keycloak user creation request failed.',
-      );
-    }
+      },
+      'Keycloak user creation',
+    );
 
     if (response.status === 409) {
       throw new KeycloakUserConflictError(
@@ -100,17 +98,14 @@ export class KeycloakAdminClient {
       `/admin/realms/${encodeURIComponent(this.config.realm)}/users/${encodeURIComponent(subject)}`,
       this.config.internalUrl,
     );
-    let response: Response;
-    try {
-      response = await this.fetchImplementation(userUrl, {
+    const response = await this.fetchWithTimeout(
+      userUrl,
+      {
         method: 'DELETE',
         headers: this.jsonHeaders(accessToken),
-      });
-    } catch {
-      throw new KeycloakAdminUnavailableError(
-        'Keycloak user deletion request failed.',
-      );
-    }
+      },
+      'Keycloak user deletion',
+    );
 
     if (!response.ok) {
       throw new KeycloakAdminUnavailableError(
@@ -130,18 +125,15 @@ export class KeycloakAdminClient {
       username: this.config.adminUsername,
       password: this.config.adminPassword,
     });
-    let response: Response;
-    try {
-      response = await this.fetchImplementation(tokenUrl, {
+    const response = await this.fetchWithTimeout(
+      tokenUrl,
+      {
         method: 'POST',
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
         body,
-      });
-    } catch {
-      throw new KeycloakAdminUnavailableError(
-        'Keycloak admin login request failed.',
-      );
-    }
+      },
+      'Keycloak admin login',
+    );
 
     if (!response.ok) {
       throw new KeycloakAdminUnavailableError(
@@ -163,6 +155,30 @@ export class KeycloakAdminClient {
       authorization: `Bearer ${accessToken}`,
       'content-type': 'application/json',
     };
+  }
+
+  private async fetchWithTimeout(
+    input: URL,
+    init: RequestInit,
+    operation: string,
+  ): Promise<Response> {
+    const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(),
+      this.config.requestTimeoutMs,
+    );
+
+    try {
+      return await this.fetchImplementation(input, {
+        ...init,
+        signal: controller.signal,
+      });
+    } catch {
+      const suffix = controller.signal.aborted ? 'timed out' : 'request failed';
+      throw new KeycloakAdminUnavailableError(`${operation} ${suffix}.`);
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 }
 

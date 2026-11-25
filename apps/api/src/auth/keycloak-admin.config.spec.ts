@@ -14,7 +14,26 @@ describe('loadKeycloakAdminClientConfig', () => {
       realm: 'digix',
       adminUsername: 'admin',
       adminPassword: 'admin-password',
+      requestTimeoutMs: 5000,
     });
+  });
+
+  it('loads a configured request timeout', () => {
+    expect(
+      loadKeycloakAdminClientConfig({
+        ...environment,
+        KEYCLOAK_ADMIN_REQUEST_TIMEOUT_MS: '12000',
+      }).requestTimeoutMs,
+    ).toBe(12000);
+  });
+
+  it('rejects an invalid request timeout', () => {
+    expect(() =>
+      loadKeycloakAdminClientConfig({
+        ...environment,
+        KEYCLOAK_ADMIN_REQUEST_TIMEOUT_MS: '0',
+      }),
+    ).toThrow('KEYCLOAK_ADMIN_REQUEST_TIMEOUT_MS must be an integer');
   });
 
   it.each([

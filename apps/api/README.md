@@ -22,6 +22,10 @@ Compose chạy migration trước khi khởi động API. API chỉ healthy sau 
 PostgreSQL và migration thành công. Compose cũng chờ SeaweedFS và Flowable healthy
 trước khi khởi động API.
 
+Keycloak Admin API requests use `KEYCLOAK_ADMIN_REQUEST_TIMEOUT_MS`, default `5000`
+milliseconds. When Keycloak does not respond before the timeout, the request is
+aborted and the registration endpoint returns `503 UNAVAILABLE`.
+
 ## Public tenant registration
 
 Frontend dang ky doanh nghiep bang endpoint public sau. Endpoint nay khong yeu cau
