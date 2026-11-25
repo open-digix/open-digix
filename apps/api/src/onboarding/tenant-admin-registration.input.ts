@@ -3,6 +3,7 @@ import { BadRequestException } from '@nestjs/common';
 const TENANT_SLUG_PATTERN = /^[a-z][a-z0-9_-]{1,63}$/;
 const USERNAME_PATTERN = /^[a-z][a-z0-9._-]{2,63}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DISPLAY_NAME_MAX_LENGTH = 160;
 const ALLOWED_KEYS = new Set(['tenantName', 'tenantSlug', 'admin']);
 const ADMIN_ALLOWED_KEYS = new Set([
   'firstName',
@@ -86,6 +87,10 @@ function parseAdmin(
   const password = requiredSecret(value, 'password', 128, issues, '/admin');
   const email = emailValue?.toLowerCase();
   const username = usernameValue?.toLowerCase();
+  const displayName =
+    firstName !== undefined && lastName !== undefined
+      ? `${firstName} ${lastName}`
+      : undefined;
 
   if (email && !EMAIL_PATTERN.test(email)) {
     issues.push({
@@ -104,6 +109,13 @@ function parseAdmin(
     issues.push({
       path: '/admin/password',
       message: 'password must contain at least 8 characters.',
+    });
+  }
+  if (displayName && displayName.length > DISPLAY_NAME_MAX_LENGTH) {
+    issues.push({
+      path: '/admin',
+      message:
+        'firstName and lastName combined must contain at most 160 characters.',
     });
   }
 

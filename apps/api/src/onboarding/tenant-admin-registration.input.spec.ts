@@ -88,6 +88,23 @@ describe('parseTenantAdminRegistrationBody', () => {
     );
   });
 
+  it('rejects a display name that exceeds the database limit', () => {
+    expectInvalid(
+      {
+        tenantName: 'Acme Corporation',
+        tenantSlug: 'acme_corp',
+        admin: {
+          firstName: 'A'.repeat(80),
+          lastName: 'B'.repeat(80),
+          email: 'admin@example.com',
+          username: 'admin',
+          password: 'correct-horse-battery',
+        },
+      },
+      '/admin',
+    );
+  });
+
   it('requires the nested admin object and all account fields', () => {
     expectInvalid(
       {
