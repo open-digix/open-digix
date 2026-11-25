@@ -24,6 +24,8 @@ type TenantAdminPersistence = Pick<TenantAdminRepository, 'createTenantAdmin'>;
 
 export interface TenantAdminRegistrationResult extends CreatedTenantAdmin {
   readonly keycloakSubject: string;
+  readonly tenantSlug: string;
+  readonly username: string;
 }
 
 @Injectable()
@@ -47,7 +49,12 @@ export class TenantAdminRegistrationService {
       const created = await this.repository.createTenantAdmin(
         toRepositoryInput(input, this.identityIssuer, keycloakSubject),
       );
-      return { keycloakSubject, ...created };
+      return {
+        keycloakSubject,
+        tenantSlug: input.tenantSlug,
+        username: input.admin.username,
+        ...created,
+      };
     } catch (error) {
       await this.cleanupKeycloakUser(keycloakSubject, error);
       throw error;

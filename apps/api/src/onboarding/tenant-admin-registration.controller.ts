@@ -5,16 +5,15 @@ import { TenantAdminRegistrationService } from './tenant-admin-registration.serv
 
 export interface TenantAdminRegistrationResponse {
   readonly tenantId: string;
-  readonly membershipId: string;
-  readonly status: 'created';
-  readonly role: 'tenant_admin';
+  readonly tenantSlug: string;
+  readonly username: string;
 }
 
-@Controller('v1/onboarding')
+@Controller('v1/public')
 export class TenantAdminRegistrationController {
   constructor(private readonly registration: TenantAdminRegistrationService) {}
 
-  @Post('tenant-admin')
+  @Post('tenant-registrations')
   @Public()
   @HttpCode(HttpStatus.CREATED)
   async register(
@@ -25,9 +24,8 @@ export class TenantAdminRegistrationController {
 
     return {
       tenantId: created.tenantId,
-      membershipId: created.membershipId,
-      status: 'created',
-      role: 'tenant_admin',
+      tenantSlug: created.tenantSlug,
+      username: created.username,
     };
   }
 }

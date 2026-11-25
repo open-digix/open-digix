@@ -143,7 +143,7 @@ describe('AppController (e2e)', () => {
     });
 
     const response = await request(app.getHttpServer())
-      .post('/v1/onboarding/tenant-admin')
+      .post('/v1/public/tenant-registrations')
       .send({
         tenantName: 'Acme Corporation',
         tenantSlug: 'acme_corp',
@@ -159,9 +159,8 @@ describe('AppController (e2e)', () => {
 
     expect(response.body).toEqual({
       tenantId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
-      membershipId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
-      status: 'created',
-      role: 'tenant_admin',
+      tenantSlug: 'acme_corp',
+      username: 'admin',
     });
     expect(keycloakAdmin.createUser).toHaveBeenCalledWith({
       username: 'admin',
@@ -181,7 +180,7 @@ describe('AppController (e2e)', () => {
 
   it('rejects invalid tenant admin registration input', async () => {
     const response = await request(app.getHttpServer())
-      .post('/v1/onboarding/tenant-admin')
+      .post('/v1/public/tenant-registrations')
       .send({
         tenantName: 'Acme Corporation',
         tenantSlug: 'Acme Corporation',
