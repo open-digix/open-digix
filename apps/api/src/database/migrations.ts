@@ -1,5 +1,6 @@
 import { initialSchemaMigration } from './migrations/0001-initial-schema';
 import { builderDraftsMigration } from './migrations/0002-builder-drafts';
+import { appAclMigration } from './migrations/0003-app-acl';
 
 export interface Migration {
   id: string;
@@ -10,4 +11,5 @@ export interface Migration {
 export const migrations: readonly Migration[] = [
   initialSchemaMigration,
   builderDraftsMigration,
+  appAclMigration,
 ];
