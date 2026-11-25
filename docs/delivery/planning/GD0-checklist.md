@@ -1,5 +1,7 @@
 # Checklist thực hiện GĐ0 — chốt thiết kế DigiX Lab
 
+> Checklist dưới đây lập theo SRS v2.4. Trước khi dùng cho phạm vi v2.5, cần chốt lại [roadmap v2.5](../roadmap-v2.5.md), owner và ca TC-MOD/TC-UI/TC-APP; giữ trạng thái checkbox lịch sử, không đánh dấu lại theo tài liệu đề xuất.
+
 **Trạng thái:** Chưa bắt đầu nghiệm thu GĐ0. Đây là checklist để thực hiện, không phải biên bản phê duyệt hay bằng chứng đã hoàn thành.  
 **Ngày lập:** 11/11/2026. Mốc GĐ0 dự kiến 31/10–02/11 và M1 dự kiến 09/11 đã qua; ghi ngày thực tế, không hồi tố.  
 **Người dùng checklist / owner toàn bộ tài liệu GĐ0:** An (theo yêu cầu 14/11/2026). An tự soạn, đối chiếu, cập nhật mọi đầu ra; có thể xin phản hồi kỹ thuật/UX từ Dũng/Tú nhưng không giao họ viết GĐ0. Quyết định tập thể và người triển khai sau GĐ0 vẫn cần cả đội chốt.

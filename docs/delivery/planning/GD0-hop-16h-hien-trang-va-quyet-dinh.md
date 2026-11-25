@@ -1,5 +1,7 @@
 # Tài liệu mang vào họp GĐ0 — hiện trạng và điểm cần quyết
 
+> Ảnh chụp trước phạm vi v2.5; các kết luận/demo mua sắm–nghỉ phép bên dưới là lịch sử, không dùng làm quyết định cho ERP/CRM lắp ghép. Xem [roadmap v2.5](../roadmap-v2.5.md) để tái đánh giá.
+
 **Chuẩn bị ban đầu cho:** cuộc họp dự kiến 16:00 ngày 11/11/2026; dùng lại làm tài liệu tham khảo cho lịch online **15:30 ngày 13/11/2026**. Người dùng cho biết buổi họp 12/11 chưa diễn ra.  
 **Lưu ý trước khi dùng:** bảng kiểm kê bên dưới là ảnh chụp **11/11**, chưa cập nhật các commit APISIX Gateway ngày 13/11, `.env` local mới và kết quả kiểm tra mới; cần rà lại cùng đội, không trình bày dòng “Gateway chưa có” như hiện trạng 13/11.  
 **Trạng thái:** Bản kiểm kê sơ bộ từ repository/workspace; **chưa được An, Dũng, Tú review hoặc phê duyệt**. Những ô “chưa kiểm chứng” không có nghĩa tính năng chắc chắn lỗi, mà là chưa có bằng chứng chạy thật ở lần kiểm tra này.  
