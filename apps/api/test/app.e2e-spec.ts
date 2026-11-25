@@ -8,6 +8,7 @@ import { AppModule } from './../src/app.module';
 import { S3_CLIENT } from './../src/storage/storage.constants';
 import type { TenantContext } from './../src/identity/identity.types';
 import { RequireRoles } from './../src/identity/roles.decorator';
+import { KeycloakUserConflictError } from './../src/auth/keycloak-admin.client';
 import {
   CurrentTenantContext,
   TenantScoped,
@@ -17,6 +18,7 @@ import {
   TENANT_ADMIN_IDENTITY_ISSUER,
   TENANT_ADMIN_REPOSITORY,
 } from './../src/onboarding/tenant-admin-registration.service';
+import { TenantSlugConflictError } from './../src/onboarding/tenant-admin.repository';
 
 @Controller('__test/tenant')
 class AuthorizationTestController {
@@ -203,6 +205,46 @@ describe('AppController (e2e)', () => {
     expect(tenantAdminRepository.createTenantAdmin).not.toHaveBeenCalled();
   });
 
+  it('returns EMAIL_TAKEN when Keycloak rejects a duplicate email', async () => {
+    keycloakAdmin.createUser.mockRejectedValue(
+      new KeycloakUserConflictError('email'),
+    );
+
+    const response = await request(app.getHttpServer())
+      .post('/v1/public/tenant-registrations')
+      .send(validRegistrationBody())
+      .expect(409);
+
+    expect(response.body).toEqual({
+      error: {
+        code: 'EMAIL_TAKEN',
+        message: 'Email is already taken.',
+      },
+    });
+    expect(tenantAdminRepository.createTenantAdmin).not.toHaveBeenCalled();
+  });
+
+  it('returns TENANT_SLUG_TAKEN and cleans up Keycloak on a duplicate slug', async () => {
+    keycloakAdmin.createUser.mockResolvedValue('keycloak-subject');
+    tenantAdminRepository.createTenantAdmin.mockRejectedValue(
+      new TenantSlugConflictError('acme_corp'),
+    );
+    keycloakAdmin.deleteUser.mockResolvedValue(undefined);
+
+    const response = await request(app.getHttpServer())
+      .post('/v1/public/tenant-registrations')
+      .send(validRegistrationBody())
+      .expect(409);
+
+    expect(response.body).toEqual({
+      error: {
+        code: 'TENANT_SLUG_TAKEN',
+        message: 'Tenant slug is already taken.',
+      },
+    });
+    expect(keycloakAdmin.deleteUser).toHaveBeenCalledWith('keycloak-subject');
+  });
+
   it('/v1/me rejects a request without a Bearer token', async () => {
     const response = await request(app.getHttpServer())
       .get('/v1/me')
@@ -370,5 +412,19 @@ function identityRow(tenantId: string, roles: string[]) {
     tenant_name: 'Tenant Alpha',
     tenant_status: 'active',
     roles,
+  };
+}
+
+function validRegistrationBody() {
+  return {
+    tenantName: 'Acme Corporation',
+    tenantSlug: 'acme_corp',
+    admin: {
+      firstName: 'Nguyen',
+      lastName: 'Van A',
+      email: 'admin@example.com',
+      username: 'admin',
+      password: 'correct-horse-battery',
+    },
   };
 }
