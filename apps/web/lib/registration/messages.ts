@@ -39,7 +39,7 @@ export const REGISTRATION_ERROR_MAPPINGS: Record<RegistrationErrorCode, ErrorMap
     field: "general",
   },
   RATE_LIMITED: {
-    message: "Bạn đã thao tác quá nhanh hoặc quá nhiều lần. Vui lòng thử lại sau ít phút.",
+    message: "Bạn thao tác quá nhanh, vui lòng thử lại sau ít phút.",
     field: "general",
   },
   UNAVAILABLE: {

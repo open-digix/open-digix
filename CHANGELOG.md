@@ -18,7 +18,15 @@
 
 Mọi thay đổi đáng chú ý của dự án sẽ được ghi nhận tại đây.
 
-## [Chưa phát hành] - 24/11/2026
+## [Chưa phát hành] - 26/11/2026
+
+### Nối API đăng ký doanh nghiệp & Sửa lỗi ô điều khoản (FRONT-REG, #56)
+- **Mặc định gọi API thật:** Chuyển `REGISTRATION_API_MODE` sang mặc định `api`, gọi trực tiếp `POST /v1/public/tenant-registrations` qua Gateway; chỉ chuyển sang `mock` khi cấu hình rõ ràng.
+- **Màn hình thành công API thật:** Hiển thị thông báo "Đã tạo doanh nghiệp", tên doanh nghiệp, tên đăng nhập quản trị và nút chuyển tiếp "Đăng nhập".
+- **Ánh xạ mã lỗi API thật:** Bắt trọn 6 mã lỗi (`TENANT_SLUG_TAKEN`, `EMAIL_TAKEN`, `USERNAME_TAKEN`, `VALIDATION_FAILED`, `RATE_LIMITED`, `UNAVAILABLE`), hỗ trợ phân bổ lỗi `issues` về từng ô nhập bao gồm cả `/admin`.
+- **Sửa lỗi giao diện ô Điều khoản sử dụng:** Loại bỏ `marginTop: -12` gây đè chữ; thông báo lỗi căn chỉnh dưới dòng điều khoản, thụt lề 28px thẳng hàng với văn bản, bổ sung `aria-invalid` và `aria-describedby` trên ô checkbox.
+
+## 24/11/2026
 
 ### Đăng ký doanh nghiệp mới (UI-03, chuẩn bị cho backend #35)
 - **Màn hình chọn hình thức (`/register`):** Hiển thị 2 lựa chọn trực quan "Tạo doanh nghiệp mới" (dành cho người đại diện công ty) và "Tham gia doanh nghiệp có sẵn" (gửi yêu cầu cấp tài khoản, kế thừa R3 với nút quay lại "← Chọn lại").
