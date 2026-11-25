@@ -2,12 +2,15 @@ import { Module } from '@nestjs/common';
 import { AppAuthorizationRepository } from './app-authorization.repository';
 import { APP_AUTHORIZATION_REPOSITORY } from './app-authorization.types';
 import { AppAuthorizationService } from './app-authorization.service';
+import { AppRoleController } from './app-role.controller';
+import { AppRoleManagementRepository } from './app-role-management.repository';
+import { AppRoleManagementService } from './app-role-management.service';
 import { IdentityContextRepository } from './identity-context.repository';
 import { IdentityContextService } from './identity-context.service';
 import { MeController } from './me.controller';
 
 @Module({
-  controllers: [MeController],
+  controllers: [MeController, AppRoleController],
   providers: [
     IdentityContextRepository,
     IdentityContextService,
@@ -17,6 +20,8 @@ import { MeController } from './me.controller';
       useExisting: AppAuthorizationRepository,
     },
     AppAuthorizationService,
+    AppRoleManagementRepository,
+    AppRoleManagementService,
   ],
   exports: [IdentityContextService, AppAuthorizationService],
 })

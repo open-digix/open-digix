@@ -48,14 +48,10 @@ export class AppAuthorizationService {
   async requireAppAccess(
     input: AppAuthorizationInput,
   ): Promise<AppAuthorizationResult> {
-    const application = await this.repository.findApplication(
+    const application = await this.requireApplication(
       input.tenantId,
       input.applicationId,
     );
-
-    if (!application || application.status === 'retired') {
-      throw appNotFound();
-    }
 
     const membershipAccess = await this.repository.findMembershipAccess(
       input.tenantId,
@@ -75,6 +71,19 @@ export class AppAuthorizationService {
       roleCodes: membershipAccess.roleCodes,
       permissions: membershipAccess.permissions,
     };
+  }
+
+  async requireApplication(tenantId: string, applicationId: string) {
+    const application = await this.repository.findApplication(
+      tenantId,
+      applicationId,
+    );
+
+    if (!application || application.status === 'retired') {
+      throw appNotFound();
+    }
+
+    return application;
   }
 
   async requirePermission(
