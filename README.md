@@ -108,6 +108,86 @@ bộ dữ liệu local của các dịch vụ này**, chỉ dùng khi chủ đ�
 đổi tên DB/user/password sau lần chạy đầu, volume cũ không tự khởi tạo lại tài
 khoản; dùng thông số cũ hoặc chủ động tạo DB/user mới trong volume đó.
 
+## Phát triển trong Docker với hot reload
+
+Giữ `.env` như phần trên, chạy thêm file override dev (không chạy song song với
+Compose mặc định trên cùng cổng). **Luôn truyền cả hai file, theo đúng thứ tự**:
+`compose.dev.yaml` chỉ chứa phần override, chạy riêng sẽ thiếu biến DB/OIDC và
+các dependency. Nếu trước đó đã chạy nhầm chỉ với file dev, volume dependency
+có thể đang rỗng; dùng lệnh phục hồi ngay bên dưới.
+
+```sh
+docker compose -f compose.yaml -f compose.dev.yaml up --build --wait
+```
+
+Có thể dùng `Makefile` để không phải nhớ các cờ Compose. Mặc định `ENV=dev`
+tự ghép `compose.yaml` và `compose.dev.yaml`; `ENV=prod` chỉ dùng `compose.yaml`
+(chế độ build production **trên máy local**, không phải cấu hình triển khai
+production):
+
+```sh
+make help
+make setup                 # chỉ tạo .env nếu chưa có; nhớ thay password mẫu
+make up                    # chạy toàn stack dev, chờ healthcheck
+make infra-up              # chỉ chạy DB, Keycloak, Flowable, SeaweedFS
+make ps
+make logs SVC=api
+make sh SVC=api
+make build SVC=web NO_CACHE=1
+make rebuild               # build lại và chạy
+make test                  # cả hai app; hoặc make test-api / make test-web
+make lint                  # không tự sửa mã nguồn
+make typecheck
+make migrate
+make seed                  # cần cấu hình DEMO_USER_PASSWORD trong .env
+make down                  # giữ volume dữ liệu
+```
+
+`make restart SVC=api` chỉ restart container, không build lại image.
+`make pull` bỏ qua các image build trong repo. `make clean` dọn container và
+network của project, **giữ volumes**. Chỉ dùng `make purge
+CONFIRM=delete-data` khi muốn xóa cả DB/storage local; `make prune
+CONFIRM=prune-global` dọn tài nguyên không dùng trên **toàn máy Docker** (không
+xóa volumes), không chỉ dự án này.
+
+Phục hồi khi đã chạy `docker compose -f compose.dev.yaml up`: chạy lại với đủ
+hai file và rebuild, sau đó cài dependency vào volume Web bị rỗng (không xóa
+volume dữ liệu DB). Nếu `npm ci` báo `EACCES` do volume cũ do root tạo, sửa
+quyền volume trước:
+
+```sh
+docker compose -f compose.yaml -f compose.dev.yaml build api web
+docker compose -f compose.yaml -f compose.dev.yaml run --rm --no-deps --user root web chown -R node:node /app/node_modules /app/.next
+docker compose -f compose.yaml -f compose.dev.yaml run --rm --no-deps web npm ci
+docker compose -f compose.yaml -f compose.dev.yaml up --wait
+```
+
+Web chạy `next dev` (Fast Refresh) và API chạy `nest start --watch`. Sửa file
+trong `apps/web` hoặc `apps/api/src` trên máy sẽ được đồng bộ vào container; không
+cần build lại image sau mỗi lần sửa. API chạy migration một lần trước khi vào
+watch mode. Gateway và các dịch vụ phụ trợ vẫn dùng cấu hình Compose mặc định,
+chỉ mở các cổng host trên `127.0.0.1`. Nếu file watcher không nhận thay đổi trên
+Docker Desktop/ổ mạng, kiểm tra cấu hình chia sẻ file của Docker và watcher
+Next/Nest trên hệ thống đó trước khi bật polling thường trực (tốn CPU).
+
+Dependency của mỗi app và output `.dev-build/dist`/`.next` nằm trên Docker volumes, không
+ghi đè `node_modules` hay output trên máy host. Khi `package-lock.json` đổi,
+cài lại dependency trong volume tương ứng rồi khởi động lại app:
+
+```sh
+docker compose -f compose.yaml -f compose.dev.yaml stop api web
+docker compose -f compose.yaml -f compose.dev.yaml run --rm --no-deps api npm ci
+docker compose -f compose.yaml -f compose.dev.yaml run --rm --no-deps web npm ci
+docker compose -f compose.yaml -f compose.dev.yaml up -d api web
+```
+
+Chỉ cần chạy lệnh `npm ci` cho app có lockfile thay đổi. Có thể dùng `docker
+compose -f compose.yaml -f compose.dev.yaml exec api npm test` (hoặc `exec web
+npm test`) để chạy test với dependency trong container. Kiểm tra Gateway bằng
+`sh infra/apisix/smoke-test.sh`; trang Web ở <http://localhost:3000>. Dừng
+bằng `docker compose -f compose.yaml -f compose.dev.yaml down` để giữ dữ liệu.
+Không dùng `down -v` nếu không chủ động muốn xóa toàn bộ dữ liệu local.
+
 ## Phát triển ngoài Compose (tùy chọn)
 
 Chạy DB bằng `docker compose up -d db`; API trên host cần `DB_HOST=localhost`
@@ -128,6 +208,8 @@ apps/web/          Next.js; trang status/dashboard gọi Gateway bằng API_INTE
 infra/apisix/      APISIX standalone, chỉ định tuyến /health và /v1/*
 infra/keycloak/    Realm OIDC development có version và hướng dẫn kiểm chứng
 compose.yaml       Toàn bộ dịch vụ local + healthcheck/depends_on
+compose.dev.yaml   Override dev để watch API và hot reload Web
+Makefile           Lệnh vận hành stack dev/local qua Docker Compose
 .env.example       Chỉ là ví dụ; .env thật được git bỏ qua
 docs/              Mục lục tài liệu và tài liệu dự án (xem docs/README.md)
 ```
