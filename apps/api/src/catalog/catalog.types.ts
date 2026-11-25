@@ -18,7 +18,7 @@ export const CATALOG_VERSION = '2026-11-demo-1' as const;
 export const CATALOG_SCHEMA_VERSION = 1 as const;
 
 export type CatalogSchemaVersion = typeof CATALOG_SCHEMA_VERSION;
-export type CatalogFeatureStatus = 'active' | 'deprecated';
+export type CatalogFeatureStatus = 'supported' | 'deprecated';
 export type CatalogDomain = 'erp' | 'crm';
 export type CatalogComponent =
   'form' | 'table' | 'detail' | 'metric' | 'action';
