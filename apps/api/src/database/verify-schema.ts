@@ -5,7 +5,10 @@ import { migrationChecksum } from './migration-runner';
 import { migrations } from './migrations';
 
 const REQUIRED_TABLES = [
+  'app_membership_roles',
   'application_versions',
+  'application_role_permissions',
+  'application_roles',
   'applications',
   'audit_logs',
   'builder_draft_revisions',
@@ -123,6 +126,8 @@ export async function verifySchema(
   const membershipBetaId = randomUUID();
   const roleAlphaId = randomUUID();
   const roleBetaId = randomUUID();
+  const applicationRoleAlphaId = randomUUID();
+  const applicationRoleBetaId = randomUUID();
   const applicationAlphaId = randomUUID();
   const applicationVersionAlphaId = randomUUID();
   const sourceRevisionAlphaId = randomUUID();
@@ -190,6 +195,41 @@ export async function verifySchema(
       `INSERT INTO applications (id, tenant_id, app_key, name)
        VALUES ($1, $2, 'verification_app', 'Verification App')`,
       [applicationAlphaId, tenantAlphaId],
+    );
+    await client.query(
+      `INSERT INTO application_roles (
+         id,
+         tenant_id,
+         application_id,
+         code,
+         name,
+         is_system
+       ) VALUES ($1, $2, $3, 'designer', 'Designer', true)`,
+      [applicationRoleAlphaId, tenantAlphaId, applicationAlphaId],
+    );
+    await client.query(
+      `INSERT INTO application_role_permissions (
+         tenant_id,
+         application_id,
+         role_id,
+         permission
+       ) VALUES ($1, $2, $3, 'app.draft.read')`,
+      [tenantAlphaId, applicationAlphaId, applicationRoleAlphaId],
+    );
+    await client.query(
+      `INSERT INTO app_membership_roles (
+         tenant_id,
+         application_id,
+         membership_id,
+         role_id,
+         assigned_by_membership_id
+       ) VALUES ($1, $2, $3, $4, $3)`,
+      [
+        tenantAlphaId,
+        applicationAlphaId,
+        membershipAlphaId,
+        applicationRoleAlphaId,
+      ],
     );
     await client.query(
       `INSERT INTO application_versions (
@@ -325,6 +365,44 @@ export async function verifySchema(
         sql: `INSERT INTO membership_roles (tenant_id, membership_id, role_id)
               VALUES ($1, $2, $3)`,
         values: [tenantAlphaId, membershipAlphaId, roleBetaId],
+      },
+      {
+        name: 'application role cannot use an application from another tenant',
+        sql: `INSERT INTO application_roles (
+                id,
+                tenant_id,
+                application_id,
+                code,
+                name
+              ) VALUES ($1, $2, $3, 'designer_beta', 'Designer Beta')`,
+        values: [applicationRoleBetaId, tenantBetaId, applicationAlphaId],
+      },
+      {
+        name: 'application permission cannot use a role from another tenant',
+        sql: `INSERT INTO application_role_permissions (
+                tenant_id,
+                application_id,
+                role_id,
+                permission
+              ) VALUES ($1, $2, $3, 'app.draft.write')`,
+        values: [tenantBetaId, applicationAlphaId, applicationRoleAlphaId],
+      },
+      {
+        name: 'app role assignment cannot use a membership from another tenant',
+        sql: `INSERT INTO app_membership_roles (
+                tenant_id,
+                application_id,
+                membership_id,
+                role_id,
+                assigned_by_membership_id
+              ) VALUES ($1, $2, $3, $4, $5)`,
+        values: [
+          tenantAlphaId,
+          applicationAlphaId,
+          membershipBetaId,
+          applicationRoleAlphaId,
+          membershipAlphaId,
+        ],
       },
       {
         name: 'application version cannot use an application from another tenant',
