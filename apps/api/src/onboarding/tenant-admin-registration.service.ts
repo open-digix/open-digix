@@ -9,6 +9,7 @@ import type {
   CreateTenantAdminInput,
   TenantAdminRepository,
 } from './tenant-admin.repository';
+import { TenantSlugConflictError } from './tenant-admin.repository';
 import type { TenantAdminRegistrationBody } from './tenant-admin-registration.input';
 
 export const KEYCLOAK_ADMIN_CLIENT = Symbol('KEYCLOAK_ADMIN_CLIENT');
@@ -63,7 +64,7 @@ export class TenantAdminRegistrationService {
       };
     } catch (error) {
       await this.cleanupKeycloakUser(keycloakSubject, error);
-      throw error;
+      throw mapPersistenceRegistrationError(error);
     }
   }
 
@@ -108,6 +109,17 @@ function mapKeycloakRegistrationError(error: unknown): unknown {
     error: {
       code,
       message: `${label} is already taken.`,
+    },
+  });
+}
+
+function mapPersistenceRegistrationError(error: unknown): unknown {
+  if (!(error instanceof TenantSlugConflictError)) return error;
+
+  return new ConflictException({
+    error: {
+      code: 'TENANT_SLUG_TAKEN',
+      message: 'Tenant slug is already taken.',
     },
   });
 }

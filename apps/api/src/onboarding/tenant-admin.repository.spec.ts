@@ -1,6 +1,7 @@
 import type { Pool } from 'pg';
 import {
   TenantAdminRepository,
+  TenantSlugConflictError,
   type CreateTenantAdminInput,
 } from './tenant-admin.repository';
 
@@ -96,5 +97,17 @@ describe('TenantAdminRepository', () => {
     );
     expect(query).toHaveBeenLastCalledWith('ROLLBACK');
     expect(release).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports a duplicate tenant slug as a domain conflict', async () => {
+    query
+      .mockResolvedValueOnce({ rows: [] })
+      .mockRejectedValueOnce({ code: '23505' })
+      .mockResolvedValueOnce({ rows: [] });
+
+    await expect(repository.createTenantAdmin(input)).rejects.toEqual(
+      new TenantSlugConflictError('acme_corp'),
+    );
+    expect(query).toHaveBeenLastCalledWith('ROLLBACK');
   });
 });

@@ -4,6 +4,7 @@ import {
 } from './tenant-admin-registration.service';
 import type { TenantAdminRegistrationBody } from './tenant-admin-registration.input';
 import { KeycloakUserConflictError } from '../auth/keycloak-admin.client';
+import { TenantSlugConflictError } from './tenant-admin.repository';
 
 describe('TenantAdminRegistrationService', () => {
   const input: TenantAdminRegistrationBody = {
@@ -114,5 +115,22 @@ describe('TenantAdminRegistrationService', () => {
     await expect(service.register(input)).rejects.toThrow(
       'Keycloak cleanup also failed',
     );
+  });
+
+  it('maps a duplicate tenant slug to the public API error contract', async () => {
+    createUser.mockResolvedValue('keycloak-subject');
+    createTenantAdmin.mockRejectedValue(
+      new TenantSlugConflictError('acme_corp'),
+    );
+    deleteUser.mockResolvedValue(undefined);
+
+    await expect(service.register(input)).rejects.toMatchObject({
+      response: {
+        error: {
+          code: 'TENANT_SLUG_TAKEN',
+          message: 'Tenant slug is already taken.',
+        },
+      },
+    });
   });
 });

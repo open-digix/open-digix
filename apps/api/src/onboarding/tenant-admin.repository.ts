@@ -18,6 +18,13 @@ export interface CreatedTenantAdmin {
   readonly roleId: string;
 }
 
+export class TenantSlugConflictError extends Error {
+  constructor(readonly tenantSlug: string) {
+    super(`Tenant slug is already taken: ${tenantSlug}.`);
+    this.name = 'TenantSlugConflictError';
+  }
+}
+
 interface IdRow extends QueryResultRow {
   id: string;
 }
@@ -68,12 +75,20 @@ export class TenantAdminRepository {
 
     try {
       await client.query('BEGIN');
-      const tenant = await insertId(
-        client,
-        INSERT_TENANT_QUERY,
-        [input.tenantSlug, input.tenantName],
-        'tenant',
-      );
+      let tenant: IdRow;
+      try {
+        tenant = await insertId(
+          client,
+          INSERT_TENANT_QUERY,
+          [input.tenantSlug, input.tenantName],
+          'tenant',
+        );
+      } catch (error) {
+        if (isUniqueViolation(error)) {
+          throw new TenantSlugConflictError(input.tenantSlug);
+        }
+        throw error;
+      }
       const identityUser = await insertId(
         client,
         INSERT_IDENTITY_USER_QUERY,
@@ -118,6 +133,15 @@ export class TenantAdminRepository {
       client.release();
     }
   }
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === '23505'
+  );
 }
 
 async function insertId(
