@@ -22,6 +22,58 @@ Compose chạy migration trước khi khởi động API. API chỉ healthy sau 
 PostgreSQL và migration thành công. Compose cũng chờ SeaweedFS và Flowable healthy
 trước khi khởi động API.
 
+## Public tenant registration
+
+Frontend dang ky doanh nghiep bang endpoint public sau. Endpoint nay khong yeu cau
+Bearer token; APISIX chi mo cong khai dung route nay va van gioi han tan suat.
+
+```http
+POST /v1/public/tenant-registrations
+Content-Type: application/json
+```
+
+Request body:
+
+```json
+{
+  "tenantName": "Acme Corporation",
+  "tenantSlug": "acme_corp",
+  "admin": {
+    "firstName": "Nguyen",
+    "lastName": "Van A",
+    "email": "admin@example.com",
+    "username": "admin",
+    "password": "change-me-now"
+  }
+}
+```
+
+Backend validate va normalize `tenantSlug`, `username`, email, ho ten va mat khau.
+`password` chi duoc dung de tao credential trong Keycloak, khong duoc ghi log hay
+luu vao PostgreSQL. Khi thanh cong, backend tao tenant moi, tai khoan Keycloak,
+identity mapping va membership co role `tenant_admin` trong mot transaction.
+
+Response `201 Created`:
+
+```json
+{
+  "tenantId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "tenantSlug": "acme_corp",
+  "username": "admin"
+}
+```
+
+Cac loi frontend can xu ly:
+
+- `400 VALIDATION_FAILED`: du lieu thieu, sai dinh dang hoac mat khau ngan.
+- `409 TENANT_SLUG_TAKEN`: ma doanh nghiep da ton tai.
+- `409 EMAIL_TAKEN`: email Keycloak da ton tai.
+- `409 USERNAME_TAKEN`: username Keycloak da ton tai.
+- `429 RATE_LIMITED`: vuot gioi han request tai Gateway.
+
+Neu tao PostgreSQL that bai sau khi Keycloak da tao user, backend se co gang xoa
+user Keycloak vua tao de tranh tai khoan mo coi.
+
 ## OIDC access-token validation
 
 API cần ba biến môi trường:
