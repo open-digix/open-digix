@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import type { TenantContext } from '../identity/identity.types';
 import { RequireAppPermission } from '../identity/app-permission.decorator';
-import { RequireRoles } from '../identity/roles.decorator';
 import { CurrentTenantContext } from '../identity/tenant-context.decorator';
 import { BuilderDraftService } from './builder-draft.service';
 import type {
@@ -64,7 +63,6 @@ export class BuilderDraftController {
   constructor(private readonly draftService: BuilderDraftService) {}
 
   @Get(':appId/drafts/:version')
-  @RequireRoles('designer', 'publisher', 'tenant_admin')
   @RequireAppPermission('app.draft.read')
   async get(
     @Param('appId') appId: string,
@@ -97,7 +95,6 @@ export class BuilderDraftController {
 
   @Post(':appId/drafts/:version/normalize')
   @HttpCode(HttpStatus.OK)
-  @RequireRoles('designer', 'tenant_admin')
   @RequireAppPermission('app.draft.write')
   async normalize(
     @Param('appId') appId: string,
@@ -131,7 +128,6 @@ export class BuilderDraftController {
   }
 
   @Patch(':appId/drafts/:version')
-  @RequireRoles('designer', 'tenant_admin')
   @RequireAppPermission('app.draft.write')
   async patch(
     @Param('appId') appId: string,
@@ -164,7 +160,6 @@ export class BuilderDraftController {
 
   @Post(':appId/drafts/:version/validate')
   @HttpCode(HttpStatus.OK)
-  @RequireRoles('designer', 'publisher', 'tenant_admin')
   @RequireAppPermission('app.draft.validate')
   async validate(
     @Param('appId') appId: string,
