@@ -18,10 +18,10 @@ describe('AppAuthorizationRepository', () => {
     await expect(
       repository.findApplication('tenant-a', 'app-a'),
     ).resolves.toEqual({ id: 'app-a', status: 'draft' });
-    expect(pool.query).toHaveBeenCalledWith(expect.any(String), [
-      'tenant-a',
-      'app-a',
-    ]);
+    expect(pool.query).toHaveBeenCalledWith(
+      expect.stringContaining('WHERE tenant_id = $1 AND id = $2'),
+      ['tenant-a', 'app-a'],
+    );
   });
 
   it('maps app roles and permissions from the membership assignment', async () => {
@@ -40,11 +40,10 @@ describe('AppAuthorizationRepository', () => {
       roleCodes: ['designer'],
       permissions: ['app.draft.read'],
     });
-    expect(pool.query).toHaveBeenCalledWith(expect.any(String), [
-      'tenant-a',
-      'membership-a',
-      'app-a',
-    ]);
+    expect(pool.query).toHaveBeenCalledWith(
+      expect.stringContaining('AND amr.application_id = $3'),
+      ['tenant-a', 'membership-a', 'app-a'],
+    );
   });
 
   it('returns empty access when the membership has no app role', async () => {

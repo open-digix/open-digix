@@ -57,6 +57,37 @@ describe('AppAuthorizationService', () => {
     expect(findMembershipAccess).not.toHaveBeenCalled();
   });
 
+  it('does not reuse a role from another application', async () => {
+    findMembershipAccess.mockImplementation(
+      (_tenantId: string, applicationId: string) =>
+        Promise.resolve(
+          applicationId === 'app-a'
+            ? { roleCodes: ['designer'], permissions: ['app.draft.read'] }
+            : { roleCodes: [], permissions: [] },
+        ),
+    );
+
+    await expect(
+      service.requireAppAccess({
+        ...input,
+        applicationId: 'app-a',
+      }),
+    ).resolves.toMatchObject({ applicationId: 'app-a' });
+
+    await expect(
+      service.requireAppAccess({
+        ...input,
+        applicationId: 'app-b',
+      }),
+    ).rejects.toMatchObject({
+      response: {
+        error: {
+          code: 'APP_ROLE_REQUIRED',
+        },
+      },
+    });
+  });
+
   it('hides retired applications', async () => {
     findApplication.mockResolvedValue({
       id: input.applicationId,
@@ -111,5 +142,27 @@ describe('AppAuthorizationService', () => {
     await expect(
       service.requirePermission(input, 'app.draft.read'),
     ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('observes a revoked role on the next authorization check', async () => {
+    findMembershipAccess
+      .mockResolvedValueOnce({
+        roleCodes: ['designer'],
+        permissions: ['app.draft.read'],
+      })
+      .mockResolvedValueOnce({ roleCodes: [], permissions: [] });
+
+    await expect(service.requireAppAccess(input)).resolves.toMatchObject({
+      roleCodes: ['designer'],
+    });
+
+    await expect(service.requireAppAccess(input)).rejects.toMatchObject({
+      response: {
+        error: {
+          code: 'APP_ROLE_REQUIRED',
+        },
+      },
+    });
+    expect(findMembershipAccess).toHaveBeenCalledTimes(2);
   });
 });
