@@ -26,15 +26,16 @@ interface FormErrors {
 const USERNAME_REGEX = /^[a-z0-9][a-z0-9._-]{2,}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function scorePassword(v: string) {
+export function scorePassword(v: string) {
   const r = {
-    len: v.length >= 8,
+    len: v.length >= 8 && v.length <= 128,
     up: /[A-ZÀ-Ỹ]/.test(v),
     num: /\d/.test(v),
     sym: /[^\w\sÀ-ỹ]/.test(v),
   };
-  const count = Object.values(r).filter(Boolean).length;
-  return { r, count, valid: count >= 3 };
+  const extraCount = [r.up, r.num, r.sym].filter(Boolean).length;
+  const count = (r.len ? 1 : 0) + extraCount;
+  return { r, count, extraCount, valid: r.len && extraCount >= 2 };
 }
 
 const METER_LABELS = ["—", "Yếu", "Trung bình", "Khá", "Mạnh"];
@@ -167,8 +168,13 @@ export default function TenantRegistrationForm({ onBackToChoice }: TenantRegistr
 
     if (!password) {
       nextErrors.password = "Vui lòng nhập mật khẩu.";
-    } else if (!pwScore.valid) {
-      nextErrors.password = "Mật khẩu phải thỏa mãn ít nhất 3 trong 4 yêu cầu bảo mật.";
+    } else if (password.length < 8) {
+      nextErrors.password = "Mật khẩu phải có ít nhất 8 ký tự.";
+    } else if (password.length > 128) {
+      nextErrors.password = "Mật khẩu không được vượt quá 128 ký tự.";
+    } else if (pwScore.extraCount < 2) {
+      nextErrors.password =
+        "Mật khẩu phải thỏa mãn ít nhất 2 trong 3 yêu cầu: chữ hoa, chữ số, ký tự đặc biệt.";
     }
 
     if (!confirmPassword) {

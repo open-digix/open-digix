@@ -73,6 +73,43 @@ describe("Tenant Registration UI (UI-03)", () => {
       expect((screen.getByLabelText("Mã doanh nghiệp") as HTMLInputElement).value).toBe("cong-ty-co-phan-dong-a");
     });
 
+    it("validates password length and complexity rules (A1! blocked, abcdefgh blocked, Abcdefg1 accepted)", () => {
+      const onBackToChoice = vi.fn();
+      render(<TenantRegistrationForm onBackToChoice={onBackToChoice} />);
+
+      fireEvent.change(screen.getByLabelText("Tên doanh nghiệp"), {
+        target: { value: "Đông Á Corp" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: /Tiếp tục/i }));
+
+      // Fill basic fields
+      fireEvent.change(screen.getByLabelText("Họ và tên đệm"), { target: { value: "Nguyễn" } });
+      fireEvent.change(screen.getByLabelText("Tên"), { target: { value: "An" } });
+      fireEvent.change(screen.getByLabelText("Email công việc"), { target: { value: "an@example.com" } });
+      fireEvent.change(screen.getByLabelText("Tên đăng nhập"), { target: { value: "an.nguyen" } });
+      fireEvent.click(screen.getByRole("checkbox"));
+
+      // 1. Password A1! (less than 8 chars)
+      fireEvent.change(screen.getByLabelText("Mật khẩu"), { target: { value: "A1!" } });
+      fireEvent.change(screen.getByLabelText("Nhập lại mật khẩu"), { target: { value: "A1!" } });
+      fireEvent.click(screen.getByRole("button", { name: /Tạo doanh nghiệp/i }));
+      expect(screen.getByText("Mật khẩu phải có ít nhất 8 ký tự.")).toBeInTheDocument();
+
+      // 2. Password abcdefgh (8 chars but 0 of 3 extra rules)
+      fireEvent.change(screen.getByLabelText("Mật khẩu"), { target: { value: "abcdefgh" } });
+      fireEvent.change(screen.getByLabelText("Nhập lại mật khẩu"), { target: { value: "abcdefgh" } });
+      fireEvent.click(screen.getByRole("button", { name: /Tạo doanh nghiệp/i }));
+      expect(
+        screen.getByText("Mật khẩu phải thỏa mãn ít nhất 2 trong 3 yêu cầu: chữ hoa, chữ số, ký tự đặc biệt."),
+      ).toBeInTheDocument();
+
+      // 3. Password Abcdefg1 (8 chars, uppercase + digit = 2 of 3 extra rules)
+      fireEvent.change(screen.getByLabelText("Mật khẩu"), { target: { value: "Abcdefg1" } });
+      fireEvent.change(screen.getByLabelText("Nhập lại mật khẩu"), { target: { value: "Abcdefg1" } });
+      fireEvent.click(screen.getByRole("button", { name: /Tạo doanh nghiệp/i }));
+      expect(screen.queryByText(/Mật khẩu phải/i)).not.toBeInTheDocument();
+    });
+
     it("validates step 2 fields and terms checkbox", () => {
       const onBackToChoice = vi.fn();
       render(<TenantRegistrationForm onBackToChoice={onBackToChoice} />);
