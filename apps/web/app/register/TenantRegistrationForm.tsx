@@ -20,6 +20,7 @@ interface FormErrors {
   username?: string;
   password?: string;
   confirmPassword?: string;
+  admin?: string;
   terms?: string;
 }
 
@@ -244,6 +245,8 @@ export default function TenantRegistrationForm({ onBackToChoice }: TenantRegistr
           } else if (res.fieldErrors.tenantName) {
             setStep(1);
             setTimeout(() => document.getElementById("tenantName")?.focus(), 100);
+          } else if (res.fieldErrors.admin) {
+            document.getElementById("lastName")?.focus();
           } else if (res.fieldErrors.lastName) {
             document.getElementById("lastName")?.focus();
           } else if (res.fieldErrors.firstName) {
@@ -264,6 +267,9 @@ export default function TenantRegistrationForm({ onBackToChoice }: TenantRegistr
           setStep(1);
           setErrors({ tenantName: res.message });
           setTimeout(() => document.getElementById("tenantName")?.focus(), 100);
+        } else if (res.field === "admin") {
+          setErrors({ admin: res.message });
+          document.getElementById("lastName")?.focus();
         } else if (res.field === "email") {
           setErrors({ email: res.message });
           document.getElementById("email")?.focus();
@@ -463,6 +469,12 @@ export default function TenantRegistrationForm({ onBackToChoice }: TenantRegistr
                 Bạn sẽ là quản trị viên của <b>{tenantName}</b>.
               </p>
 
+              {errors.admin && (
+                <div className="alert alert-error" role="alert" style={{ marginBottom: 16 }}>
+                  <span>{errors.admin}</span>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} noValidate>
                 <div className="grid-2">
                   <div className={`field ${errors.lastName ? "has-error" : ""}`}>
@@ -650,7 +662,7 @@ export default function TenantRegistrationForm({ onBackToChoice }: TenantRegistr
                   )}
                 </div>
 
-                <div className="field">
+                <div className={`field ${errors.terms ? "has-error" : ""}`}>
                   <label className="check" htmlFor="termsAccepted">
                     <input
                       type="checkbox"
@@ -661,6 +673,8 @@ export default function TenantRegistrationForm({ onBackToChoice }: TenantRegistr
                         setTermsAccepted(e.target.checked);
                         if (errors.terms) setErrors((p) => ({ ...p, terms: undefined }));
                       }}
+                      aria-invalid={!!errors.terms}
+                      aria-describedby={errors.terms ? "terms-err" : undefined}
                     />
                     <span>
                       Tôi đồng ý với{" "}
@@ -686,7 +700,12 @@ export default function TenantRegistrationForm({ onBackToChoice }: TenantRegistr
                     </span>
                   </label>
                   {errors.terms && (
-                    <p className="field-error" id="terms-err" aria-live="polite" style={{ marginTop: -12 }}>
+                    <p
+                      className="field-error terms-field-error"
+                      id="terms-err"
+                      aria-live="polite"
+                      style={{ paddingLeft: 28, margin: "6px 0 0" }}
+                    >
                       {errors.terms}
                     </p>
                   )}
@@ -761,7 +780,7 @@ export default function TenantRegistrationForm({ onBackToChoice }: TenantRegistr
                     </Link>
                   ) : (
                     <Link href="/login" className="btn">
-                      Đăng nhập ngay
+                      Đăng nhập
                     </Link>
                   )}
                 </p>

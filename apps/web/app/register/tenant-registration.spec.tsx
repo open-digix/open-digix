@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import ChoiceView from "./ChoiceView";
 import TenantRegistrationForm from "./TenantRegistrationForm";
@@ -35,6 +35,17 @@ describe("Tenant Registration UI (UI-03)", () => {
   });
 
   describe("TenantRegistrationForm", () => {
+    const originalEnv = process.env;
+
+    beforeEach(() => {
+      process.env = { ...originalEnv, REGISTRATION_API_MODE: "mock" };
+    });
+
+    afterEach(() => {
+      process.env = originalEnv;
+      vi.restoreAllMocks();
+    });
+
     it("validates empty step 1 inputs", () => {
       const onBackToChoice = vi.fn();
       render(<TenantRegistrationForm onBackToChoice={onBackToChoice} />);
@@ -260,6 +271,85 @@ describe("Tenant Registration UI (UI-03)", () => {
         expect(screen.getByText("Công ty Cổ phần Alpha")).toBeInTheDocument();
         expect(screen.getByText(/chưa được tạo thật/i)).toBeInTheDocument();
         expect(screen.getByRole("link", { name: "Về trang giới thiệu" })).toBeInTheDocument();
+      });
+    });
+
+    it("validates terms checkbox error: shows error, sets aria-invalid, and error element has no negative marginTop", () => {
+      const onBackToChoice = vi.fn();
+      render(<TenantRegistrationForm onBackToChoice={onBackToChoice} />);
+
+      // Step 1
+      fireEvent.change(screen.getByLabelText("Tên doanh nghiệp"), { target: { value: "Đông Á Corp" } });
+      fireEvent.click(screen.getByRole("button", { name: /Tiếp tục/i }));
+
+      // Step 2: Fill all fields EXCEPT terms checkbox
+      fireEvent.change(screen.getByLabelText("Họ và tên đệm"), { target: { value: "Nguyễn" } });
+      fireEvent.change(screen.getByLabelText("Tên"), { target: { value: "An" } });
+      fireEvent.change(screen.getByLabelText("Email công việc"), { target: { value: "an@donga.vn" } });
+      fireEvent.change(screen.getByLabelText("Tên đăng nhập"), { target: { value: "an.nguyen" } });
+      fireEvent.change(screen.getByLabelText("Mật khẩu"), { target: { value: "DigiX@2026!" } });
+      fireEvent.change(screen.getByLabelText("Nhập lại mật khẩu"), { target: { value: "DigiX@2026!" } });
+
+      const termsCheckbox = screen.getByRole("checkbox") as HTMLInputElement;
+      expect(termsCheckbox.checked).toBe(false);
+
+      // Submit
+      fireEvent.click(screen.getByRole("button", { name: /Tạo doanh nghiệp/i }));
+
+      // Check error is shown
+      const errorMsg = screen.getByText("Vui lòng đồng ý với điều khoản sử dụng để tiếp tục.");
+      expect(errorMsg).toBeInTheDocument();
+      expect(errorMsg.id).toBe("terms-err");
+
+      // Check aria attributes on checkbox
+      expect(termsCheckbox.getAttribute("aria-invalid")).toBe("true");
+      expect(termsCheckbox.getAttribute("aria-describedby")).toBe("terms-err");
+
+      // Verify no negative margin
+      const errorStyle = (errorMsg as HTMLElement).style;
+      expect(errorStyle.marginTop).not.toMatch(/-/);
+      expect(errorStyle.paddingLeft).toBe("28px");
+    });
+
+    it("completes registration in api mode with 'Đã tạo doanh nghiệp' and 'Đăng nhập' button", async () => {
+      delete process.env.REGISTRATION_API_MODE;
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 201,
+        json: async () => ({
+          tenantId: "tenant-donga",
+          tenantSlug: "donga",
+          username: "an.nguyen",
+        }),
+      });
+      vi.stubGlobal("fetch", mockFetch);
+
+      const onBackToChoice = vi.fn();
+      render(<TenantRegistrationForm onBackToChoice={onBackToChoice} />);
+
+      // Step 1
+      fireEvent.change(screen.getByLabelText("Tên doanh nghiệp"), { target: { value: "Đông Á Corp" } });
+      fireEvent.click(screen.getByRole("button", { name: /Tiếp tục/i }));
+
+      // Step 2
+      fireEvent.change(screen.getByLabelText("Họ và tên đệm"), { target: { value: "Nguyễn" } });
+      fireEvent.change(screen.getByLabelText("Tên"), { target: { value: "An" } });
+      fireEvent.change(screen.getByLabelText("Email công việc"), { target: { value: "an@donga.vn" } });
+      fireEvent.change(screen.getByLabelText("Tên đăng nhập"), { target: { value: "an.nguyen" } });
+      fireEvent.change(screen.getByLabelText("Mật khẩu"), { target: { value: "DigiX@2026!" } });
+      fireEvent.change(screen.getByLabelText("Nhập lại mật khẩu"), { target: { value: "DigiX@2026!" } });
+      fireEvent.click(screen.getByLabelText(/Tôi đồng ý với điều khoản sử dụng/i));
+
+      fireEvent.click(screen.getByRole("button", { name: /Tạo doanh nghiệp/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole("heading", { name: "Đã tạo doanh nghiệp" })).toBeInTheDocument();
+        expect(screen.getByText("Đông Á Corp")).toBeInTheDocument();
+        expect(screen.getByText("an.nguyen")).toBeInTheDocument();
+        expect(screen.queryByText(/chưa được tạo thật/i)).not.toBeInTheDocument();
+        const loginLink = screen.getByRole("link", { name: "Đăng nhập" });
+        expect(loginLink).toBeInTheDocument();
+        expect(loginLink.getAttribute("href")).toBe("/login");
       });
     });
   });

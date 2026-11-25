@@ -27,7 +27,7 @@ import { getRegistrationErrorMessage } from "./messages";
 export async function registerTenantAction(
   input: TenantRegistrationInput,
 ): Promise<TenantRegistrationResult> {
-  const mode = process.env.REGISTRATION_API_MODE || "mock";
+  const mode = process.env.REGISTRATION_API_MODE === "mock" ? "mock" : "api";
 
   if (mode === "api") {
     const internalUrl = process.env.API_INTERNAL_URL ?? "http://localhost:3001";
@@ -62,6 +62,26 @@ export async function registerTenantAction(
         };
       }
 
+      if (res.status === 429) {
+        const mapping = getRegistrationErrorMessage("RATE_LIMITED");
+        return {
+          ok: false,
+          code: "RATE_LIMITED",
+          message: mapping.message,
+          field: "general",
+        };
+      }
+
+      if (res.status >= 500) {
+        const mapping = getRegistrationErrorMessage("UNAVAILABLE");
+        return {
+          ok: false,
+          code: "UNAVAILABLE",
+          message: mapping.message,
+          field: "general",
+        };
+      }
+
       const errJson = await res.json().catch(() => ({}));
       const code = (errJson?.error?.code as RegistrationErrorCode) || "UNAVAILABLE";
       const mapping = getRegistrationErrorMessage(code);
@@ -74,6 +94,7 @@ export async function registerTenantAction(
           const path = issue?.path;
           if (path === "/tenantName") fieldErrors.tenantName = genericMsg;
           else if (path === "/tenantSlug") fieldErrors.tenantSlug = genericMsg;
+          else if (path === "/admin") fieldErrors.admin = "Thông tin tài khoản quản trị chưa hợp lệ.";
           else if (path === "/admin/firstName") fieldErrors.firstName = genericMsg;
           else if (path === "/admin/lastName") fieldErrors.lastName = genericMsg;
           else if (path === "/admin/email") fieldErrors.email = genericMsg;

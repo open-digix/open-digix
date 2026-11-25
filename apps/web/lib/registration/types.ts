@@ -44,6 +44,7 @@ export type RegistrationTargetField =
   | "email"
   | "username"
   | "password"
+  | "admin"
   | "general";
 
 export interface TenantRegistrationSuccess {

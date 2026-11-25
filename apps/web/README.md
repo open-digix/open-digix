@@ -64,9 +64,13 @@ Dừng bằng `docker compose down`. Volume giữ dữ liệu khi dừng; tránh
 
 - `/`: trang giới thiệu DigiX.
 - `/login`: mở giao diện đăng nhập. Nút tiếp tục đưa trình duyệt sang Keycloak.
-- `/register`: thông báo cách xin cấp tài khoản; realm hiện tắt tự đăng ký.
+- `/register`: đăng ký doanh nghiệp mới (gọi API `POST /v1/public/tenant-registrations` qua Gateway) hoặc gửi form yêu cầu cấp tài khoản.
 - `/dashboard`: yêu cầu phiên đăng nhập; gọi `/v1/me` qua Gateway. Các số liệu nghiệp vụ hiện vẫn là dữ liệu mẫu.
 - `/status`: kiểm tra đường đi từ web đến Gateway/API/database.
+
+### Biến môi trường đăng ký doanh nghiệp
+
+- `REGISTRATION_API_MODE`: Chế độ kết nối API khi đăng ký doanh nghiệp. Mặc định là `api` (gọi trực tiếp `POST /v1/public/tenant-registrations` qua `API_INTERNAL_URL`). Đặt `mock` khi cần chạy giả lập offline hoặc kiểm thử không có backend.
 
 Luồng: trình duyệt mở Keycloak tại `localhost:8080` → Keycloak đưa người dùng về callback của Auth.js → server web dùng địa chỉ nội bộ `keycloak:8080` để đổi authorization code lấy token → dashboard gửi access token qua Gateway → API kiểm tra danh tính và membership. `AUTH_KEYCLOAK_ISSUER` phải giữ issuer công khai `localhost:8080`, còn `AUTH_KEYCLOAK_INTERNAL_URL` là địa chỉ chỉ container truy cập.
 

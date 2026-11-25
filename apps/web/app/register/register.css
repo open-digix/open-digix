@@ -677,6 +677,11 @@
   cursor: pointer;
 }
 
+.register-page .field-error.terms-field-error {
+  padding-left: 28px;
+  margin: 6px 0 0;
+}
+
 /* Button group */
 .register-page .btn-group {
   display: grid;
