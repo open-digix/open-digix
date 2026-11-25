@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppAuthorizationRepository } from './app-authorization.repository';
 import { APP_AUTHORIZATION_REPOSITORY } from './app-authorization.types';
 import { AppAuthorizationService } from './app-authorization.service';
+import { ApplicationAclBootstrapService } from './application-acl-bootstrap.service';
 import { AuditLogRepository } from './audit-log.repository';
 import { AppRoleController } from './app-role.controller';
 import { AppRoleManagementRepository } from './app-role-management.repository';
@@ -21,10 +22,15 @@ import { MeController } from './me.controller';
       useExisting: AppAuthorizationRepository,
     },
     AppAuthorizationService,
+    ApplicationAclBootstrapService,
     AuditLogRepository,
     AppRoleManagementRepository,
     AppRoleManagementService,
   ],
-  exports: [IdentityContextService, AppAuthorizationService],
+  exports: [
+    IdentityContextService,
+    AppAuthorizationService,
+    ApplicationAclBootstrapService,
+  ],
 })
 export class IdentityModule {}

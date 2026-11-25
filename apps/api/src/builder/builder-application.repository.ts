@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Pool, PoolClient, QueryResultRow } from 'pg';
 import { DATABASE_POOL } from '../database/database.module';
+import { ApplicationAclBootstrapService } from '../identity/application-acl-bootstrap.service';
 
 export interface CreateBuilderApplicationInput {
   readonly tenantId: string;
@@ -71,7 +72,10 @@ const CREATE_APPLICATION_VERSION_QUERY = `
 
 @Injectable()
 export class BuilderApplicationRepository {
-  constructor(@Inject(DATABASE_POOL) private readonly pool: Pool) {}
+  constructor(
+    @Inject(DATABASE_POOL) private readonly pool: Pool,
+    private readonly aclBootstrap: ApplicationAclBootstrapService,
+  ) {}
 
   async createDraft(
     input: CreateBuilderApplicationInput,
@@ -81,6 +85,11 @@ export class BuilderApplicationRepository {
     try {
       await client.query('BEGIN');
       const application = await insertApplication(client, input);
+      await this.aclBootstrap.initialize(client, {
+        tenantId: input.tenantId,
+        applicationId: application.id,
+        creatorMembershipId: input.createdByMembershipId,
+      });
       const version = await insertApplicationVersion(
         client,
         input,

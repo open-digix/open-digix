@@ -1,4 +1,5 @@
 import type { Pool } from 'pg';
+import { ApplicationAclBootstrapService } from '../identity/application-acl-bootstrap.service';
 import { BuilderApplicationRepository } from './builder-application.repository';
 
 describe('BuilderApplicationRepository', () => {
@@ -29,15 +30,20 @@ describe('BuilderApplicationRepository', () => {
 
   let query: jest.Mock;
   let release: jest.Mock;
+  let aclBootstrap: { initialize: jest.Mock };
   let repository: BuilderApplicationRepository;
 
   beforeEach(() => {
     query = jest.fn();
     release = jest.fn();
+    aclBootstrap = { initialize: jest.fn().mockResolvedValue(undefined) };
     const pool = {
       connect: jest.fn().mockResolvedValue({ query, release }),
     };
-    repository = new BuilderApplicationRepository(pool as unknown as Pool);
+    repository = new BuilderApplicationRepository(
+      pool as unknown as Pool,
+      aclBootstrap as unknown as ApplicationAclBootstrapService,
+    );
   });
 
   it('creates an application and its first draft version atomically', async () => {
@@ -71,6 +77,11 @@ describe('BuilderApplicationRepository', () => {
         input.templateKey,
       ],
     );
+    expect(aclBootstrap.initialize).toHaveBeenCalledWith(expect.anything(), {
+      tenantId: input.tenantId,
+      applicationId: applicationRow.id,
+      creatorMembershipId: input.createdByMembershipId,
+    });
     expect(query).toHaveBeenNthCalledWith(
       3,
       expect.stringContaining('INSERT INTO application_versions'),
