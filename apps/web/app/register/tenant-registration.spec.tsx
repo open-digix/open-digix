@@ -110,6 +110,57 @@ describe("Tenant Registration UI (UI-03)", () => {
       expect(screen.queryByText(/Mật khẩu phải/i)).not.toBeInTheDocument();
     });
 
+    it("validates username starting with a letter and length 3-64 (1abc rejected)", () => {
+      const onBackToChoice = vi.fn();
+      render(<TenantRegistrationForm onBackToChoice={onBackToChoice} />);
+
+      fireEvent.change(screen.getByLabelText("Tên doanh nghiệp"), { target: { value: "Đông Á Corp" } });
+      fireEvent.click(screen.getByRole("button", { name: /Tiếp tục/i }));
+
+      // Fill valid fields but username starts with 1
+      fireEvent.change(screen.getByLabelText("Họ và tên đệm"), { target: { value: "Nguyễn" } });
+      fireEvent.change(screen.getByLabelText("Tên"), { target: { value: "An" } });
+      fireEvent.change(screen.getByLabelText("Email công việc"), { target: { value: "an@example.com" } });
+      fireEvent.change(screen.getByLabelText("Tên đăng nhập"), { target: { value: "1abc" } });
+      fireEvent.change(screen.getByLabelText("Mật khẩu"), { target: { value: "DigiX@2026!" } });
+      fireEvent.change(screen.getByLabelText("Nhập lại mật khẩu"), { target: { value: "DigiX@2026!" } });
+      fireEvent.click(screen.getByRole("checkbox"));
+
+      fireEvent.click(screen.getByRole("button", { name: /Tạo doanh nghiệp/i }));
+
+      expect(
+        screen.getByText("Tên đăng nhập dài 3–64 ký tự, bắt đầu bằng chữ cái, chỉ gồm chữ thường, số, dấu chấm, gạch dưới hoặc gạch ngang."),
+      ).toBeInTheDocument();
+    });
+
+    it("handles VALIDATION_FAILED issues correctly and displays Vietnamese error instead of server English", async () => {
+      const onBackToChoice = vi.fn();
+      render(<TenantRegistrationForm onBackToChoice={onBackToChoice} />);
+
+      // Step 1: use "mock-validation-issues"
+      fireEvent.change(screen.getByLabelText("Tên doanh nghiệp"), { target: { value: "Công ty Test" } });
+      fireEvent.change(screen.getByLabelText("Mã doanh nghiệp"), { target: { value: "mock-validation-issues" } });
+      fireEvent.click(screen.getByRole("button", { name: /Tiếp tục/i }));
+
+      // Step 2
+      fireEvent.change(screen.getByLabelText("Họ và tên đệm"), { target: { value: "Nguyễn" } });
+      fireEvent.change(screen.getByLabelText("Tên"), { target: { value: "An" } });
+      fireEvent.change(screen.getByLabelText("Email công việc"), { target: { value: "an@example.com" } });
+      fireEvent.change(screen.getByLabelText("Tên đăng nhập"), { target: { value: "an.nguyen" } });
+      fireEvent.change(screen.getByLabelText("Mật khẩu"), { target: { value: "DigiX@2026!" } });
+      fireEvent.change(screen.getByLabelText("Nhập lại mật khẩu"), { target: { value: "DigiX@2026!" } });
+      fireEvent.click(screen.getByRole("checkbox"));
+
+      fireEvent.click(screen.getByRole("button", { name: /Tạo doanh nghiệp/i }));
+
+      await waitFor(
+        () => {
+          expect(screen.getByText("Giá trị chưa hợp lệ, vui lòng kiểm tra lại.")).toBeInTheDocument();
+        },
+        { timeout: 3000 },
+      );
+    });
+
     it("validates step 2 fields and terms checkbox", () => {
       const onBackToChoice = vi.fn();
       render(<TenantRegistrationForm onBackToChoice={onBackToChoice} />);

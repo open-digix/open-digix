@@ -60,6 +60,7 @@ export interface TenantRegistrationFailure {
   code: RegistrationErrorCode;
   message: string;
   field: RegistrationTargetField;
+  fieldErrors?: Partial<Record<RegistrationTargetField, string>>;
 }
 
 export type TenantRegistrationResult =

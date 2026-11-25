@@ -20,6 +20,7 @@ import type {
   TenantRegistrationInput,
   TenantRegistrationResult,
   RegistrationErrorCode,
+  RegistrationTargetField,
 } from "./types";
 import { getRegistrationErrorMessage } from "./messages";
 
@@ -64,10 +65,36 @@ export async function registerTenantAction(
       const errJson = await res.json().catch(() => ({}));
       const code = (errJson?.error?.code as RegistrationErrorCode) || "UNAVAILABLE";
       const mapping = getRegistrationErrorMessage(code);
+
+      // Xử lý VALIDATION_FAILED với error.issues: [{ path, message }]
+      if (code === "VALIDATION_FAILED" && Array.isArray(errJson?.error?.issues)) {
+        const fieldErrors: Partial<Record<RegistrationTargetField, string>> = {};
+        const genericMsg = "Giá trị chưa hợp lệ, vui lòng kiểm tra lại.";
+        for (const issue of errJson.error.issues) {
+          const path = issue?.path;
+          if (path === "/tenantName") fieldErrors.tenantName = genericMsg;
+          else if (path === "/tenantSlug") fieldErrors.tenantSlug = genericMsg;
+          else if (path === "/admin/firstName") fieldErrors.firstName = genericMsg;
+          else if (path === "/admin/lastName") fieldErrors.lastName = genericMsg;
+          else if (path === "/admin/email") fieldErrors.email = genericMsg;
+          else if (path === "/admin/username") fieldErrors.username = genericMsg;
+          else if (path === "/admin/password") fieldErrors.password = genericMsg;
+        }
+
+        const firstField = Object.keys(fieldErrors)[0] as RegistrationTargetField | undefined;
+        return {
+          ok: false,
+          code: "VALIDATION_FAILED",
+          message: mapping.message,
+          field: firstField || "general",
+          fieldErrors: Object.keys(fieldErrors).length > 0 ? fieldErrors : undefined,
+        };
+      }
+
       return {
         ok: false,
         code,
-        message: errJson?.error?.message || mapping.message,
+        message: mapping.message,
         field: mapping.field,
       };
     } catch {
@@ -87,6 +114,20 @@ export async function registerTenantAction(
   const slug = input.tenantSlug?.trim().toLowerCase();
   const email = input.admin?.email?.trim().toLowerCase();
   const username = input.admin?.username?.trim().toLowerCase();
+
+  // Mock ca kiểm tra VALIDATION_FAILED với issues
+  if (slug === "mock-validation-issues") {
+    const mapping = getRegistrationErrorMessage("VALIDATION_FAILED");
+    return {
+      ok: false,
+      code: "VALIDATION_FAILED",
+      message: mapping.message,
+      field: "email",
+      fieldErrors: {
+        email: "Giá trị chưa hợp lệ, vui lòng kiểm tra lại.",
+      },
+    };
+  }
 
   if (slug === "da-ton-tai") {
     const mapping = getRegistrationErrorMessage("TENANT_SLUG_TAKEN");

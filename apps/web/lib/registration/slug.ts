@@ -37,6 +37,11 @@ export function toTenantSlug(name: string): string {
   // Bỏ - ở đầu và cuối
   str = str.replace(/^-+|-+$/g, "");
 
+  // Nếu kết quả bắt đầu bằng số (ví dụ "3M Việt Nam" -> 3m-viet-nam) thì thêm tiền tố dn-
+  if (/^[0-9]/.test(str)) {
+    str = `dn-${str}`;
+  }
+
   // Giới hạn tối đa 40 ký tự, không kết thúc bằng dấu -
   if (str.length > 40) {
     str = str.slice(0, 40).replace(/-+$/, "");
@@ -47,10 +52,10 @@ export function toTenantSlug(name: string): string {
 
 /**
  * Kiểm tra mã tenant slug hợp lệ theo mẫu:
- * ^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])$
- * Bắt đầu và kết thúc bằng chữ cái thường hoặc số, ở giữa là chữ số hoặc dấu '-', dài từ 3 đến 40 ký tự.
+ * ^[a-z][a-z0-9-]{1,38}[a-z0-9]$
+ * Bắt đầu bằng chữ cái thường, kết thúc bằng chữ hoặc số, ở giữa là chữ số hoặc dấu '-', dài từ 3 đến 40 ký tự.
  */
-export const TENANT_SLUG_REGEX = /^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])$/;
+export const TENANT_SLUG_REGEX = /^[a-z][a-z0-9-]{1,38}[a-z0-9]$/;
 
 export function isValidTenantSlug(slug: string): boolean {
   if (!slug || slug.length > 40) return false;

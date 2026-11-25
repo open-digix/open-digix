@@ -23,7 +23,7 @@ interface FormErrors {
   terms?: string;
 }
 
-const USERNAME_REGEX = /^[a-z0-9][a-z0-9._-]{2,}$/;
+const USERNAME_REGEX = /^[a-z][a-z0-9._-]{2,63}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function scorePassword(v: string) {
@@ -106,15 +106,15 @@ export default function TenantRegistrationForm({ onBackToChoice }: TenantRegistr
       nextErrors.tenantName = "Vui lòng nhập tên doanh nghiệp.";
     } else if (tenantName.trim().length < 2) {
       nextErrors.tenantName = "Tên doanh nghiệp phải có ít nhất 2 ký tự.";
-    } else if (tenantName.trim().length > 120) {
-      nextErrors.tenantName = "Tên doanh nghiệp không được vượt quá 120 ký tự.";
+    } else if (tenantName.trim().length > 160) {
+      nextErrors.tenantName = "Tên doanh nghiệp không được vượt quá 160 ký tự.";
     }
 
     if (!tenantSlug.trim()) {
       nextErrors.tenantSlug = "Vui lòng nhập mã doanh nghiệp.";
     } else if (!isValidTenantSlug(tenantSlug.trim())) {
       nextErrors.tenantSlug =
-        "Mã doanh nghiệp dài 3–40 ký tự, chỉ gồm chữ thường (a-z), số và dấu '-', không bắt đầu hoặc kết thúc bằng '-'.";
+        "Mã doanh nghiệp dài 3–40 ký tự, bắt đầu bằng chữ cái, chỉ gồm chữ thường (a-z), số và dấu '-', không kết thúc bằng '-'.";
     }
 
     setErrors(nextErrors);
@@ -147,14 +147,20 @@ export default function TenantRegistrationForm({ onBackToChoice }: TenantRegistr
 
     if (!lastName.trim()) {
       nextErrors.lastName = "Vui lòng nhập họ và tên đệm.";
+    } else if (lastName.trim().length > 80) {
+      nextErrors.lastName = "Họ và tên đệm không được vượt quá 80 ký tự.";
     }
 
     if (!firstName.trim()) {
       nextErrors.firstName = "Vui lòng nhập tên.";
+    } else if (firstName.trim().length > 80) {
+      nextErrors.firstName = "Tên không được vượt quá 80 ký tự.";
     }
 
     if (!email.trim()) {
       nextErrors.email = "Vui lòng nhập email công việc.";
+    } else if (email.trim().length > 320) {
+      nextErrors.email = "Email không được vượt quá 320 ký tự.";
     } else if (!EMAIL_REGEX.test(email.trim())) {
       nextErrors.email = "Email công việc chưa đúng định dạng.";
     }
@@ -163,7 +169,7 @@ export default function TenantRegistrationForm({ onBackToChoice }: TenantRegistr
       nextErrors.username = "Vui lòng nhập tên đăng nhập.";
     } else if (!USERNAME_REGEX.test(username.trim())) {
       nextErrors.username =
-        "Tên đăng nhập bắt đầu bằng chữ hoặc số, chỉ chứa chữ thường, số, dấu '.', '_', '-', tối thiểu 3 ký tự.";
+        "Tên đăng nhập dài 3–64 ký tự, bắt đầu bằng chữ cái, chỉ gồm chữ thường, số, dấu chấm, gạch dưới hoặc gạch ngang.";
     }
 
     if (!password) {
@@ -230,17 +236,49 @@ export default function TenantRegistrationForm({ onBackToChoice }: TenantRegistr
         setStep(3);
       } else {
         triggerShake();
-        if (res.field === "tenantSlug") {
+        if (res.fieldErrors && Object.keys(res.fieldErrors).length > 0) {
+          setErrors(res.fieldErrors);
+          if (res.fieldErrors.tenantSlug) {
+            setStep(1);
+            setTimeout(() => document.getElementById("tenantSlug")?.focus(), 100);
+          } else if (res.fieldErrors.tenantName) {
+            setStep(1);
+            setTimeout(() => document.getElementById("tenantName")?.focus(), 100);
+          } else if (res.fieldErrors.lastName) {
+            document.getElementById("lastName")?.focus();
+          } else if (res.fieldErrors.firstName) {
+            document.getElementById("firstName")?.focus();
+          } else if (res.fieldErrors.email) {
+            document.getElementById("email")?.focus();
+          } else if (res.fieldErrors.username) {
+            document.getElementById("username")?.focus();
+          } else if (res.fieldErrors.password) {
+            document.getElementById("password")?.focus();
+          }
+        } else if (res.field === "tenantSlug") {
           // Slug lỗi: tự quay về bước 1 và chỉ vào ô mã
           setStep(1);
           setErrors({ tenantSlug: res.message });
           setTimeout(() => document.getElementById("tenantSlug")?.focus(), 100);
+        } else if (res.field === "tenantName") {
+          setStep(1);
+          setErrors({ tenantName: res.message });
+          setTimeout(() => document.getElementById("tenantName")?.focus(), 100);
         } else if (res.field === "email") {
           setErrors({ email: res.message });
           document.getElementById("email")?.focus();
         } else if (res.field === "username") {
           setErrors({ username: res.message });
           document.getElementById("username")?.focus();
+        } else if (res.field === "firstName") {
+          setErrors({ firstName: res.message });
+          document.getElementById("firstName")?.focus();
+        } else if (res.field === "lastName") {
+          setErrors({ lastName: res.message });
+          document.getElementById("lastName")?.focus();
+        } else if (res.field === "password") {
+          setErrors({ password: res.message });
+          document.getElementById("password")?.focus();
         } else {
           setGeneralError(res.message);
         }

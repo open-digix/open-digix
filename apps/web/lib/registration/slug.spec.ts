@@ -26,6 +26,11 @@ describe("slug utilities", () => {
       expect(toTenantSlug("-abc-def-")).toBe("abc-def");
     });
 
+    it("prepends dn- prefix if slug starts with a number", () => {
+      expect(toTenantSlug("3M Việt Nam")).toBe("dn-3m-viet-nam");
+      expect(toTenantSlug("123 Đô")).toBe("dn-123-do");
+    });
+
     it("limits length to 40 characters and trims trailing hyphens", () => {
       const longName = "Doanh nghiệp dịch vụ kỹ thuật số toàn diện Việt Nam";
       const slug = toTenantSlug(longName);
@@ -39,6 +44,7 @@ describe("slug utilities", () => {
     it("accepts valid tenant slugs", () => {
       expect(isValidTenantSlug("dong-a")).toBe(true);
       expect(isValidTenantSlug("abc-123")).toBe(true);
+      expect(isValidTenantSlug("dn-3m-viet-nam")).toBe(true);
       expect(isValidTenantSlug("digix-lab")).toBe(true);
       expect(isValidTenantSlug("a-b")).toBe(true);
     });
@@ -47,6 +53,7 @@ describe("slug utilities", () => {
       expect(isValidTenantSlug("")).toBe(false);
       expect(isValidTenantSlug("a")).toBe(false); // too short
       expect(isValidTenantSlug("ab")).toBe(false); // too short
+      expect(isValidTenantSlug("3m-viet-nam")).toBe(false); // starts with number
       expect(isValidTenantSlug("-abc")).toBe(false); // starts with hyphen
       expect(isValidTenantSlug("abc-")).toBe(false); // ends with hyphen
       expect(isValidTenantSlug("A-B-C")).toBe(false); // uppercase
