@@ -381,6 +381,338 @@
   color: var(--ink-2);
 }
 
+/* === BỔ SUNG CHO UI-03 === */
+/* Choice Cards (Màn hình chọn hình thức) */
+.register-page .choice-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 20px 0 24px;
+}
+
+.register-page .choice-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px 20px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  width: 100%;
+}
+
+.register-page .choice-card:hover,
+.register-page .choice-card:focus-visible {
+  border-color: var(--teal);
+  box-shadow: 0 4px 16px rgba(13, 148, 136, 0.12);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.register-page .choice-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--soft);
+  color: var(--teal-strong);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.register-page .choice-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.register-page .choice-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.register-page .choice-arrow {
+  color: var(--teal);
+  font-weight: 700;
+  transition: transform 0.2s;
+  margin-left: 8px;
+}
+
+.register-page .choice-card:hover .choice-arrow {
+  transform: translateX(4px);
+}
+
+.register-page .choice-desc {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* Stepper */
+.register-page .stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.register-page .stepper .st {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.register-page .stepper .st b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--soft);
+  color: var(--ink-2);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.register-page .stepper .st.on {
+  color: var(--teal-strong);
+  font-weight: 600;
+}
+
+.register-page .stepper .st.on b {
+  background: var(--teal-strong);
+  color: #fff;
+}
+
+.register-page .stepper .st.done {
+  color: var(--teal-strong);
+}
+
+.register-page .stepper .st.done b {
+  background: #e6f7f5;
+  color: var(--teal-strong);
+}
+
+.register-page .stepper .bar {
+  flex: 1;
+  height: 2px;
+  background: var(--line);
+  border-radius: 1px;
+}
+
+.register-page .stepper .bar.done {
+  background: var(--teal-strong);
+}
+
+/* Slug hint & preview */
+.register-page .slug-hint {
+  font-size: 12px;
+  color: var(--ink-2);
+  margin: 6px 0 0;
+  line-height: 1.45;
+}
+
+.register-page .slug-preview {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11.5px;
+  background: var(--soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--teal-strong);
+  word-break: break-all;
+}
+
+/* Toggle password button */
+.register-page .toggle-pass {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ink-2);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.15s;
+}
+
+.register-page .toggle-pass:hover {
+  color: var(--ink);
+}
+
+.register-page .toggle-pass .eye-off {
+  display: none;
+}
+
+.register-page .toggle-pass.is-on .eye-on {
+  display: none;
+}
+
+.register-page .toggle-pass.is-on .eye-off {
+  display: block;
+}
+
+.register-page .input-wrap:has(.toggle-pass) input {
+  padding-right: 44px;
+}
+
+/* Password strength meter */
+.register-page .meter {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.register-page .meter i {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: #e2e8f0;
+  transition: background 0.25s;
+}
+
+.register-page .meter[data-level="1"] i:nth-child(1) {
+  background: #ef4444;
+}
+
+.register-page .meter[data-level="2"] i:nth-child(-n+2) {
+  background: #f59e0b;
+}
+
+.register-page .meter[data-level="3"] i:nth-child(-n+3) {
+  background: #0d9488;
+}
+
+.register-page .meter[data-level="4"] i:nth-child(-n+4) {
+  background: #059669;
+}
+
+.register-page .meter-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--ink-2);
+  margin-top: 4px;
+}
+
+/* Password rules */
+.register-page .rules {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+}
+
+@media (max-width: 420px) {
+  .register-page .rules {
+    grid-template-columns: 1fr;
+  }
+}
+
+.register-page .rules li {
+  font-size: 11.5px;
+  color: var(--ink-2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.register-page .rules li::before {
+  content: "•";
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.register-page .rules li.ok {
+  color: var(--teal-strong);
+}
+
+.register-page .rules li.ok::before {
+  content: "✓";
+  font-weight: 700;
+  color: var(--teal-strong);
+}
+
+/* Checkbox terms */
+.register-page .field label.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: normal;
+  cursor: pointer;
+  line-height: 1.45;
+  color: var(--ink);
+  margin: 0;
+}
+
+.register-page .field label.check input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--teal-strong);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* Button group */
+.register-page .btn-group {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+@media (max-width: 420px) {
+  .register-page .btn-group {
+    grid-template-columns: 1fr;
+  }
+  .register-page .btn-group .btn-ghost {
+    order: 2;
+  }
+}
+
+/* Alert error */
+.register-page .alert.alert-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--danger-soft);
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--danger);
+  margin-bottom: 18px;
+}
+
+.register-page .alert.alert-error svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
 .register-page .link {
   color: var(--teal-strong);
   font-weight: 600;

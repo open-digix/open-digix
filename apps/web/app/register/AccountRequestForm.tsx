@@ -13,7 +13,11 @@ interface FormErrors {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export default function AccountRequestForm() {
+interface AccountRequestFormProps {
+  onBack?: () => void;
+}
+
+export default function AccountRequestForm({ onBack }: AccountRequestFormProps = {}) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [tenant, setTenant] = useState("");
@@ -321,6 +325,16 @@ export default function AccountRequestForm() {
               </form>
 
               <p className="foot">
+                {onBack && (
+                  <button
+                    type="button"
+                    className="link"
+                    onClick={onBack}
+                    style={{ background: "none", border: "none", cursor: "pointer", padding: 0, marginRight: 16 }}
+                  >
+                    ← Chọn lại
+                  </button>
+                )}
                 Đã có tài khoản?{" "}
                 <Link href="/login" className="link">
                   Đăng nhập
@@ -342,7 +356,7 @@ export default function AccountRequestForm() {
                   <circle cx="32" cy="32" r="28" stroke="currentColor" />
                   <path d="M20 33l8 8 16-17" stroke="currentColor" />
                 </svg>
-                <h1 className="title">Đã gửi yêu cầu</h1>
+                <h1 className="title">Đã ghi nhận (bản thử)</h1>
                 <p className="lead">
                   Quản trị viên sẽ xem xét. Khi được duyệt, thư mời sẽ gửi tới{" "}
                   <span className="email-chip">{email}</span>, thường trong 1 ngày làm việc.

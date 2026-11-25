@@ -20,6 +20,15 @@ Mọi thay đổi đáng chú ý của dự án sẽ được ghi nhận tại �
 
 ## [Chưa phát hành] - 24/11/2026
 
+### Đăng ký doanh nghiệp mới (UI-03, chuẩn bị cho backend #35)
+- **Màn hình chọn hình thức (`/register`):** Hiển thị 2 lựa chọn trực quan "Tạo doanh nghiệp mới" (dành cho người đại diện công ty) và "Tham gia doanh nghiệp có sẵn" (gửi yêu cầu cấp tài khoản, kế thừa R3 với nút quay lại "← Chọn lại").
+- **Quy trình 2 bước tạo doanh nghiệp (`/register?type=tenant`):**
+  - **Bước 1 (Thông tin doanh nghiệp):** Nhập tên doanh nghiệp, tự động chuyển đổi sang mã định danh slug chuẩn hóa tiếng Việt không dấu (`toTenantSlug`), hỗ trợ chỉnh sửa mã với xem trước đường dẫn `digix.app/t/<slug>`.
+  - **Bước 2 (Tài khoản quản trị):** Nhập họ tên, email công việc, tên đăng nhập, mật khẩu kèm thanh đo độ mạnh mật khẩu và 4 quy tắc kiểm tra động (yêu cầu đạt tối thiểu 3/4), xác nhận mật khẩu và cam kết điều khoản.
+  - **Trải nghiệm người dùng:** Rung thẻ khi có lỗi xác thực, tự động focus vào trường lỗi đầu tiên; khi mã doanh nghiệp đã tồn tại từ phản hồi API, tự động quay về bước 1 và focus vào ô mã doanh nghiệp; màn hình thành công hiển thị thông tin doanh nghiệp và tài khoản quản trị kèm gắn nhãn "bản thử" khi chạy chế độ mock.
+- **Tầng kết nối API (`lib/registration/`):** Xây dựng server action `registerTenantAction` hỗ trợ 2 chế độ `mock` (mặc định) và `api` (chuẩn bị kết nối endpoint `POST /v1/public/tenant-registrations` của #35); bản đồ lỗi tiếng Việt đầy đủ.
+- **Kiểm thử tự động:** Bổ sung 8 bài unit test cho `toTenantSlug` & `isValidTenantSlug` và 8 bài kiểm thử tích hợp giao diện cho toàn bộ luồng đăng ký.
+
 ### Tinh chỉnh giao diện theo bản xem thử demo-ui-2 (S2 · I2 · R3 · Q2)
 - **S2 – Sidebar thu hẹp:** Mặc định thu gọn còn cột 76px trên máy tính. Rê chuột hoặc Tab bàn phím thì bung ra nổi đè lên nội dung (không đẩy/nhảy nội dung); nút Ghim thanh bên để giữ mở cố định 242px, trạng thái ghim được nhớ trong `localStorage`. Tooltip nổi khi thu gọn. Điện thoại (< 900px) giữ nguyên menu trượt drawer.
 - **I2 – Icon web & Keycloak:** Áp dụng icon DigiX chính thức (ô vuông navy `#112B45`, chữ X trắng, nhánh teal `#2DD4BF`) thay thế icon mặc định Next.js trên web (`/icon.svg`, `/favicon.ico`, `/apple-icon.png`, `/manifest.json`) và trang đăng nhập Keycloak (`infra/keycloak/themes/digix/login/resources/img/icon.svg`).

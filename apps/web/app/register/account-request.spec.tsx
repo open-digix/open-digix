@@ -57,7 +57,7 @@ describe("AccountRequestForm (R3)", () => {
       vi.advanceTimersByTime(700);
     });
 
-    expect(screen.getByRole("heading", { name: "Đã gửi yêu cầu" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Đã ghi nhận (bản thử)" })).toBeInTheDocument();
     expect(screen.getByText("an.nguyen@example.com")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Về trang đăng nhập" })).toBeInTheDocument();
 

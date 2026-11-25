@@ -1,12 +1,24 @@
 import type { Metadata } from "next";
-import AccountRequestForm from "./AccountRequestForm";
+import { Suspense } from "react";
+import RegisterFlow from "./RegisterFlow";
 import "./register.css";
 
 export const metadata: Metadata = {
-  title: "Yêu cầu cấp tài khoản · DigiX",
-  description: "Gửi yêu cầu cấp tài khoản doanh nghiệp trên DigiX",
+  title: "Đăng ký · DigiX",
+  description: "Tạo doanh nghiệp mới hoặc tham gia không gian làm việc số DigiX",
 };
 
 export default function RegisterPage() {
-  return <AccountRequestForm />;
+  return (
+    <Suspense
+      fallback={
+        <div
+          className="register-page"
+          style={{ minHeight: "100vh", background: "var(--canvas)" }}
+        />
+      }
+    >
+      <RegisterFlow />
+    </Suspense>
+  );
 }
