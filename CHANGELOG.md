@@ -20,6 +20,14 @@ Mọi thay đổi đáng chú ý của dự án sẽ được ghi nhận tại �
 
 ## [Chưa phát hành] - 26/11/2026
 
+### Đăng xuất hoàn tất phiên SSO Keycloak (FRONT-LOGOUT, #64)
+- **Đổi route đăng xuất sang POST:** Chuyển `/api/auth/keycloak-logout` sang phương thức `POST` để ngăn ngừa đăng xuất ngoài ý muốn qua link `GET` từ bên ngoài (yêu cầu `GET` trả về HTTP 405 Method Not Allowed kèm `Allow: POST`).
+- **Thoát triệt để phiên SSO Keycloak:**
+  - Trích xuất `idToken` từ phiên phía server và xóa cookie phiên Auth.js.
+  - Chuyển hướng HTTP 303 về endpoint `/protocol/openid-connect/logout` của Keycloak với `client_id`, `post_logout_redirect_uri` và `id_token_hint` (bỏ qua trang xác nhận đăng xuất trung gian của Keycloak).
+- **Cập nhật component `LogoutButton`:** Chuyển đổi từ `signOut` cục bộ của Auth.js sang form POST gọi trực tiếp endpoint `/api/auth/keycloak-logout`, bảo đảm mọi nơi sử dụng nút đăng xuất (menu Topbar) đều đăng xuất hoàn toàn khỏi Keycloak.
+
+
 ### Giữ phiên đăng nhập, chuẩn hóa lỗi API và đổi doanh nghiệp an toàn (WEB-F00, #45, gộp AUTH-01 #30)
 - **Tự làm mới phiên đăng nhập (Token Refresh):**
   - Callback `jwt` lưu giữ `refresh_token`, `id_token`, `expires_at`, `refresh_expires_at`. Tự động làm mới khi access token còn dưới 30 giây thời hạn.

@@ -19,6 +19,7 @@ import { vi } from "vitest";
 
 const mockCookieStore = {
   get: vi.fn().mockReturnValue(undefined),
+  getAll: vi.fn().mockReturnValue([]),
   set: vi.fn(),
   delete: vi.fn(),
 };
@@ -29,9 +30,13 @@ vi.mock("next/headers", () => ({
   connection: () => Promise.resolve(),
 }));
 
-vi.mock("next/server", () => ({
-  connection: () => Promise.resolve(),
-}));
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
+  return {
+    ...actual,
+    connection: () => Promise.resolve(),
+  };
+});
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
