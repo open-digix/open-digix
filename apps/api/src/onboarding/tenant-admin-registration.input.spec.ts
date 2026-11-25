@@ -6,7 +6,7 @@ describe('parseTenantAdminRegistrationBody', () => {
     expect(
       parseTenantAdminRegistrationBody({
         tenantName: '  Acme Corporation  ',
-        tenantSlug: '  Acme_Corp  ',
+        tenantSlug: '  Acme-Corp  ',
         admin: {
           firstName: '  Nguyen ',
           lastName: ' Van A ',
@@ -17,7 +17,7 @@ describe('parseTenantAdminRegistrationBody', () => {
       }),
     ).toEqual({
       tenantName: 'Acme Corporation',
-      tenantSlug: 'acme_corp',
+      tenantSlug: 'acme-corp',
       admin: {
         firstName: 'Nguyen',
         lastName: 'Van A',
@@ -36,7 +36,7 @@ describe('parseTenantAdminRegistrationBody', () => {
     expectInvalid(
       {
         tenantName: 'Acme Corporation',
-        tenantSlug: 'acme_corp',
+        tenantSlug: 'acme-corp',
         tenantId: 'client-controlled',
         admin: {
           firstName: 'Nguyen',
@@ -71,11 +71,59 @@ describe('parseTenantAdminRegistrationBody', () => {
     );
   });
 
-  it('rejects a weak or missing password', () => {
+  it('rejects tenant slugs that do not match the frontend format', () => {
     expectInvalid(
       {
         tenantName: 'Acme Corporation',
         tenantSlug: 'acme_corp',
+        admin: {
+          firstName: 'Nguyen',
+          lastName: 'Van A',
+          email: 'admin@example.com',
+          username: 'admin',
+          password: 'correct-horse-battery',
+        },
+      },
+      '/tenantSlug',
+    );
+    expectInvalid(
+      {
+        tenantName: 'Acme Corporation',
+        tenantSlug: 'acme-',
+        admin: {
+          firstName: 'Nguyen',
+          lastName: 'Van A',
+          email: 'admin@example.com',
+          username: 'admin',
+          password: 'correct-horse-battery',
+        },
+      },
+      '/tenantSlug',
+    );
+  });
+
+  it('requires a tenant name to contain at least two characters', () => {
+    expectInvalid(
+      {
+        tenantName: 'A',
+        tenantSlug: 'acme-corp',
+        admin: {
+          firstName: 'Nguyen',
+          lastName: 'Van A',
+          email: 'admin@example.com',
+          username: 'admin',
+          password: 'correct-horse-battery',
+        },
+      },
+      '/tenantName',
+    );
+  });
+
+  it('rejects a weak or missing password', () => {
+    expectInvalid(
+      {
+        tenantName: 'Acme Corporation',
+        tenantSlug: 'acme-corp',
         admin: {
           firstName: 'Nguyen',
           lastName: 'Van A',
@@ -92,7 +140,7 @@ describe('parseTenantAdminRegistrationBody', () => {
     expectInvalid(
       {
         tenantName: 'Acme Corporation',
-        tenantSlug: 'acme_corp',
+        tenantSlug: 'acme-corp',
         admin: {
           firstName: 'A'.repeat(80),
           lastName: 'B'.repeat(80),
@@ -109,7 +157,7 @@ describe('parseTenantAdminRegistrationBody', () => {
     expectInvalid(
       {
         tenantName: ' ',
-        tenantSlug: 'acme_corp',
+        tenantSlug: 'acme-corp',
         admin: {
           firstName: 'Nguyen',
           email: 'admin@example.com',

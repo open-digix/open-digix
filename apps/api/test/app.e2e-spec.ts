@@ -154,7 +154,7 @@ describe('AppController (e2e)', () => {
       .post('/v1/public/tenant-registrations')
       .send({
         tenantName: 'Acme Corporation',
-        tenantSlug: 'acme_corp',
+        tenantSlug: 'acme-corp',
         admin: {
           firstName: 'Nguyen',
           lastName: 'Van A',
@@ -167,7 +167,7 @@ describe('AppController (e2e)', () => {
 
     expect(response.body).toEqual({
       tenantId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
-      tenantSlug: 'acme_corp',
+      tenantSlug: 'acme-corp',
       username: 'admin',
     });
     expect(keycloakAdmin.createUser).toHaveBeenCalledWith({
@@ -178,7 +178,7 @@ describe('AppController (e2e)', () => {
       password: 'correct-horse-battery',
     });
     expect(tenantAdminRepository.createTenantAdmin).toHaveBeenCalledWith({
-      tenantSlug: 'acme_corp',
+      tenantSlug: 'acme-corp',
       tenantName: 'Acme Corporation',
       identityIssuer: 'http://localhost:8080/realms/digix',
       identitySubject: 'keycloak-subject',
@@ -251,7 +251,7 @@ describe('AppController (e2e)', () => {
   it('returns TENANT_SLUG_TAKEN and cleans up Keycloak on a duplicate slug', async () => {
     keycloakAdmin.createUser.mockResolvedValue('keycloak-subject');
     tenantAdminRepository.createTenantAdmin.mockRejectedValue(
-      new TenantSlugConflictError('acme_corp'),
+      new TenantSlugConflictError('acme-corp'),
     );
     keycloakAdmin.deleteUser.mockResolvedValue(undefined);
 
@@ -485,7 +485,7 @@ function identityRow(tenantId: string, roles: string[]) {
 function validRegistrationBody() {
   return {
     tenantName: 'Acme Corporation',
-    tenantSlug: 'acme_corp',
+    tenantSlug: 'acme-corp',
     admin: {
       firstName: 'Nguyen',
       lastName: 'Van A',

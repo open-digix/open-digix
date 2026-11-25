@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 
-const TENANT_SLUG_PATTERN = /^[a-z][a-z0-9_-]{1,63}$/;
+const TENANT_SLUG_PATTERN = /^[a-z][a-z0-9-]{1,38}[a-z0-9]$/;
 const USERNAME_PATTERN = /^[a-z][a-z0-9._-]{2,63}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DISPLAY_NAME_MAX_LENGTH = 160;
@@ -44,8 +44,8 @@ export function parseTenantAdminRegistrationBody(
   const issues: InputIssue[] = [];
   collectUnknownProperties(body, ALLOWED_KEYS, '', issues);
 
-  const tenantName = requiredString(body, 'tenantName', 160, issues);
-  const tenantSlugValue = requiredString(body, 'tenantSlug', 64, issues);
+  const tenantName = requiredString(body, 'tenantName', 160, issues, '', 2);
+  const tenantSlugValue = requiredString(body, 'tenantSlug', 40, issues);
   const tenantSlug = tenantSlugValue?.toLowerCase();
   const admin = parseAdmin(body.admin, issues);
 
@@ -53,7 +53,7 @@ export function parseTenantAdminRegistrationBody(
     issues.push({
       path: '/tenantSlug',
       message:
-        'tenantSlug must start with a lowercase letter and contain only lowercase letters, digits, underscores or hyphens.',
+        'tenantSlug must be 3-40 characters, start with a lowercase letter, end with a lowercase letter or digit, and contain only lowercase letters, digits or hyphens.',
     });
   }
 
@@ -134,6 +134,7 @@ function requiredString(
   maxLength: number,
   issues: InputIssue[],
   pathPrefix = '',
+  minLength = 1,
 ): string | undefined {
   const path = `${pathPrefix}/${key}`;
   const value = body[key];
@@ -146,6 +147,12 @@ function requiredString(
   }
 
   const normalized = value.trim();
+  if (normalized.length < minLength) {
+    issues.push({
+      path,
+      message: `${key} must contain at least ${minLength} characters.`,
+    });
+  }
   if (normalized.length > maxLength) {
     issues.push({
       path,

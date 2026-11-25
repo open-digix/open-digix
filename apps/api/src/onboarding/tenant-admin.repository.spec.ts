@@ -8,7 +8,7 @@ import {
 
 describe('TenantAdminRepository', () => {
   const input: CreateTenantAdminInput = {
-    tenantSlug: 'acme_corp',
+    tenantSlug: 'acme-corp',
     tenantName: 'Acme Corporation',
     identityIssuer: 'http://localhost:8080/realms/digix',
     identitySubject: 'keycloak-subject',
@@ -107,7 +107,7 @@ describe('TenantAdminRepository', () => {
       .mockResolvedValueOnce({ rows: [] });
 
     await expect(repository.createTenantAdmin(input)).rejects.toEqual(
-      new TenantSlugConflictError('acme_corp'),
+      new TenantSlugConflictError('acme-corp'),
     );
     expect(query).toHaveBeenLastCalledWith('ROLLBACK');
   });

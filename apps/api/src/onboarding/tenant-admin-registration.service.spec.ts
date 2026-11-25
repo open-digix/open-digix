@@ -12,7 +12,7 @@ import { DatabaseUnavailableError } from './tenant-admin.repository';
 describe('TenantAdminRegistrationService', () => {
   const input: TenantAdminRegistrationBody = {
     tenantName: 'Acme Corporation',
-    tenantSlug: 'acme_corp',
+    tenantSlug: 'acme-corp',
     admin: {
       firstName: 'Nguyen',
       lastName: 'Van A',
@@ -24,7 +24,7 @@ describe('TenantAdminRegistrationService', () => {
   const created: TenantAdminRegistrationResult = {
     keycloakSubject: 'keycloak-subject',
     tenantId: '11111111-1111-4111-8111-111111111111',
-    tenantSlug: 'acme_corp',
+    tenantSlug: 'acme-corp',
     username: 'admin',
     identityUserId: '22222222-2222-4222-8222-222222222222',
     membershipId: '33333333-3333-4333-8333-333333333333',
@@ -159,7 +159,7 @@ describe('TenantAdminRegistrationService', () => {
   it('maps a duplicate tenant slug to the public API error contract', async () => {
     createUser.mockResolvedValue('keycloak-subject');
     createTenantAdmin.mockRejectedValue(
-      new TenantSlugConflictError('acme_corp'),
+      new TenantSlugConflictError('acme-corp'),
     );
     deleteUser.mockResolvedValue(undefined);
 

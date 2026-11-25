@@ -8,7 +8,7 @@ import type { TenantAdminRegistrationService } from './tenant-admin-registration
 describe('TenantAdminRegistrationController', () => {
   const input = {
     tenantName: 'Acme Corporation',
-    tenantSlug: 'acme_corp',
+    tenantSlug: 'acme-corp',
     admin: {
       firstName: 'Nguyen',
       lastName: 'Van A',
@@ -20,7 +20,7 @@ describe('TenantAdminRegistrationController', () => {
   const serviceResult = {
     keycloakSubject: 'keycloak-subject',
     tenantId: '11111111-1111-4111-8111-111111111111',
-    tenantSlug: 'acme_corp',
+    tenantSlug: 'acme-corp',
     username: 'admin',
     identityUserId: '22222222-2222-4222-8222-222222222222',
     membershipId: '33333333-3333-4333-8333-333333333333',
