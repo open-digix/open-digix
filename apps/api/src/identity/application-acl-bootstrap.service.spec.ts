@@ -35,7 +35,23 @@ describe('ApplicationAclBootstrapService', () => {
       'app-a',
       'membership-a',
     ]);
-    expect(auditLogs.createInTransaction).toHaveBeenCalledWith(
+    expect(auditLogs.createInTransaction).toHaveBeenNthCalledWith(
+      1,
+      client,
+      expect.objectContaining({
+        action: 'application.created',
+        actorMembershipId: 'membership-a',
+        resourceType: 'application',
+        resourceId: 'app-a',
+        result: 'success',
+        metadata: {
+          applicationId: 'app-a',
+          source: 'application_creation',
+        },
+      }),
+    );
+    expect(auditLogs.createInTransaction).toHaveBeenNthCalledWith(
+      2,
       client,
       expect.objectContaining({
         action: 'app_role.assign',
@@ -71,6 +87,13 @@ describe('ApplicationAclBootstrapService', () => {
         creatorMembershipId: 'membership-a',
       }),
     ).rejects.toThrow('Database did not assign the application designer role');
-    expect(auditLogs.createInTransaction).not.toHaveBeenCalled();
+    expect(auditLogs.createInTransaction).toHaveBeenCalledTimes(1);
+    expect(auditLogs.createInTransaction).toHaveBeenCalledWith(
+      client,
+      expect.objectContaining({
+        action: 'application.created',
+        resourceId: 'app-a',
+      }),
+    );
   });
 });

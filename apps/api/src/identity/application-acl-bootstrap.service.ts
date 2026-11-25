@@ -67,6 +67,19 @@ export class ApplicationAclBootstrapService {
     client: PoolClient,
     input: InitializeApplicationAclInput,
   ): Promise<void> {
+    await this.auditLogs.createInTransaction(client, {
+      tenantId: input.tenantId,
+      actorMembershipId: input.creatorMembershipId,
+      action: 'application.created',
+      resourceType: 'application',
+      resourceId: input.applicationId,
+      result: 'success',
+      metadata: {
+        applicationId: input.applicationId,
+        source: 'application_creation',
+      },
+    });
+
     await client.query(INSERT_APPLICATION_ACL_QUERY, [
       input.tenantId,
       input.applicationId,
