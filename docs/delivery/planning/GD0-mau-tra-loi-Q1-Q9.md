@@ -1,5 +1,7 @@
 # GĐ0 — Mẫu trả lời Q1–Q9 để thảo luận trong cuộc họp
 
+> Câu trả lời/hạn dưới đây là đề xuất lịch sử cho phạm vi v2.4; cần thảo luận lại theo [roadmap v2.5](../roadmap-v2.5.md) trước khi dùng làm quyết định ERP/CRM. Không sửa hồi tố câu trả lời cũ.
+
 **Soạn cho lịch họp online dự kiến 15:30 ngày 13/11/2026.**
 Đây là **phương án đề xuất để đọc, sửa và chốt trong họp**, không phải biên bản, quyết định đã có hiệu lực hoặc lời xác nhận của An, Dũng, Tú.
 Mọi hạn dưới đây là **hạn đề nghị**, cần đội thống nhất; nếu không thống nhất, ghi owner và hạn mới.

@@ -1,5 +1,18 @@
 # Đối chiếu DigiX Lab với đề và thể lệ PMNM OLP 2026
 
+> Phần đối chiếu kỹ thuật dưới đây được lập theo kế hoạch v2.4 (mua sắm/nghỉ phép). **Ngưỡng bắt buộc của đề không đổi chỉ vì SRS đổi:** SRS v2.5 tự chọn ERP A/CRM B và CRM thứ hai trong tenant A, builder giao diện và chức năng lắp ghép; xem [ma trận ca thử v2.5](../delivery/ke-hoach-nghiem-thu-v2.5.md). Các tham chiếu TC-LEAVE dưới đây là ví dụ lịch sử, không phải bằng chứng đạt yêu cầu mới hay điều kiện BTC bắt buộc. Cần kiểm tra lại văn bản đề/thể lệ nếu có bản cập nhật.
+
+## Bổ sung đối chiếu phạm vi v2.5 (đề xuất, chưa nghiệm thu)
+
+| Phân loại | Cam kết DigiX v2.5 / cách kiểm chứng |
+| --- | --- |
+| Ngưỡng Đề §3 | Giữ lõi headless SSO, Gateway, dữ liệu cấu trúc/phi cấu trúc, workflow và ít nhất một app giao diện Tầng 2 chạy thật; ERP A/CRM B không thay điều kiện lõi. |
+| DigiX tự chọn cao hơn ngưỡng | Danh mục chức năng ERP/CRM, builder giao diện, A có ERP + CRM nhỏ cùng tenant, B có CRM riêng, cách ly chéo app; kiểm TC-MOD-01..03, TC-UI-01..03, TC-APP-01..03 và TC-L3-01. Không gọi đây là yêu cầu BTC. |
+| Bằng chứng | Build từ source, ảnh UI theo app/role, request API qua Gateway, bản ghi/workflow/audit sau restart, test từ chối chéo tenant và chéo app. Fixture/schema/prototype chỉ chứng minh đặc tả, không chứng minh chạy thật. |
+| Giới hạn | Không tuyên bố ERP/CRM/kế toán đầy đủ hay so sánh với MISA khi chưa đo; nếu giảm phạm vi demo, cập nhật SRS/roadmap và báo phần chưa đạt. |
+
+Các bảng v2.4 dưới đây được giữ để đối chiếu nguồn đề ở thời điểm lập, không tự tái gán TC-LEAVE thành TC-APP.
+
 **Ngày đối chiếu:** 05/11/2026 · **Trạng thái:** đối chiếu văn bản chính thức, **không phải bằng chứng đã triển khai**.
 
 **Nguồn trực tiếp:** [Đề thi VFOSSA, đăng 30/09/2026](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026-798.html) (§2–6; gọi tắt **Đề**); [Thể lệ VFOSSA, đăng 09/06/2026](https://vfossa.vn/tin-tuc/the-le-olp-phan-mem-nguon-mo-nam-2026-760.html) (mục *Lịch trình tổ chức*, *Các tiêu chí chấm điểm*; gọi tắt **Thể lệ**). Đề đăng ngày 30/09 dù Thể lệ dự kiến tháng 11 mới công bố; khi có văn bản cập nhật phải đối chiếu lại. Trích đoạn ngắn bên dưới dùng để nhận diện yêu cầu, không thay thế nguồn gốc.

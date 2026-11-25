@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "2.5",
+  "startingPoint": "crm",
+  "tenantId": "tenant_b",
+  "appId": "hybrid_b",
+  "version": 1,
+  "name": "Khách hàng và vật tư",
+  "features": [
+    { "id": "crm.customers", "version": 1 },
+    { "id": "crm.opportunities", "version": 1 },
+    { "id": "erp.materials", "version": 1 }
+  ],
+  "roles": [
+    { "id": "sales", "permissions": ["crm.customers.read", "crm.opportunities.create", "erp.materials.read"] }
+  ],
+  "pages": [
+    {
+      "id": "customers", "label": "Khách hàng", "path": "customers", "layout": "single", "menuOrder": 0,
+      "components": [
+        { "id": "customer_table", "type": "table", "featureId": "crm.customers", "resource": "customers", "zone": "main" }
+      ]
+    },
+    {
+      "id": "opportunities", "label": "Cơ hội", "path": "opportunities", "layout": "two_columns", "menuOrder": 1,
+      "components": [
+        { "id": "opportunity_form", "type": "form", "featureId": "crm.opportunities", "resource": "opportunities", "action": "create", "zone": "main" },
+        { "id": "materials_table", "type": "table", "featureId": "erp.materials", "resource": "materials", "zone": "side" }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 # DigiX Lab — đặc tả thiết kế UI/UX cho Builder và ứng dụng vận hành
 
+> **Baseline thiết kế theo SRS v2.4.** Hành trình mua sắm A/nghỉ phép B, các màn hình mẫu cố định và ca TC-LEAVE dưới đây được lưu để đối chiếu; xem [thiết kế UI/UX v2.5 đề xuất](DigiX%20Lab%20-%20UI%20UX%20v2.5.md) cho chức năng ERP/CRM lắp ghép, trình dựng giao diện và nhiều app trong một tenant. Liên kết “SRS v2.4” bên dưới hiện trỏ tới nội dung v2.5 cùng đường dẫn; bản v2.4 nằm trong lịch sử Git. Quy ước accessibility/thương hiệu còn áp dụng khi không mâu thuẫn SRS mới.
+
 **Phiên bản:** 0.1 · **Ngày:** 13/11/2026 · **Trạng thái:** đề xuất thiết kế, chờ đội review; không phải UI đã triển khai hoặc được nghiệm thu.  
 **Đối tượng:** Product/UX, UI designer, frontend, backend, QA và người duyệt nghiệp vụ.  
 **Phạm vi:** giao diện Web tiếng Việt responsive của không gian thiết kế và ứng dụng đã xuất bản (Tầng 2); màn hình quản trị tenant cần cho hành trình; không đặc tả giao diện quản trị hạ tầng, cổng đối tác hay website marketing.

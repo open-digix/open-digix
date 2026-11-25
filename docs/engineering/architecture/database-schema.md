@@ -1,5 +1,7 @@
 # DigiX database foundation
 
+> Tài liệu này mô tả **migration hiện có**, không phải thiết kế mục tiêu v2.5. Xem [thiết kế dữ liệu nhiều ứng dụng trong một tenant](du-lieu-da-ung-dung-v2.5.md) cho các ràng buộc app/feature/quyền cần bổ sung; không suy ra cách ly chéo app cùng tenant chỉ từ khóa ngoại tenant bên dưới.
+
 Tài liệu này mô tả schema được triển khai bởi migration
 `0001_initial_schema`. Nguồn chân lý của schema là mã migration tại
 `apps/api/src/database/migrations/0001-initial-schema.ts`; sơ đồ dưới đây giúp
