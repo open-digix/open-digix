@@ -20,6 +20,21 @@ Mọi thay đổi đáng chú ý của dự án sẽ được ghi nhận tại �
 
 ## [Chưa phát hành] - 26/11/2026
 
+### Giữ phiên đăng nhập, chuẩn hóa lỗi API và đổi doanh nghiệp an toàn (WEB-F00, #45, gộp AUTH-01 #30)
+- **Tự làm mới phiên đăng nhập (Token Refresh):**
+  - Callback `jwt` lưu giữ `refresh_token`, `id_token`, `expires_at`, `refresh_expires_at`. Tự động làm mới khi access token còn dưới 30 giây thời hạn.
+  - Bộ chống trùng: sử dụng bảng băm SHA-256 của refresh token, gom các yêu cầu làm mới đồng thời về cùng một Promise duy nhất, giảm thiểu số lần gọi tới Keycloak.
+  - Proxy Node.js (`apps/web/proxy.ts`): kiểm tra và làm mới token trước khi render Server Components, tiêm cookie mới vào header request hiện tại để Server Components đọc được ngay token mới. Matcher bỏ qua các route công khai và tệp tĩnh.
+  - Bảo mật phiên: `/api/auth/session` chỉ trả về `user` và `expires`, không để lộ bất kỳ token nào ra phía trình duyệt.
+- **Đăng nhập lại 1 lần bấm (`ReloginButton`):**
+  - Khi phiên hết hạn, màn hình thông báo cung cấp nút "Đăng nhập lại" chuyển hướng thẳng tới Keycloak (`signIn("keycloak")`), không qua hộp thoại trung gian.
+- **Chuẩn hóa lỗi API (v2.5 §3):**
+  - Bổ sung trường `kind` cho `ApiError`: `unauthenticated` (401), `forbidden` (403), `not_found` (404), `conflict` (409), `unprocessable` (422), `rate_limited` (429), `unavailable` (5xx/mạng).
+  - Thành phần giao diện `ApiErrorState`: hiển thị thông điệp tiếng Việt trung thực; lỗi 404 không để lộ tên/mã bản ghi; lỗi 409 cung cấp nút "Tải lại"; lỗi 422 hiển thị danh sách trường vi phạm.
+- **Đổi doanh nghiệp an toàn:**
+  - Hook `useUnsavedChangesGuard`: cảnh báo xác nhận khi người dùng chuyển doanh nghiệp trong khi trang có dữ liệu chưa lưu; hủy thao tác nếu người dùng chọn ở lại.
+  - Tiện ích `tenant-switch`: tự động hủy các request mạng đang chạy dở (`AbortController`), xóa sạch bộ lọc, bảng và dữ liệu tạm client của doanh nghiệp cũ, làm mới router an toàn.
+  - Topbar luôn hiển thị chính xác tên doanh nghiệp hiện tại.
 ### Nối API đăng ký doanh nghiệp & Sửa lỗi ô điều khoản (FRONT-REG, #56)
 - **Mặc định gọi API thật:** Chuyển `REGISTRATION_API_MODE` sang mặc định `api`, gọi trực tiếp `POST /v1/public/tenant-registrations` qua Gateway; chỉ chuyển sang `mock` khi cấu hình rõ ràng.
 - **Màn hình thành công API thật:** Hiển thị thông báo "Đã tạo doanh nghiệp", tên doanh nghiệp, tên đăng nhập quản trị và nút chuyển tiếp "Đăng nhập".

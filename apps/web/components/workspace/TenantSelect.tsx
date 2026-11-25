@@ -17,8 +17,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { selectTenantAction } from "../../lib/tenant/actions";
 import type { MeMembership } from "../../lib/tenant/types";
+import {
+  confirmDiscardChanges,
+  resetUnsavedChanges,
+} from "../../lib/tenant/useUnsavedChangesGuard";
+import { clearClientTenantData } from "../../lib/tenant/tenant-switch";
 
 interface TenantSelectProps {
   activeMemberships: MeMembership[];
@@ -29,8 +35,11 @@ export default function TenantSelect({
   activeMemberships,
   currentTenantId,
 }: TenantSelectProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [selectedId, setSelectedId] = useState(currentTenantId ?? "");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const activeId = selectedId ?? currentTenantId ?? "";
 
   if (activeMemberships.length === 0) {
     return <span className="tenant-select">Chưa có doanh nghiệp</span>;
@@ -48,23 +57,45 @@ export default function TenantSelect({
     );
   }
 
+  const currentMembership =
+    activeMemberships.find((m) => m.tenant.id === activeId) ??
+    activeMemberships[0];
+
   return (
-    <label className="tenant-select" title="Chọn doanh nghiệp">
+    <label
+      className="tenant-select"
+      title={`Doanh nghiệp: ${currentMembership?.tenant.name ?? "Chọn doanh nghiệp"}`}
+    >
       <span className="tenant-label">Doanh nghiệp</span>
       <select
         id="tenant-select"
         className="tenant-select-dropdown"
         aria-label="Chọn doanh nghiệp"
         disabled={isPending}
-        value={selectedId}
+        value={activeId}
         onChange={(e) => {
           const nextId = e.target.value;
-          setSelectedId(nextId);
-          if (nextId) {
-            startTransition(async () => {
-              await selectTenantAction(nextId);
-            });
+          if (!nextId || nextId === activeId) return;
+
+          // Check unsaved changes before switching
+          const canProceed = confirmDiscardChanges(
+            "Bạn có thay đổi chưa lưu. Bạn có chắc chắn muốn chuyển doanh nghiệp?",
+          );
+          if (!canProceed) {
+            e.target.value = activeId;
+            return;
           }
+
+          setSelectedId(nextId);
+
+          // Clear client filters, toasts, and abort ongoing requests
+          clearClientTenantData();
+          resetUnsavedChanges();
+
+          startTransition(async () => {
+            await selectTenantAction(nextId);
+            router.refresh();
+          });
         }}
       >
         <option value="" disabled>

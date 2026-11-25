@@ -19,13 +19,15 @@ import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { getToken } from "next-auth/jwt";
 import type { MeMembership, MeResponse, TenantContext } from "../tenant/types";
-import type { ApiIssue } from "./errors";
-export { formatApiErrorVi } from "./errors";
-export type { ApiIssue, FormattedApiError } from "./errors";
+import type { ApiIssue, ApiErrorKind } from "./errors";
+import { determineErrorKind } from "./errors";
+export { formatApiErrorVi, determineErrorKind } from "./errors";
+export type { ApiIssue, ApiErrorKind, FormattedApiError } from "./errors";
 
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
+  readonly kind: ApiErrorKind;
   readonly details?: unknown;
   readonly issues?: readonly ApiIssue[];
 
@@ -35,24 +37,34 @@ export class ApiError extends Error {
     message: string,
     details?: unknown,
     issues?: readonly ApiIssue[],
+    kind?: ApiErrorKind,
   ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
+    this.kind = kind ?? determineErrorKind(status);
     this.details = details;
     this.issues = issues;
   }
 }
 
-export async function getServerAccessToken(): Promise<string | null> {
+export async function getServerSessionToken() {
   const requestHeaders = await headers();
-  const token = await getToken({
+  return getToken({
     req: { headers: requestHeaders },
     secret: process.env.AUTH_SECRET,
   });
+}
 
-  if (!token?.accessToken || typeof token.accessToken !== "string") {
+export async function getServerAccessToken(): Promise<string | null> {
+  const token = await getServerSessionToken();
+
+  if (
+    !token?.accessToken ||
+    typeof token.accessToken !== "string" ||
+    token.error
+  ) {
     return null;
   }
   return token.accessToken;
@@ -142,7 +154,14 @@ export async function apiCall<T>(
 ): Promise<T> {
   const token = await getServerAccessToken();
   if (!token) {
-    throw new ApiError(401, "AUTHENTICATION_REQUIRED", "Yêu cầu đăng nhập.");
+    throw new ApiError(
+      401,
+      "AUTHENTICATION_REQUIRED",
+      "Yêu cầu đăng nhập.",
+      undefined,
+      undefined,
+      "unauthenticated",
+    );
   }
 
   let tenantId = options.tenantId;
@@ -153,6 +172,9 @@ export async function apiCall<T>(
         400,
         "TENANT_CONTEXT_REQUIRED",
         "Vui lòng chọn doanh nghiệp trước khi thao tác.",
+        undefined,
+        undefined,
+        "unprocessable",
       );
     }
     tenantId = ctx.currentTenant.id;
@@ -168,12 +190,25 @@ export async function apiCall<T>(
     headersInit["Content-Type"] = "application/json";
   }
 
-  const res = await fetch(`${internalUrl}${path}`, {
-    method: options.method ?? "GET",
-    headers: headersInit,
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-    cache: "no-store",
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${internalUrl}${path}`, {
+      method: options.method ?? "GET",
+      headers: headersInit,
+      body:
+        options.body !== undefined ? JSON.stringify(options.body) : undefined,
+      cache: "no-store",
+    });
+  } catch (err) {
+    throw new ApiError(
+      503,
+      "SERVICE_UNAVAILABLE",
+      "Không thể kết nối đến máy chủ hoặc dịch vụ đang bảo trì.",
+      err,
+      undefined,
+      "unavailable",
+    );
+  }
 
   const contentType = res.headers?.get("content-type") ?? "application/json";
   const isJson = contentType.includes("application/json");
