@@ -2,6 +2,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import type {
@@ -31,6 +32,13 @@ type KeycloakAdminProvisioner = Pick<
 >;
 type TenantAdminPersistence = Pick<TenantAdminRepository, 'createTenantAdmin'>;
 
+class TenantAdminReconciliationError extends Error {
+  constructor() {
+    super('Tenant admin registration requires reconciliation.');
+    this.name = 'TenantAdminReconciliationError';
+  }
+}
+
 export interface TenantAdminRegistrationResult extends CreatedTenantAdmin {
   readonly keycloakSubject: string;
   readonly tenantSlug: string;
@@ -39,6 +47,8 @@ export interface TenantAdminRegistrationResult extends CreatedTenantAdmin {
 
 @Injectable()
 export class TenantAdminRegistrationService {
+  private readonly logger = new Logger(TenantAdminRegistrationService.name);
+
   constructor(
     @Inject(KEYCLOAK_ADMIN_CLIENT)
     private readonly keycloak: KeycloakAdminProvisioner,
@@ -70,23 +80,44 @@ export class TenantAdminRegistrationService {
         ...created,
       };
     } catch (error) {
-      await this.cleanupKeycloakUser(keycloakSubject, error);
+      try {
+        await this.cleanupKeycloakUser(
+          {
+            keycloakSubject,
+            tenantSlug: input.tenantSlug,
+            username: input.admin.username,
+          },
+          error,
+        );
+      } catch (cleanupError) {
+        throw mapPersistenceRegistrationError(cleanupError);
+      }
       throw mapPersistenceRegistrationError(error);
     }
   }
 
   private async cleanupKeycloakUser(
-    subject: string,
+    context: {
+      keycloakSubject: string;
+      tenantSlug: string;
+      username: string;
+    },
     registrationError: unknown,
   ): Promise<void> {
     try {
-      await this.keycloak.deleteUser(subject);
+      await this.keycloak.deleteUser(context.keycloakSubject);
     } catch (cleanupError) {
-      const registrationMessage = errorMessage(registrationError);
-      const cleanupMessage = errorMessage(cleanupError);
-      throw new Error(
-        `Tenant admin registration failed (${registrationMessage}) and Keycloak cleanup also failed (${cleanupMessage}).`,
+      this.logger.error(
+        JSON.stringify({
+          event: 'tenant_admin_registration.reconciliation_required',
+          keycloakSubject: context.keycloakSubject,
+          tenantSlug: context.tenantSlug,
+          username: context.username,
+          registrationError: errorMessage(registrationError),
+          cleanupError: errorMessage(cleanupError),
+        }),
       );
+      throw new TenantAdminReconciliationError();
     }
   }
 }
@@ -124,6 +155,9 @@ function mapKeycloakRegistrationError(error: unknown): unknown {
 }
 
 function mapPersistenceRegistrationError(error: unknown): unknown {
+  if (error instanceof TenantAdminReconciliationError) {
+    return unavailableError();
+  }
   if (error instanceof DatabaseUnavailableError) {
     return unavailableError();
   }

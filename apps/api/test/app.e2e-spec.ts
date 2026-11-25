@@ -290,6 +290,28 @@ describe('AppController (e2e)', () => {
     expect(keycloakAdmin.deleteUser).toHaveBeenCalledWith('keycloak-subject');
   });
 
+  it('returns UNAVAILABLE when Keycloak cleanup also fails', async () => {
+    keycloakAdmin.createUser.mockResolvedValue('keycloak-subject');
+    tenantAdminRepository.createTenantAdmin.mockRejectedValue(
+      new DatabaseUnavailableError(),
+    );
+    keycloakAdmin.deleteUser.mockRejectedValue(
+      new KeycloakAdminUnavailableError('Keycloak cleanup unavailable'),
+    );
+
+    const response = await request(app.getHttpServer())
+      .post('/v1/public/tenant-registrations')
+      .send(validRegistrationBody())
+      .expect(503);
+
+    expect(response.body).toEqual({
+      error: {
+        code: 'UNAVAILABLE',
+        message: 'Registration service is temporarily unavailable.',
+      },
+    });
+  });
+
   it('/v1/me rejects a request without a Bearer token', async () => {
     const response = await request(app.getHttpServer())
       .get('/v1/me')

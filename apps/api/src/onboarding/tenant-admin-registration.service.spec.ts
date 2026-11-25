@@ -2,6 +2,7 @@ import {
   TenantAdminRegistrationService,
   type TenantAdminRegistrationResult,
 } from './tenant-admin-registration.service';
+import { Logger } from '@nestjs/common';
 import type { TenantAdminRegistrationBody } from './tenant-admin-registration.input';
 import { KeycloakUserConflictError } from '../auth/keycloak-admin.client';
 import { KeycloakAdminUnavailableError } from '../auth/keycloak-admin.client';
@@ -129,10 +130,30 @@ describe('TenantAdminRegistrationService', () => {
     createUser.mockResolvedValue('keycloak-subject');
     createTenantAdmin.mockRejectedValue(new Error('database unavailable'));
     deleteUser.mockRejectedValue(new Error('Keycloak delete unavailable'));
+    const loggerError = jest
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => undefined);
 
-    await expect(service.register(input)).rejects.toThrow(
-      'Keycloak cleanup also failed',
-    );
+    try {
+      await expect(service.register(input)).rejects.toMatchObject({
+        response: {
+          error: {
+            code: 'UNAVAILABLE',
+            message: 'Registration service is temporarily unavailable.',
+          },
+        },
+      });
+      expect(loggerError).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'tenant_admin_registration.reconciliation_required',
+        ),
+      );
+      expect(loggerError.mock.calls[0]?.[0]).not.toContain(
+        input.admin.password,
+      );
+    } finally {
+      loggerError.mockRestore();
+    }
   });
 
   it('maps a duplicate tenant slug to the public API error contract', async () => {
