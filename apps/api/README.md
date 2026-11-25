@@ -41,7 +41,7 @@ Request body:
 ```json
 {
   "tenantName": "Acme Corporation",
-  "tenantSlug": "acme_corp",
+  "tenantSlug": "acme-corp",
   "admin": {
     "firstName": "Nguyen",
     "lastName": "Van A",
@@ -62,7 +62,7 @@ Response `201 Created`:
 ```json
 {
   "tenantId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-  "tenantSlug": "acme_corp",
+  "tenantSlug": "acme-corp",
   "username": "admin"
 }
 ```
