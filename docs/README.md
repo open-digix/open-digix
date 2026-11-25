@@ -25,7 +25,7 @@ trạng thái từ vị trí của tài liệu trong cây thư mục.
 
 ## Điều hành và cuộc thi
 
-- [Roadmap v2.5 đề xuất](delivery/roadmap-v2.5.md), [kiểm kê hiện trạng mức A](delivery/kiem-ke-hien-trang-uu-tien-a-v2.5.md) và [kế hoạch nghiệm thu v2.5](delivery/ke-hoach-nghiem-thu-v2.5.md); [roadmap v2.4](delivery/roadmap.md) giữ baseline lịch sử.
+- [Roadmap v2.5 đề xuất](delivery/roadmap-v2.5.md), [plan chi tiết phân việc Dũng/Duy Anh/An](delivery/ke-hoach-trien-khai-chi-tiet-v2.5.md), [kiểm kê hiện trạng mức A](delivery/kiem-ke-hien-trang-uu-tien-a-v2.5.md) và [kế hoạch nghiệm thu v2.5](delivery/ke-hoach-nghiem-thu-v2.5.md); [roadmap v2.4](delivery/roadmap.md) giữ baseline lịch sử.
 - [Hồ sơ khởi động GĐ0](delivery/planning/GD0.md), [checklist GĐ0](delivery/planning/GD0-checklist.md), [tài liệu chuẩn bị họp](delivery/planning/GD0-hop-16h-hien-trang-va-quyet-dinh.md) và [mẫu trả lời Q1–Q9](delivery/planning/GD0-mau-tra-loi-Q1-Q9.md).
 - [Đối chiếu đề và thể lệ OLP 2026](competition/OLP%202026%20-%20%C4%90%E1%BB%91i%20chi%E1%BA%BFu%20%C4%91%E1%BB%81%20ch%C3%ADnh%20th%E1%BB%A9c.md).
 
