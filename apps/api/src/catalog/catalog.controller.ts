@@ -16,7 +16,10 @@
 
 import { Controller, Get } from '@nestjs/common';
 import { TenantScoped } from '../identity/tenant-context.decorator';
-import type { CatalogFeaturesResponse } from './catalog.types';
+import type {
+  CatalogFeaturesResponse,
+  CatalogPresetsResponse,
+} from './catalog.types';
 import { CatalogService } from './catalog.service';
 
 @TenantScoped()
@@ -27,5 +30,10 @@ export class CatalogController {
   @Get('features')
   getFeatures(): CatalogFeaturesResponse {
     return this.catalog.getFeatures();
+  }
+
+  @Get('presets')
+  getPresets(): CatalogPresetsResponse {
+    return this.catalog.getPresets();
   }
 }
