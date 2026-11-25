@@ -14,7 +14,8 @@ trạng thái từ vị trí của tài liệu trong cây thư mục.
 
 - [Kiến trúc database và quy tắc schema](engineering/architecture/database-schema.md).
 - [Thiết kế dữ liệu nhiều app v2.5](engineering/architecture/du-lieu-da-ung-dung-v2.5.md) — đề xuất, không phải migration đã chạy.
-- [Hợp đồng ứng dụng v2.5](engineering/builder/hop-dong-ung-dung-v2.5.md), [schema v2.5](reference/schema/digix-app-v2.5.schema.json), [fixture ERP A](examples/erp-a-app-v2.5.json), [CRM A](examples/crm-a-app-v2.5.json), [CRM B](examples/crm-b-app-v2.5.json) và [app ERP/CRM kết hợp](examples/hybrid-app-v2.5.json) — thiết kế, chưa nghiệm thu.
+- [Quyết định đủ để khởi công code v2.5](engineering/architecture/quyet-dinh-khoi-cong-code-v2.5.md) và [hợp đồng kỹ thuật Builder/runtime](engineering/builder/hop-dong-ky-thuat-v2.5.md) — đã chốt thiết kế, chưa triển khai/nghiệm thu.
+- [Hợp đồng ứng dụng v2.5](engineering/builder/hop-dong-ung-dung-v2.5.md), [schema draft](reference/schema/digix-app-draft-v2.5.schema.json), [schema published](reference/schema/digix-app-v2.5.schema.json), [fixture ERP A](examples/erp-a-app-v2.5.json), [CRM A](examples/crm-a-app-v2.5.json), [CRM B](examples/crm-b-app-v2.5.json) và [app ERP/CRM kết hợp](examples/hybrid-app-v2.5.json) — thiết kế, chưa nghiệm thu.
 - [Hợp đồng dữ liệu Builder](engineering/builder/DigiX%20Lab%20-%20H%E1%BB%A3p%20%C4%91%E1%BB%93ng%20d%E1%BB%AF%20li%E1%BB%87u%20Builder.md).
 - [Thiết kế Builder và nghiệm thu nghỉ phép](engineering/builder/DigiX%20Lab%20-%20Thi%E1%BA%BFt%20k%E1%BA%BF%20builder%20v%C3%A0%20nghi%E1%BB%87m%20thu%20ngh%E1%BB%89%20ph%C3%A9p.md).
 - [Database, luồng hoạt động và demo Builder](engineering/builder/digix-builder-database-va-demo.md).
@@ -24,7 +25,7 @@ trạng thái từ vị trí của tài liệu trong cây thư mục.
 
 ## Điều hành và cuộc thi
 
-- [Roadmap v2.5 đề xuất](delivery/roadmap-v2.5.md) và [kế hoạch nghiệm thu v2.5](delivery/ke-hoach-nghiem-thu-v2.5.md); [roadmap v2.4](delivery/roadmap.md) giữ baseline lịch sử.
+- [Roadmap v2.5 đề xuất](delivery/roadmap-v2.5.md), [kiểm kê hiện trạng mức A](delivery/kiem-ke-hien-trang-uu-tien-a-v2.5.md) và [kế hoạch nghiệm thu v2.5](delivery/ke-hoach-nghiem-thu-v2.5.md); [roadmap v2.4](delivery/roadmap.md) giữ baseline lịch sử.
 - [Hồ sơ khởi động GĐ0](delivery/planning/GD0.md), [checklist GĐ0](delivery/planning/GD0-checklist.md), [tài liệu chuẩn bị họp](delivery/planning/GD0-hop-16h-hien-trang-va-quyet-dinh.md) và [mẫu trả lời Q1–Q9](delivery/planning/GD0-mau-tra-loi-Q1-Q9.md).
 - [Đối chiếu đề và thể lệ OLP 2026](competition/OLP%202026%20-%20%C4%90%E1%BB%91i%20chi%E1%BA%BFu%20%C4%91%E1%BB%81%20ch%C3%ADnh%20th%E1%BB%A9c.md).
 

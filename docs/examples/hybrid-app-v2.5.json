@@ -1,8 +1,8 @@
 {
   "schemaVersion": "2.5",
   "startingPoint": "crm",
-  "tenantId": "tenant_b",
-  "appId": "hybrid_b",
+  "tenantId": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+  "appId": "44444444-4444-4444-8444-444444444444",
   "version": 1,
   "name": "Khách hàng và vật tư",
   "features": [
@@ -11,7 +11,7 @@
     { "id": "erp.materials", "version": 1 }
   ],
   "roles": [
-    { "id": "sales", "permissions": ["crm.customers.read", "crm.opportunities.create", "erp.materials.read"] }
+    { "id": "sales", "permissions": ["crm.customers.read", "crm.opportunities.create", "crm.opportunities.read", "erp.materials.read"] }
   ],
   "pages": [
     {

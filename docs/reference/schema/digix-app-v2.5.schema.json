@@ -1,15 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://digix.example/schema/app-v2.5",
-  "title": "DigiX published composable application v2.5 (proposal)",
+  "title": "DigiX published composable application v2.5 (design contract; not implemented)",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "tenantId", "appId", "version", "name", "features", "roles", "pages"],
   "properties": {
     "schemaVersion": { "const": "2.5" },
     "startingPoint": { "enum": ["erp", "crm", "blank"], "description": "Optional creation provenance; never determines enabled features, authorization or runtime behavior." },
-    "tenantId": { "$ref": "#/$defs/id" },
-    "appId": { "$ref": "#/$defs/id" },
+    "tenantId": { "$ref": "#/$defs/uuid" },
+    "appId": { "$ref": "#/$defs/uuid" },
     "version": { "type": "integer", "minimum": 1 },
     "name": { "type": "string", "minLength": 1, "maxLength": 120 },
     "features": {
@@ -49,6 +49,7 @@
     }
   },
   "$defs": {
+    "uuid": { "type": "string", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" },
     "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{1,63}$" },
     "featureId": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{1,63}\\.[a-z][a-z0-9_-]{1,63}$" },
     "page": {
@@ -60,6 +61,8 @@
         "path": { "$ref": "#/$defs/id" },
         "layout": { "enum": ["single", "two_columns"] },
         "menuOrder": { "type": "integer", "minimum": 0 },
+        "visibleToRoles": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+        "hidden": { "type": "boolean", "default": false },
         "components": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/component" } }
       }
     },
@@ -69,11 +72,15 @@
       "properties": {
         "id": { "$ref": "#/$defs/id" },
         "type": { "enum": ["form", "table", "detail", "metric", "action"] },
+        "componentVersion": { "type": "integer", "minimum": 1, "default": 1 },
         "featureId": { "$ref": "#/$defs/featureId" },
         "resource": { "$ref": "#/$defs/id" },
         "action": { "$ref": "#/$defs/id" },
         "zone": { "enum": ["main", "side"] },
-        "label": { "type": "string", "minLength": 1 }
+        "label": { "type": "string", "minLength": 1 },
+        "order": { "type": "integer", "minimum": 0 },
+        "visibleToRoles": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+        "hidden": { "type": "boolean", "default": false }
       }
     }
   }

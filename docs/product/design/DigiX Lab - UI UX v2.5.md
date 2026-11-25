@@ -43,7 +43,7 @@ Khi thêm cơ hội từ trống cần chọn khách hàng trước hoặc xử 
 - **CRM B:** menu khách hàng/liên hệ, cơ hội/giai đoạn; tạo khách hàng → liên hệ → cơ hội gắn khách hàng → thay đổi giai đoạn, xem lịch sử.
   Không hiện kho/mua sắm/kế toán/marketing tự động.
 - **CRM nhỏ A:** được tạo như app thứ hai trong tenant A với khách hàng/cơ hội; app switcher đổi giữa ERP và CRM theo quyền.
-  Không hiển thị dữ liệu ERP trong CRM theo mặc định; nếu có liên kết chia sẻ, ghi rõ nguồn, quyền, audit.
+  Không hiển thị dữ liệu ERP trong CRM theo mặc định; nếu có liên kết chia sẻ được cấp quyền, ghi rõ nguồn, phạm vi bản ghi và quyền đọc/ghi, audit; thu hồi thì không cho truy cập mới.
 - Với mọi app: form/list/detail/task/dashboard/trợ lý là thành phần có thể chọn/bố trí, không phải bộ màn hình bắt buộc giống nhau.
   H/P/D hoạt động khi I chưa có nguồn; KPI dẫn tới bản ghi được phép; trạng thái loading/empty/403/409 và lỗi backend có thông điệp trung thực.
 
@@ -58,8 +58,6 @@ Khi thêm cơ hội từ trống cần chọn khách hàng trước hoặc xử 
 4. Prototype đủ TC-START-01..04: ERP bỏ tồn kho; CRM thêm vật tư; từ trống chọn khách hàng + cơ hội và thử nháp rỗng;
    ba trường hợp đi cùng Builder/preview/runtime, không có màn/API riêng theo loại app. Kiểm trạng thái đổi lối vào sau khi đã sửa chức năng.
 
-**Còn phải chốt:** thư viện thành phần và bố cục nào được hỗ trợ;
-mô hình ACL theo app/bản ghi;
-API danh mục chức năng và preview;
-có chia sẻ dữ liệu giữa app trong demo hay chỉ kiểm thử mặc định từ chối.
-Không thiết kế một khả năng chưa có API như thể đã triển khai.
+**Đã chốt phạm vi demo (chưa triển khai):** có chia sẻ liên app được người có quyền cấu hình, mặc định từ chối; liên kết chỉ rõ app nguồn/đích, loại dữ liệu, quyền đọc/ghi, phạm vi bản ghi, có audit và thu hồi chặn truy cập mới. AI dùng nguồn được chọn theo tenant/app/quyền hiện hành, có dẫn nguồn hoặc nói không biết; không trộn nguồn chéo app/tenant kể cả khi có liên kết, thu hồi nguồn/quyền phải có hiệu lực; AI ngừng thì H/P/D vẫn chạy. UI cần thể hiện trạng thái chưa cấp/đã cấp/đã thu hồi và nguồn dữ liệu, không giả lập quyền trên client.
+
+**Đã chốt phương án thiết kế:** [hợp đồng kỹ thuật v2.5](../../engineering/builder/hop-dong-ky-thuat-v2.5.md) mô tả thư viện thành phần/bố cục, ACL, route danh mục–preview–publish, chia sẻ và AI. Chưa có OpenAPI/migration hoặc các API v2.5 chạy thật; không thiết kế một khả năng chưa có API như thể đã triển khai.
