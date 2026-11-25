@@ -165,7 +165,8 @@ describe('AppController (e2e)', () => {
     expect(keycloakAdmin.createUser).toHaveBeenCalledWith({
       username: 'admin',
       email: 'admin@example.com',
-      displayName: 'Nguyen Van A',
+      firstName: 'Nguyen',
+      lastName: 'Van A',
       password: 'correct-horse-battery',
     });
     expect(tenantAdminRepository.createTenantAdmin).toHaveBeenCalledWith({

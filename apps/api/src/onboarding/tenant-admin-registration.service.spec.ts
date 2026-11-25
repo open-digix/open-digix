@@ -3,6 +3,7 @@ import {
   type TenantAdminRegistrationResult,
 } from './tenant-admin-registration.service';
 import type { TenantAdminRegistrationBody } from './tenant-admin-registration.input';
+import { KeycloakUserConflictError } from '../auth/keycloak-admin.client';
 
 describe('TenantAdminRegistrationService', () => {
   const input: TenantAdminRegistrationBody = {
@@ -56,7 +57,8 @@ describe('TenantAdminRegistrationService', () => {
     expect(createUser).toHaveBeenCalledWith({
       username: input.admin.username,
       email: input.admin.email,
-      displayName: 'Nguyen Van A',
+      firstName: 'Nguyen',
+      lastName: 'Van A',
       password: input.admin.password,
     });
     expect(createTenantAdmin).toHaveBeenCalledWith({
@@ -88,6 +90,20 @@ describe('TenantAdminRegistrationService', () => {
     );
     expect(createTenantAdmin).not.toHaveBeenCalled();
     expect(deleteUser).not.toHaveBeenCalled();
+  });
+
+  it('maps a duplicate Keycloak username to the public API error contract', async () => {
+    createUser.mockRejectedValue(new KeycloakUserConflictError('username'));
+
+    await expect(service.register(input)).rejects.toMatchObject({
+      response: {
+        error: {
+          code: 'USERNAME_TAKEN',
+          message: 'Username is already taken.',
+        },
+      },
+    });
+    expect(createTenantAdmin).not.toHaveBeenCalled();
   });
 
   it('reports a cleanup failure instead of hiding the orphaned account', async () => {

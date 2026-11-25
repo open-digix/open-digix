@@ -1,8 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import type {
   CreateKeycloakUserInput,
   KeycloakAdminClient,
 } from '../auth/keycloak-admin.client';
+import { KeycloakUserConflictError } from '../auth/keycloak-admin.client';
 import type {
   CreatedTenantAdmin,
   CreateTenantAdminInput,
@@ -43,7 +44,12 @@ export class TenantAdminRegistrationService {
     input: TenantAdminRegistrationBody,
   ): Promise<TenantAdminRegistrationResult> {
     const keycloakInput = toKeycloakUserInput(input);
-    const keycloakSubject = await this.keycloak.createUser(keycloakInput);
+    let keycloakSubject: string;
+    try {
+      keycloakSubject = await this.keycloak.createUser(keycloakInput);
+    } catch (error) {
+      throw mapKeycloakRegistrationError(error);
+    }
 
     try {
       const created = await this.repository.createTenantAdmin(
@@ -87,9 +93,23 @@ function toKeycloakUserInput(
   return {
     username: input.admin.username,
     email: input.admin.email,
-    displayName: `${input.admin.firstName} ${input.admin.lastName}`,
+    firstName: input.admin.firstName,
+    lastName: input.admin.lastName,
     password: input.admin.password,
   };
+}
+
+function mapKeycloakRegistrationError(error: unknown): unknown {
+  if (!(error instanceof KeycloakUserConflictError)) return error;
+
+  const code = `${error.field.toUpperCase()}_TAKEN`;
+  const label = error.field === 'email' ? 'Email' : 'Username';
+  return new ConflictException({
+    error: {
+      code,
+      message: `${label} is already taken.`,
+    },
+  });
 }
 
 function toRepositoryInput(

@@ -8,8 +8,18 @@ export interface KeycloakAdminClientConfig {
 export interface CreateKeycloakUserInput {
   readonly username: string;
   readonly email: string;
-  readonly displayName: string;
+  readonly firstName: string;
+  readonly lastName: string;
   readonly password: string;
+}
+
+export type KeycloakUserConflictField = 'username' | 'email';
+
+export class KeycloakUserConflictError extends Error {
+  constructor(readonly field: KeycloakUserConflictField) {
+    super(`Keycloak user already exists with the same ${field}.`);
+    this.name = 'KeycloakUserConflictError';
+  }
 }
 
 interface KeycloakTokenResponse {
@@ -36,7 +46,8 @@ export class KeycloakAdminClient {
         enabled: true,
         email: input.email,
         emailVerified: false,
-        ...keycloakPersonName(input.displayName),
+        firstName: input.firstName,
+        lastName: input.lastName,
         credentials: [
           {
             type: 'password',
@@ -46,6 +57,12 @@ export class KeycloakAdminClient {
         ],
       }),
     });
+
+    if (response.status === 409) {
+      throw new KeycloakUserConflictError(
+        keycloakConflictField(await response.text()),
+      );
+    }
 
     if (response.status !== 201) {
       throw new Error(
@@ -117,13 +134,8 @@ export class KeycloakAdminClient {
   }
 }
 
-function keycloakPersonName(displayName: string): {
-  firstName: string;
-  lastName: string;
-} {
-  const [firstName, ...remainingNames] = displayName.trim().split(/\s+/);
-  return {
-    firstName,
-    lastName: remainingNames.join(' ') || 'User',
-  };
+function keycloakConflictField(
+  responseBody: string,
+): KeycloakUserConflictField {
+  return /email/i.test(responseBody) ? 'email' : 'username';
 }

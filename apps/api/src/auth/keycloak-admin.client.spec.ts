@@ -1,5 +1,6 @@
 import {
   KeycloakAdminClient,
+  KeycloakUserConflictError,
   type KeycloakAdminClientConfig,
 } from './keycloak-admin.client';
 
@@ -11,9 +12,10 @@ describe('KeycloakAdminClient', () => {
     adminPassword: 'admin-password',
   };
   const user = {
-    username: 'admin@example.com',
+    username: 'admin',
     email: 'admin@example.com',
-    displayName: 'Nguyen Van A',
+    firstName: 'Nguyen',
+    lastName: 'Van A',
     password: 'correct-horse-battery',
   };
 
@@ -61,7 +63,29 @@ describe('KeycloakAdminClient', () => {
       }),
     );
     const createRequest = fetchImplementation.mock.calls[1]?.[1];
-    expect(createRequest?.body).toContain('"username":"admin@example.com"');
+    expect(createRequest?.body).toContain('"username":"admin"');
+    expect(createRequest?.body).toContain('"firstName":"Nguyen"');
+    expect(createRequest?.body).toContain('"lastName":"Van A"');
+  });
+
+  it('reports a duplicate Keycloak email as a typed conflict', async () => {
+    const fetchImplementation = jest.fn() as jest.MockedFunction<typeof fetch>;
+    fetchImplementation
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ access_token: 'admin-token' }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ errorMessage: 'same email' }), {
+          status: 409,
+        }),
+      );
+    const client = new KeycloakAdminClient(config, fetchImplementation);
+
+    await expect(client.createUser(user)).rejects.toEqual(
+      new KeycloakUserConflictError('email'),
+    );
   });
 
   it('fails when Keycloak admin login returns no token', async () => {
