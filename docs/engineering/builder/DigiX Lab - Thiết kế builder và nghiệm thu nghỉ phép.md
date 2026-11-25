@@ -1,5 +1,7 @@
 # DigiX Lab — thiết kế builder v1 và kế hoạch nghiệm thu
 
+> **Baseline v2.4:** fixture/TC-LEAVE là minh họa lịch sử. SRS v2.5 dùng [hợp đồng ứng dụng lắp ghép](hop-dong-ung-dung-v2.5.md) và TC-MOD/TC-UI/TC-APP cho demo ERP/CRM; test nghỉ phép không nghiệm thu phạm vi mới.
+
 **Trạng thái:** đề xuất kỹ thuật để cả đội duyệt, **chưa triển khai/chưa chạy thử thật** (05/11/2026).
 Phạm vi sản phẩm theo [SRS DigiX Lab v2.2](../../product/requirements/SRS%20DigiX%20Lab%20-%20%C4%90%E1%BA%B7c%20t%E1%BA%A3%20y%C3%AAu%20c%E1%BA%A7u%20ph%E1%BA%A7n%20m%E1%BB%81m.md). Đây là thiết kế một lát cắt, không phải đặc tả đầy đủ cho mọi quy trình.
 

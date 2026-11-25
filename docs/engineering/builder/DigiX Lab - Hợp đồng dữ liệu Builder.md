@@ -1,5 +1,7 @@
 # DigiX Lab — Luồng nhập liệu và kịch bản demo Builder
 
+> **Baseline minh họa quy trình theo SRS cũ.** Ví dụ cấp laptop dưới đây không mô tả danh mục chức năng ERP/CRM, bố cục tùy biến hay nhiều app trong một tenant. Xem [hợp đồng ứng dụng v2.5 đề xuất](hop-dong-ung-dung-v2.5.md); giữ ví dụ này để đối chiếu.
+
 **Trạng thái:** Tài liệu đề xuất để Dũng, Tú và An thống nhất trước khi làm API/UI.  
 **Phạm vi:** Giải thích Builder hoạt động như thế nào, người thiết kế phải nhập gì và các dữ liệu liên kết với nhau ra sao.
 
