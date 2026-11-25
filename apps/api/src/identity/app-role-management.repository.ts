@@ -1,6 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Pool, QueryResultRow } from 'pg';
 import { DATABASE_POOL } from '../database/database.module';
+import {
+  AuditLogRepository,
+  type CreateAuditLogInput,
+} from './audit-log.repository';
 
 export class AppRoleAssignmentConflictError extends Error {
   constructor() {
@@ -47,7 +51,10 @@ const REVOKE_ROLE_QUERY = `
 
 @Injectable()
 export class AppRoleManagementRepository {
-  constructor(@Inject(DATABASE_POOL) private readonly pool: Pool) {}
+  constructor(
+    @Inject(DATABASE_POOL) private readonly pool: Pool,
+    private readonly auditLogs: AuditLogRepository,
+  ) {}
 
   async hasActiveMembership(
     tenantId: string,
@@ -78,21 +85,34 @@ export class AppRoleManagementRepository {
     applicationId: string;
     membershipId: string;
     roleId: string;
+    roleCode: string;
     assignedByMembershipId: string;
   }): Promise<void> {
+    const client = await this.pool.connect();
+
     try {
-      await this.pool.query(ASSIGN_ROLE_QUERY, [
+      await client.query('BEGIN');
+      await client.query(ASSIGN_ROLE_QUERY, [
         input.tenantId,
         input.applicationId,
         input.membershipId,
         input.roleId,
         input.assignedByMembershipId,
       ]);
+
+      await this.auditLogs.createInTransaction(
+        client,
+        createRoleAuditInput(input, 'app_role.assign'),
+      );
+      await client.query('COMMIT');
     } catch (error) {
+      await client.query('ROLLBACK');
       if (isUniqueViolation(error)) {
         throw new AppRoleAssignmentConflictError();
       }
       throw error;
+    } finally {
+      client.release();
     }
   }
 
@@ -101,15 +121,64 @@ export class AppRoleManagementRepository {
     applicationId: string;
     membershipId: string;
     roleId: string;
+    roleCode: string;
+    assignedByMembershipId: string;
   }): Promise<boolean> {
-    const result = await this.pool.query(REVOKE_ROLE_QUERY, [
-      input.tenantId,
-      input.applicationId,
-      input.membershipId,
-      input.roleId,
-    ]);
-    return result.rowCount === 1;
+    const client = await this.pool.connect();
+
+    try {
+      await client.query('BEGIN');
+      const result = await client.query(REVOKE_ROLE_QUERY, [
+        input.tenantId,
+        input.applicationId,
+        input.membershipId,
+        input.roleId,
+      ]);
+      const revoked = result.rowCount === 1;
+
+      if (revoked) {
+        await this.auditLogs.createInTransaction(
+          client,
+          createRoleAuditInput(input, 'app_role.revoke'),
+        );
+      }
+
+      await client.query('COMMIT');
+      return revoked;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   }
+}
+
+function createRoleAuditInput(
+  input: {
+    tenantId: string;
+    applicationId: string;
+    membershipId: string;
+    roleCode?: string;
+    roleId?: string;
+    assignedByMembershipId: string;
+  },
+  action: 'app_role.assign' | 'app_role.revoke',
+): CreateAuditLogInput {
+  return {
+    tenantId: input.tenantId,
+    actorMembershipId: input.assignedByMembershipId,
+    action,
+    resourceType: 'app_membership_role',
+    resourceId: input.membershipId,
+    result: 'success',
+    metadata: {
+      applicationId: input.applicationId,
+      membershipId: input.membershipId,
+      roleId: input.roleId ?? null,
+      roleCode: input.roleCode ?? null,
+    },
+  };
 }
 
 function isUniqueViolation(error: unknown): error is { code: string } {

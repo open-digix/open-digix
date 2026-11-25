@@ -89,6 +89,8 @@ describe('AppRoleManagementService', () => {
       applicationId: input.applicationId,
       membershipId: input.membershipId,
       roleId: 'role-designer',
+      roleCode: 'designer',
+      assignedByMembershipId: input.assignedByMembershipId,
     });
   });
 

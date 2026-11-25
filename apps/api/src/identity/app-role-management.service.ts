@@ -48,6 +48,7 @@ export class AppRoleManagementService {
       await this.repository.assignRole({
         ...input,
         roleId: role.id,
+        roleCode: role.code,
       });
     } catch (error) {
       if (error instanceof AppRoleAssignmentConflictError) {
@@ -84,6 +85,8 @@ export class AppRoleManagementService {
       applicationId: input.applicationId,
       membershipId: input.membershipId,
       roleId: role.id,
+      roleCode: role.code,
+      assignedByMembershipId: input.assignedByMembershipId,
     });
 
     if (!revoked) {
