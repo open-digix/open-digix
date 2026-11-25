@@ -168,10 +168,10 @@ describe("Tenant Registration UI (UI-03)", () => {
       fireEvent.click(screen.getByRole("button", { name: /Tạo doanh nghiệp/i }));
 
       await waitFor(() => {
-        expect(screen.getByRole("heading", { name: "Đã tạo doanh nghiệp" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "Thông tin hợp lệ (bản thử)" })).toBeInTheDocument();
         expect(screen.getByText("Công ty Cổ phần Alpha")).toBeInTheDocument();
-        expect(screen.getByText(/Bản thử – chưa tạo doanh nghiệp thật \(chờ API #35\)/i)).toBeInTheDocument();
-        expect(screen.getByRole("link", { name: "Đăng nhập ngay" })).toBeInTheDocument();
+        expect(screen.getByText(/chưa được tạo thật/i)).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: "Về trang giới thiệu" })).toBeInTheDocument();
       });
     });
   });

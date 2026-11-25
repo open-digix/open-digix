@@ -29,7 +29,7 @@ export async function registerTenantAction(
   const mode = process.env.REGISTRATION_API_MODE || "mock";
 
   if (mode === "api") {
-    const internalUrl = process.env.API_INTERNAL_URL || "http://open-digix-api:3001";
+    const internalUrl = process.env.API_INTERNAL_URL ?? "http://localhost:3001";
     try {
       const res = await fetch(`${internalUrl}/v1/public/tenant-registrations`, {
         method: "POST",

@@ -113,7 +113,7 @@ export default function TenantRegistrationForm({ onBackToChoice }: TenantRegistr
       nextErrors.tenantSlug = "Vui lòng nhập mã doanh nghiệp.";
     } else if (!isValidTenantSlug(tenantSlug.trim())) {
       nextErrors.tenantSlug =
-        "Mã doanh nghiệp chỉ gồm chữ thường (a-z), số (0-9) và dấu '-', dài từ 3 đến 40 ký tự.";
+        "Mã doanh nghiệp dài 3–40 ký tự, chỉ gồm chữ thường (a-z), số và dấu '-', không bắt đầu hoặc kết thúc bằng '-'.";
     }
 
     setErrors(nextErrors);
@@ -670,23 +670,35 @@ export default function TenantRegistrationForm({ onBackToChoice }: TenantRegistr
                   <circle cx="32" cy="32" r="28" stroke="currentColor" />
                   <path d="M20 33l8 8 16-17" stroke="currentColor" />
                 </svg>
-                <h1 className="title">Đã tạo doanh nghiệp</h1>
-                <p className="lead">
-                  Doanh nghiệp <b>{successData.tenantName}</b> (
-                  <span className="email-chip">{successData.tenantSlug}</span>) đã được khởi tạo
-                  thành công. Bạn có thể đăng nhập bằng tài khoản quản trị <b>{successData.username}</b>.
-                </p>
-
-                {successData.mock && (
-                  <p className="hint-note">
-                    Bản thử – chưa tạo doanh nghiệp thật (chờ API #35).
+                <h1 className="title">
+                  {successData.mock ? "Thông tin hợp lệ (bản thử)" : "Đã tạo doanh nghiệp"}
+                </h1>
+                {successData.mock ? (
+                  <p className="lead">
+                    Thông tin doanh nghiệp <b>{successData.tenantName}</b>{" "}
+                    <span style={{ whiteSpace: "nowrap" }}>(<code className="slug-preview">{successData.tenantSlug}</code>)</span> và
+                    tài khoản quản trị <b>{successData.username}</b> đã hợp lệ. Doanh nghiệp{" "}
+                    <b>chưa được tạo thật</b> vì hệ thống đang chờ API (#35).
+                  </p>
+                ) : (
+                  <p className="lead">
+                    Doanh nghiệp <b>{successData.tenantName}</b>{" "}
+                    <span style={{ whiteSpace: "nowrap" }}>(<code className="slug-preview">{successData.tenantSlug}</code>)</span> đã
+                    được khởi tạo thành công. Bạn có thể đăng nhập bằng tài khoản quản trị{" "}
+                    <b>{successData.username}</b>.
                   </p>
                 )}
 
                 <p className="foot" style={{ marginTop: 24 }}>
-                  <Link href="/login" className="btn">
-                    Đăng nhập ngay
-                  </Link>
+                  {successData.mock ? (
+                    <Link href="/" className="btn btn-ghost">
+                      Về trang giới thiệu
+                    </Link>
+                  ) : (
+                    <Link href="/login" className="btn">
+                      Đăng nhập ngay
+                    </Link>
+                  )}
                 </p>
               </div>
             </div>
