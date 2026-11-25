@@ -25,10 +25,11 @@ describe('ApplicationAclBootstrapService', () => {
       }),
     ).resolves.toBeUndefined();
 
-    expect(client.query).toHaveBeenNthCalledWith(1, expect.any(String), [
-      'tenant-a',
-      'app-a',
-    ]);
+    expect(client.query).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining('INSERT INTO application_role_permissions'),
+      ['tenant-a', 'app-a'],
+    );
     expect(client.query).toHaveBeenNthCalledWith(2, expect.any(String), [
       'tenant-a',
       'app-a',

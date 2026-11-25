@@ -2,18 +2,39 @@ import { Injectable } from '@nestjs/common';
 import type { PoolClient } from 'pg';
 import { AuditLogRepository } from './audit-log.repository';
 
-const INSERT_APPLICATION_ROLES_QUERY = `
-  INSERT INTO application_roles (
+const INSERT_APPLICATION_ACL_QUERY = `
+  WITH inserted_roles AS (
+    INSERT INTO application_roles (
+      tenant_id,
+      application_id,
+      code,
+      name,
+      description,
+      is_system
+    )
+    VALUES
+      ($1, $2, 'designer', 'Designer', 'Can edit the application draft.', true),
+      ($1, $2, 'publisher', 'Publisher', 'Can publish the application.', true)
+    RETURNING id, code
+  )
+  INSERT INTO application_role_permissions (
     tenant_id,
     application_id,
-    code,
-    name,
-    description,
-    is_system
+    role_id,
+    permission
   )
-  VALUES
-    ($1, $2, 'designer', 'Designer', 'Can edit the application draft.', true),
-    ($1, $2, 'publisher', 'Publisher', 'Can publish the application.', true)
+  SELECT $1, $2, inserted_roles.id, permissions.permission
+  FROM inserted_roles
+  JOIN (
+    VALUES
+      ('designer', 'app.draft.read'),
+      ('designer', 'app.draft.write'),
+      ('designer', 'app.draft.validate'),
+      ('designer', 'app.source.write'),
+      ('publisher', 'app.draft.read'),
+      ('publisher', 'app.draft.validate')
+  ) AS permissions(role_code, permission)
+    ON permissions.role_code = inserted_roles.code
 `;
 
 const ASSIGN_DESIGNER_QUERY = `
@@ -46,7 +67,7 @@ export class ApplicationAclBootstrapService {
     client: PoolClient,
     input: InitializeApplicationAclInput,
   ): Promise<void> {
-    await client.query(INSERT_APPLICATION_ROLES_QUERY, [
+    await client.query(INSERT_APPLICATION_ACL_QUERY, [
       input.tenantId,
       input.applicationId,
     ]);
