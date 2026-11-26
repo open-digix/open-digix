@@ -3,7 +3,6 @@ import { AppAuthorizationRepository } from './app-authorization.repository';
 import { APP_AUTHORIZATION_REPOSITORY } from './app-authorization.types';
 import { AppAuthorizationService } from './app-authorization.service';
 import { ApplicationAclBootstrapService } from './application-acl-bootstrap.service';
-import { AuditLogRepository } from './audit-log.repository';
 import { AppRoleController } from './app-role.controller';
 import { AppRoleManagementRepository } from './app-role-management.repository';
 import { AppRoleManagementService } from './app-role-management.service';
@@ -23,7 +22,6 @@ import { MeController } from './me.controller';
     },
     AppAuthorizationService,
     ApplicationAclBootstrapService,
-    AuditLogRepository,
     AppRoleManagementRepository,
     AppRoleManagementService,
   ],

@@ -1,5 +1,5 @@
 import type { PoolClient } from 'pg';
-import { AuditLogRepository } from './audit-log.repository';
+import { AuditService } from '../audit/audit.service';
 import { ApplicationAclBootstrapService } from './application-acl-bootstrap.service';
 
 describe('ApplicationAclBootstrapService', () => {
@@ -10,11 +10,11 @@ describe('ApplicationAclBootstrapService', () => {
         .mockResolvedValueOnce({})
         .mockResolvedValueOnce({ rowCount: 1 }),
     };
-    const auditLogs = {
-      createInTransaction: jest.fn().mockResolvedValue(undefined),
+    const audit = {
+      record: jest.fn().mockResolvedValue(undefined),
     };
     const service = new ApplicationAclBootstrapService(
-      auditLogs as unknown as AuditLogRepository,
+      audit as unknown as AuditService,
     );
 
     await expect(
@@ -35,9 +35,8 @@ describe('ApplicationAclBootstrapService', () => {
       'app-a',
       'membership-a',
     ]);
-    expect(auditLogs.createInTransaction).toHaveBeenNthCalledWith(
+    expect(audit.record).toHaveBeenNthCalledWith(
       1,
-      client,
       expect.objectContaining({
         action: 'application.created',
         actorMembershipId: 'membership-a',
@@ -45,25 +44,25 @@ describe('ApplicationAclBootstrapService', () => {
         resourceId: 'app-a',
         result: 'success',
         metadata: {
-          applicationId: 'app-a',
+          appId: 'app-a',
           source: 'application_creation',
         },
       }),
-    );
-    expect(auditLogs.createInTransaction).toHaveBeenNthCalledWith(
-      2,
       client,
+    );
+    expect(audit.record).toHaveBeenNthCalledWith(
+      2,
       expect.objectContaining({
-        action: 'app_role.assign',
+        action: 'rbac.role.assigned',
         actorMembershipId: 'membership-a',
         resourceId: 'membership-a',
         metadata: {
-          applicationId: 'app-a',
-          membershipId: 'membership-a',
+          targetMembershipId: 'membership-a',
           roleCode: 'designer',
-          source: 'application_creation',
+          scope: 'app-a',
         },
       }),
+      client,
     );
   });
 
@@ -73,11 +72,11 @@ describe('ApplicationAclBootstrapService', () => {
         rowCount: 0,
       }),
     };
-    const auditLogs = {
-      createInTransaction: jest.fn(),
+    const audit = {
+      record: jest.fn(),
     };
     const service = new ApplicationAclBootstrapService(
-      auditLogs as unknown as AuditLogRepository,
+      audit as unknown as AuditService,
     );
 
     await expect(
@@ -87,13 +86,13 @@ describe('ApplicationAclBootstrapService', () => {
         creatorMembershipId: 'membership-a',
       }),
     ).rejects.toThrow('Database did not assign the application designer role');
-    expect(auditLogs.createInTransaction).toHaveBeenCalledTimes(1);
-    expect(auditLogs.createInTransaction).toHaveBeenCalledWith(
-      client,
+    expect(audit.record).toHaveBeenCalledTimes(1);
+    expect(audit.record).toHaveBeenCalledWith(
       expect.objectContaining({
         action: 'application.created',
         resourceId: 'app-a',
       }),
+      client,
     );
   });
 });

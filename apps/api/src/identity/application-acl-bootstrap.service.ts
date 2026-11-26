@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import type { PoolClient } from 'pg';
-import { AuditLogRepository } from './audit-log.repository';
+import { AuditService } from '../audit/audit.service';
+import {
+  AuditAction,
+  AuditResult,
+} from '../audit/constants/audit-policy.constants';
 
 const INSERT_APPLICATION_ACL_QUERY = `
   WITH inserted_roles AS (
@@ -61,24 +65,27 @@ export interface InitializeApplicationAclInput {
 
 @Injectable()
 export class ApplicationAclBootstrapService {
-  constructor(private readonly auditLogs: AuditLogRepository) {}
+  constructor(private readonly audit: AuditService) {}
 
   async initialize(
     client: PoolClient,
     input: InitializeApplicationAclInput,
   ): Promise<void> {
-    await this.auditLogs.createInTransaction(client, {
-      tenantId: input.tenantId,
-      actorMembershipId: input.creatorMembershipId,
-      action: 'application.created',
-      resourceType: 'application',
-      resourceId: input.applicationId,
-      result: 'success',
-      metadata: {
-        applicationId: input.applicationId,
-        source: 'application_creation',
+    await this.audit.record(
+      {
+        tenantId: input.tenantId,
+        actorMembershipId: input.creatorMembershipId,
+        action: AuditAction.APP_CREATED,
+        resourceType: 'application',
+        resourceId: input.applicationId,
+        result: AuditResult.SUCCESS,
+        metadata: {
+          appId: input.applicationId,
+          source: 'application_creation',
+        },
       },
-    });
+      client,
+    );
 
     await client.query(INSERT_APPLICATION_ACL_QUERY, [
       input.tenantId,
@@ -95,19 +102,21 @@ export class ApplicationAclBootstrapService {
       throw new Error('Database did not assign the application designer role');
     }
 
-    await this.auditLogs.createInTransaction(client, {
-      tenantId: input.tenantId,
-      actorMembershipId: input.creatorMembershipId,
-      action: 'app_role.assign',
-      resourceType: 'app_membership_role',
-      resourceId: input.creatorMembershipId,
-      result: 'success',
-      metadata: {
-        applicationId: input.applicationId,
-        membershipId: input.creatorMembershipId,
-        roleCode: 'designer',
-        source: 'application_creation',
+    await this.audit.record(
+      {
+        tenantId: input.tenantId,
+        actorMembershipId: input.creatorMembershipId,
+        action: AuditAction.ROLE_ASSIGNED,
+        resourceType: 'app_membership_role',
+        resourceId: input.creatorMembershipId,
+        result: AuditResult.SUCCESS,
+        metadata: {
+          targetMembershipId: input.creatorMembershipId,
+          roleCode: 'designer',
+          scope: input.applicationId,
+        },
       },
-    });
+      client,
+    );
   }
 }
