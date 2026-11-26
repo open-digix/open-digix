@@ -30,7 +30,7 @@ Builder cần tạo/đổi thứ tự/ẩn trang và thành phần, preview theo
 
 ## Kiểm tra ngữ nghĩa trước xuất bản
 
-1. Sau xác thực hình dạng JSON, tra danh mục để kiểm chức năng/phiên bản tồn tại, phụ thuộc đủ, `resource`/`action` thuộc chức năng, role có quyền; component không tham chiếu chức năng tắt. Schema JSON đơn lẻ **không** chứng minh các điều này.
+1. Sau xác thực hình dạng JSON, tra danh mục để kiểm chức năng/phiên bản tồn tại, phụ thuộc đủ, `(featureId, resource, action)` hợp lệ và role có permission `<featureId>.<resource>.<action>` tương ứng; component chỉ đọc dùng action `read` của đúng resource. Component không tham chiếu chức năng tắt; quyền `read` của resource này không cấp quyền đọc resource khác trong cùng feature. Schema JSON đơn lẻ **không** chứng minh các điều này.
 2. Kiểm `tenantId` từ phiên xác thực, `appId` thuộc tenant, ID duy nhất, phiên bản tăng và bản xuất bản bất biến. Kiểm workflow, quyền bản ghi, nguồn dashboard/AI/tệp theo app.
 3. Preview dùng dữ liệu giả; publisher xem diff chức năng/UI/quyền/workflow rồi xác nhận qua API có audit. Thất bại giữ nháp, không tạo link runtime.
 4. Runtime/API xác thực tenant + app + quyền đối tượng + chức năng bật + phiên bản; mặc định từ chối đọc/sửa bản ghi app khác dù cùng tenant. Chia sẻ chỉ qua chính sách được duyệt, có audit; cache/search/AI/tệp/task cũng theo app.

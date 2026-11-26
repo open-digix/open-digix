@@ -11,7 +11,7 @@
     { "id": "erp.materials", "version": 1 }
   ],
   "roles": [
-    { "id": "sales", "permissions": ["crm.customers.read", "crm.opportunities.create", "crm.opportunities.read", "erp.materials.read"] }
+    { "id": "sales", "permissions": ["crm.customers.customers.read", "crm.opportunities.opportunities.create", "crm.opportunities.opportunities.read", "erp.materials.materials.read"] }
   ],
   "pages": [
     {
