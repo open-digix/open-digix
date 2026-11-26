@@ -5,10 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 
 interface FormErrors {
-  fullName?: string;
+  lastName?: string;
+  firstName?: string;
   email?: string;
-  tenant?: string;
-  role?: string;
+  tenantSlug?: string;
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -18,10 +18,10 @@ interface AccountRequestFormProps {
 }
 
 export default function AccountRequestForm({ onBack }: AccountRequestFormProps = {}) {
-  const [fullName, setFullName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
-  const [tenant, setTenant] = useState("");
-  const [role, setRole] = useState("");
+  const [tenantSlug, setTenantSlug] = useState("");
   const [reason, setReason] = useState("");
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -38,10 +38,10 @@ export default function AccountRequestForm({ onBack }: AccountRequestFormProps =
         const state = params.get("state");
         if (state === "validation") {
           setErrors({
-            fullName: "Vui lòng nhập họ và tên.",
-            email: "Vui lòng nhập email.",
-            tenant: "Chọn doanh nghiệp.",
-            role: "Chọn vai trò.",
+            lastName: "Vui lòng nhập họ và tên đệm.",
+            firstName: "Vui lòng nhập tên.",
+            email: "Vui lòng nhập email công việc.",
+            tenantSlug: "Vui lòng nhập mã doanh nghiệp.",
           });
         } else if (state === "done") {
           setEmail(params.get("email") || "an.nguyen@example.com");
@@ -55,22 +55,22 @@ export default function AccountRequestForm({ onBack }: AccountRequestFormProps =
   const validate = (): boolean => {
     const nextErrors: FormErrors = {};
 
-    if (!fullName.trim()) {
-      nextErrors.fullName = "Vui lòng nhập họ và tên.";
+    if (!lastName.trim()) {
+      nextErrors.lastName = "Vui lòng nhập họ và tên đệm.";
+    }
+
+    if (!firstName.trim()) {
+      nextErrors.firstName = "Vui lòng nhập tên.";
     }
 
     if (!email.trim()) {
-      nextErrors.email = "Vui lòng nhập email.";
+      nextErrors.email = "Vui lòng nhập email công việc.";
     } else if (!EMAIL_REGEX.test(email.trim())) {
       nextErrors.email = "Email chưa đúng định dạng.";
     }
 
-    if (!tenant) {
-      nextErrors.tenant = "Chọn doanh nghiệp.";
-    }
-
-    if (!role) {
-      nextErrors.role = "Chọn vai trò.";
+    if (!tenantSlug.trim()) {
+      nextErrors.tenantSlug = "Vui lòng nhập mã doanh nghiệp.";
     }
 
     setErrors(nextErrors);
@@ -80,14 +80,14 @@ export default function AccountRequestForm({ onBack }: AccountRequestFormProps =
       setTimeout(() => setShake(false), 500);
 
       // Focus first error field
-      if (nextErrors.fullName) {
-        document.getElementById("fullName")?.focus();
+      if (nextErrors.lastName) {
+        document.getElementById("lastName")?.focus();
+      } else if (nextErrors.firstName) {
+        document.getElementById("firstName")?.focus();
       } else if (nextErrors.email) {
         document.getElementById("email")?.focus();
-      } else if (nextErrors.tenant) {
-        document.getElementById("tenant")?.focus();
-      } else if (nextErrors.role) {
-        document.getElementById("role")?.focus();
+      } else if (nextErrors.tenantSlug) {
+        document.getElementById("tenantSlug")?.focus();
       }
       return false;
     }
@@ -100,7 +100,6 @@ export default function AccountRequestForm({ onBack }: AccountRequestFormProps =
     if (!validate()) return;
 
     setIsSubmitting(true);
-    // Giả lập gửi (0.6 giây), không gửi backend vì BE-08 chưa triển khai
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSubmitted(true);
@@ -121,30 +120,14 @@ export default function AccountRequestForm({ onBack }: AccountRequestFormProps =
         </div>
         <div className="pitch">
           <h2>
-            Quy trình rõ ràng.
+            Ứng dụng linh hoạt.
             <br />
-            Công việc liền mạch.
+            Dữ liệu độc lập.
           </h2>
           <p>
-            Thiết kế quy trình bằng mô tả, kiểm tra trước khi xuất bản, vận
-            hành và truy vết trên cùng một nền tảng mở.
+            Doanh nghiệp ghép các ứng dụng ERP/CRM từ tính năng có sẵn, mỗi ứng
+            dụng có dữ liệu và quyền riêng.
           </p>
-          <div className="steps" aria-hidden="true">
-            <div className="step">
-              <b>01</b>
-              <span>Thiết kế</span>
-            </div>
-            <i>→</i>
-            <div className="step">
-              <b>02</b>
-              <span>Kiểm tra</span>
-            </div>
-            <i>→</i>
-            <div className="step">
-              <b>03</b>
-              <span>Vận hành</span>
-            </div>
-          </div>
         </div>
         <div className="side-foot">
           <small>DigiX Lab · Phần mềm nguồn mở</small>
@@ -188,28 +171,54 @@ export default function AccountRequestForm({ onBack }: AccountRequestFormProps =
               </div>
 
               <form onSubmit={handleSubmit} noValidate>
-                <div className={`field ${errors.fullName ? "has-error" : ""}`}>
-                  <label htmlFor="fullName">Họ và tên</label>
-                  <div className="input-wrap">
-                    <input
-                      id="fullName"
-                      name="fullName"
-                      type="text"
-                      placeholder="vd: Nguyễn Văn An"
-                      autoComplete="name"
-                      value={fullName}
-                      onChange={(e) => {
-                        setFullName(e.target.value);
-                        if (errors.fullName)
-                          setErrors((prev) => ({ ...prev, fullName: undefined }));
-                      }}
-                      aria-invalid={!!errors.fullName}
-                      aria-describedby={errors.fullName ? "fullName-err" : undefined}
-                    />
+                <div className="grid-2">
+                  <div className={`field ${errors.lastName ? "has-error" : ""}`}>
+                    <label htmlFor="lastName">Họ và tên đệm</label>
+                    <div className="input-wrap">
+                      <input
+                        id="lastName"
+                        name="lastName"
+                        type="text"
+                        placeholder="vd: Nguyễn Văn"
+                        autoComplete="family-name"
+                        value={lastName}
+                        onChange={(e) => {
+                          setLastName(e.target.value);
+                          if (errors.lastName)
+                            setErrors((prev) => ({ ...prev, lastName: undefined }));
+                        }}
+                        aria-invalid={!!errors.lastName}
+                        aria-describedby={errors.lastName ? "lastName-err" : undefined}
+                      />
+                    </div>
+                    <p className="field-error" id="lastName-err" aria-live="polite">
+                      {errors.lastName}
+                    </p>
                   </div>
-                  <p className="field-error" id="fullName-err" aria-live="polite">
-                    {errors.fullName}
-                  </p>
+
+                  <div className={`field ${errors.firstName ? "has-error" : ""}`}>
+                    <label htmlFor="firstName">Tên</label>
+                    <div className="input-wrap">
+                      <input
+                        id="firstName"
+                        name="firstName"
+                        type="text"
+                        placeholder="vd: An"
+                        autoComplete="given-name"
+                        value={firstName}
+                        onChange={(e) => {
+                          setFirstName(e.target.value);
+                          if (errors.firstName)
+                            setErrors((prev) => ({ ...prev, firstName: undefined }));
+                        }}
+                        aria-invalid={!!errors.firstName}
+                        aria-describedby={errors.firstName ? "firstName-err" : undefined}
+                      />
+                    </div>
+                    <p className="field-error" id="firstName-err" aria-live="polite">
+                      {errors.firstName}
+                    </p>
+                  </div>
                 </div>
 
                 <div className={`field ${errors.email ? "has-error" : ""}`}>
@@ -236,58 +245,28 @@ export default function AccountRequestForm({ onBack }: AccountRequestFormProps =
                   </p>
                 </div>
 
-                <div className="grid-2">
-                  <div className={`field ${errors.tenant ? "has-error" : ""}`}>
-                    <label htmlFor="tenant">Doanh nghiệp</label>
-                    <div className="select-wrap">
-                      <select
-                        id="tenant"
-                        name="tenant"
-                        value={tenant}
-                        onChange={(e) => {
-                          setTenant(e.target.value);
-                          if (errors.tenant)
-                            setErrors((prev) => ({ ...prev, tenant: undefined }));
-                        }}
-                        aria-invalid={!!errors.tenant}
-                        aria-describedby={errors.tenant ? "tenant-err" : undefined}
-                      >
-                        <option value="">— Chọn —</option>
-                        <option value="tenant-alpha">Tenant Alpha</option>
-                        <option value="tenant-beta">Tenant Beta</option>
-                        <option value="other">Khác / chưa rõ</option>
-                      </select>
-                    </div>
-                    <p className="field-error" id="tenant-err" aria-live="polite">
-                      {errors.tenant}
-                    </p>
+                <div className={`field ${errors.tenantSlug ? "has-error" : ""}`}>
+                  <label htmlFor="tenantSlug">Mã doanh nghiệp</label>
+                  <div className="input-wrap">
+                    <input
+                      id="tenantSlug"
+                      name="tenantSlug"
+                      type="text"
+                      placeholder="vd: cong-ty-abc"
+                      autoComplete="organization"
+                      value={tenantSlug}
+                      onChange={(e) => {
+                        setTenantSlug(e.target.value);
+                        if (errors.tenantSlug)
+                          setErrors((prev) => ({ ...prev, tenantSlug: undefined }));
+                      }}
+                      aria-invalid={!!errors.tenantSlug}
+                      aria-describedby={errors.tenantSlug ? "tenantSlug-err" : undefined}
+                    />
                   </div>
-
-                  <div className={`field ${errors.role ? "has-error" : ""}`}>
-                    <label htmlFor="role">Vai trò mong muốn</label>
-                    <div className="select-wrap">
-                      <select
-                        id="role"
-                        name="role"
-                        value={role}
-                        onChange={(e) => {
-                          setRole(e.target.value);
-                          if (errors.role)
-                            setErrors((prev) => ({ ...prev, role: undefined }));
-                        }}
-                        aria-invalid={!!errors.role}
-                        aria-describedby={errors.role ? "role-err" : undefined}
-                      >
-                        <option value="">— Chọn —</option>
-                        <option value="employee">Nhân viên</option>
-                        <option value="manager">Quản lý duyệt</option>
-                        <option value="designer">Người thiết kế quy trình</option>
-                      </select>
-                    </div>
-                    <p className="field-error" id="role-err" aria-live="polite">
-                      {errors.role}
-                    </p>
-                  </div>
+                  <p className="field-error" id="tenantSlug-err" aria-live="polite">
+                    {errors.tenantSlug}
+                  </p>
                 </div>
 
                 <div className="field">
@@ -301,7 +280,7 @@ export default function AccountRequestForm({ onBack }: AccountRequestFormProps =
                     className="ta"
                     id="reason"
                     name="reason"
-                    placeholder="vd: Phòng Kế toán, cần duyệt đề nghị mua sắm"
+                    placeholder="vd: Phòng Kế toán, cần truy cập phân hệ mua sắm"
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
                   />
@@ -320,7 +299,7 @@ export default function AccountRequestForm({ onBack }: AccountRequestFormProps =
                 </button>
 
                 <p className="hint-note">
-                  Tính năng gửi yêu cầu trực tiếp đang trong quá trình phát triển (BE-08). Thông tin chưa gửi tới hệ thống.
+                  Hệ thống tiếp nhận yêu cầu và gửi thông báo tới quản trị viên doanh nghiệp.
                 </p>
               </form>
 
@@ -356,13 +335,13 @@ export default function AccountRequestForm({ onBack }: AccountRequestFormProps =
                   <circle cx="32" cy="32" r="28" stroke="currentColor" />
                   <path d="M20 33l8 8 16-17" stroke="currentColor" />
                 </svg>
-                <h1 className="title">Đã ghi nhận (bản thử)</h1>
+                <h1 className="title">Đã ghi nhận yêu cầu</h1>
                 <p className="lead">
                   Quản trị viên sẽ xem xét. Khi được duyệt, thư mời sẽ gửi tới{" "}
                   <span className="email-chip">{email}</span>, thường trong 1 ngày làm việc.
                 </p>
                 <p className="hint-note">
-                  (Giao diện xem thử – Thông tin chưa được lưu vào hệ thống do API BE-08 chưa triển khai.)
+                  (Yêu cầu tham gia của bạn đã được ghi nhận và đang chờ quản trị viên phê duyệt.)
                 </p>
                 <p className="foot">
                   <Link href="/login" className="btn btn-ghost">

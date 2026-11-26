@@ -1,7 +1,7 @@
 <#-- SPDX-License-Identifier: Apache-2.0 -->
 <#import "template.ftl" as layout>
 <#assign isEmailSent = message?? && message.summary == msg("emailSentMessage")>
-<@layout.registrationLayout displayMessage=!isEmailSent && !messagesPerField.existsError('username','password') displayInfo=realm.password && realm.registrationAllowed && !registrationDisabled??; section>
+<@layout.registrationLayout displayMessage=!isEmailSent displayInfo=realm.password && realm.registrationAllowed && !registrationDisabled??; section>
 <#if section = "title">
   <#if isEmailSent>
     Kiểm tra email
@@ -41,23 +41,25 @@
       <p class="lead">Dùng tài khoản doanh nghiệp của bạn. Một lần đăng nhập cho toàn bộ không gian làm việc.</p>
 
       <form id="kc-form-login" action="${url.loginAction}" method="post" novalidate>
+        <#assign isAuthError = messagesPerField.existsError('username','password')>
+        <#assign userHasErr = !isAuthError && messagesPerField.existsError('username')>
         <#if !usernameHidden??>
-          <div class="field<#if messagesPerField.existsError('username')> has-error</#if>">
+          <div class="field<#if userHasErr> has-error</#if>">
             <label for="username">${msg("usernameOrEmail")}</label>
             <div class="input-wrap">
-              <input id="username" name="username" value="${(login.username!'')}" type="text" autofocus autocomplete="username" placeholder="vd: ten.dang.nhap" aria-invalid="<#if messagesPerField.existsError('username')>true<#else>false</#if>"<#if messagesPerField.existsError('username')> aria-describedby="username-err"</#if>>
+              <input id="username" name="username" value="${(login.username!'')}" type="text" autofocus autocomplete="username" placeholder="vd: ten.dang.nhap" aria-invalid="<#if userHasErr>true<#else>false</#if>"<#if userHasErr> aria-describedby="username-err"</#if>>
             </div>
-            <#if messagesPerField.existsError('username')>
+            <#if userHasErr>
               <p class="field-error" id="username-err" aria-live="polite">${kcSanitize(messagesPerField.getFirstError('username'))?no_esc}</p>
             </#if>
           </div>
         </#if>
 
-        <#assign passHasErr = (usernameHidden?? && messagesPerField.existsError('username','password')) || (!usernameHidden?? && messagesPerField.existsError('password'))>
+        <#assign passHasErr = !isAuthError && ((usernameHidden?? && messagesPerField.existsError('username','password')) || (!usernameHidden?? && messagesPerField.existsError('password')))>
         <div class="field<#if passHasErr> has-error</#if>">
           <label for="password">${msg("password")}</label>
           <div class="input-wrap">
-            <input id="password" name="password" type="password" class="with-toggle" autocomplete="current-password" placeholder="••••••••" aria-invalid="<#if passHasErr>true<#else>false</#if>" aria-describedby="<#if passHasErr>password-err </#if>caps-hint">
+            <input id="password" name="password" type="password" class="with-toggle" autocomplete="current-password" aria-invalid="<#if passHasErr>true<#else>false</#if>" aria-describedby="<#if passHasErr>password-err </#if>caps-hint">
             <button type="button" id="toggle-password" class="toggle-pass" aria-label="${msg('showPassword')}" aria-pressed="false">
               <svg class="eye-on" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
               <svg class="eye-off" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 3l18 18M10.6 5.1A10.8 10.8 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.1M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>

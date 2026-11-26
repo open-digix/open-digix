@@ -53,11 +53,17 @@ describe("Sample Data Workspace Pages", () => {
     expect(redirect).toHaveBeenCalledWith("/apps");
   });
 
-  it("SettingsPage renders configuration rows and save toast", () => {
+  it("SettingsPage renders configuration rows and operational rules", () => {
     render(<SettingsPage />);
 
     expect(
-      screen.getByText("Thiết lập không gian làm việc")
+      screen.getByText("Thiết lập không gian làm việc"),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText("Nguyên tắc Không tự duyệt (No Self-Approval)"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Lưu thay đổi"),
+    ).not.toBeInTheDocument();
   });
 });

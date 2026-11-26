@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
+import type { Metadata } from "next";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Thiết kế ứng dụng · DigiX",
+};
 
 export default async function BuilderPage() {
   await connection();

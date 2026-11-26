@@ -16,7 +16,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import TenantSelect from "./TenantSelect";
 import AppSelect from "./AppSelect";
@@ -55,6 +55,39 @@ export default function Topbar({
 }: TopbarProps) {
   const pathname = usePathname();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const avatarBtnRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isProfileOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsProfileOpen(false);
+        avatarBtnRef.current?.focus();
+      }
+    };
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node) &&
+        avatarBtnRef.current &&
+        !avatarBtnRef.current.contains(e.target as Node)
+      ) {
+        setIsProfileOpen(false);
+        avatarBtnRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isProfileOpen]);
 
   // App routing detection
   const matchApp = pathname.match(/^\/app\/([^/]+)/);
@@ -159,10 +192,12 @@ export default function Topbar({
 
         <div style={{ position: "relative" }}>
           <button
+            ref={avatarBtnRef}
             className="avatar-button"
             type="button"
             aria-label={`Tài khoản ${displayName}`}
             aria-expanded={isProfileOpen}
+            aria-haspopup="menu"
             onClick={() => setIsProfileOpen((v) => !v)}
           >
             {initials}
@@ -170,6 +205,9 @@ export default function Topbar({
 
           {isProfileOpen && (
             <div
+              ref={dropdownRef}
+              role="menu"
+              aria-label="Menu người dùng"
               style={{
                 position: "absolute",
                 right: 0,
@@ -186,7 +224,7 @@ export default function Topbar({
             >
               <div style={{ fontWeight: 700, fontSize: 12 }}>{displayName}</div>
               {user.email && (
-                <div style={{ fontSize: 10, color: "var(--ws-muted)" }}>
+                <div style={{ fontSize: 12, color: "var(--ws-muted)", marginTop: 2 }}>
                   {user.email}
                 </div>
               )}
@@ -203,22 +241,46 @@ export default function Topbar({
                   {roles.map((r) => (
                     <span
                       key={r}
-                      style={{
-                        fontSize: 9,
-                        padding: "2px 6px",
-                        borderRadius: 4,
-                        background: "var(--ws-soft)",
-                        color: "var(--ws-teal)",
-                        fontWeight: 600,
-                      }}
+                      className="role-tag"
+                      style={{ fontSize: 11, padding: "2px 6px" }}
                     >
                       {getRoleLabel(r)}
                     </span>
                   ))}
                 </div>
               )}
-              <div style={{ borderTop: "1px solid var(--ws-line)", paddingTop: 8 }}>
-                <LogoutButton />
+              <div
+                style={{
+                  borderTop: "1px solid var(--ws-line)",
+                  marginTop: 8,
+                  paddingTop: 8,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
+                }}
+              >
+                <a
+                  href={`${process.env.NEXT_PUBLIC_KEYCLOAK_ACCOUNT_URL || "http://localhost:8080/realms/digix/account"}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-link"
+                  role="menuitem"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    fontSize: 12,
+                    color: "var(--ws-ink)",
+                    textDecoration: "none",
+                    padding: "4px 0",
+                  }}
+                >
+                  <span>Đổi mật khẩu</span>
+                  <span aria-hidden="true" style={{ fontSize: 11, opacity: 0.7 }}>↗</span>
+                </a>
+                <div role="menuitem">
+                  <LogoutButton className="text-link" />
+                </div>
               </div>
             </div>
           )}
