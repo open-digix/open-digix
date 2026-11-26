@@ -5,7 +5,7 @@ import "./globals.css";
 import "./landing.css";
 
 export const metadata: Metadata = {
-  title: "Một Nền Tảng, Vạn Tiềm Năng | DigiX",
+  title: "Một Nền Tảng, Vạn Tiềm Năng · DigiX",
   description: "DigiX giúp doanh nghiệp nhìn lại và tối ưu cách thức vận hành bằng công nghệ.",
 };
 

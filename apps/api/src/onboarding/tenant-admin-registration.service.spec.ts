@@ -14,8 +14,8 @@ describe('TenantAdminRegistrationService', () => {
     tenantName: 'Acme Corporation',
     tenantSlug: 'acme-corp',
     admin: {
-      firstName: 'Nguyen',
-      lastName: 'Van A',
+      firstName: 'Claude',
+      lastName: 'Mẫu Thử',
       email: 'admin@example.com',
       username: 'admin',
       password: 'correct-horse-battery',
@@ -61,8 +61,8 @@ describe('TenantAdminRegistrationService', () => {
     expect(createUser).toHaveBeenCalledWith({
       username: input.admin.username,
       email: input.admin.email,
-      firstName: 'Nguyen',
-      lastName: 'Van A',
+      firstName: 'Mẫu Thử',
+      lastName: 'Claude',
       password: input.admin.password,
     });
     expect(createTenantAdmin).toHaveBeenCalledWith({
@@ -71,7 +71,7 @@ describe('TenantAdminRegistrationService', () => {
       identityIssuer: 'http://localhost:8080/realms/digix',
       identitySubject: 'keycloak-subject',
       email: input.admin.email,
-      displayName: 'Nguyen Van A',
+      displayName: 'Mẫu Thử Claude',
     });
     expect(deleteUser).not.toHaveBeenCalled();
   });

@@ -52,6 +52,27 @@ body {
   --ws-sidebar-help-border: rgba(255, 255, 255, 0.17);
   --ws-sidebar-help-bg: rgba(255, 255, 255, 0.04);
 
+  --ws-bg-warning-soft: #fff8e7;
+  --ws-border-warning-soft: #f0dfb8;
+  --ws-bg-danger-soft: #fff4f1;
+  --ws-border-danger-soft: #f0d5cf;
+  --ws-bg-success-soft: #eff8f3;
+  --ws-border-success-soft: #d4ebdc;
+  --ws-bg-info-soft: #eaf2fa;
+  --ws-hero-band-bg: #183c55;
+  --ws-hero-band-ring: rgba(255, 255, 255, 0.12);
+  --ws-hero-band-glow-1: rgba(255, 255, 255, 0.024);
+  --ws-hero-band-glow-2: rgba(255, 255, 255, 0.02);
+  --ws-hero-band-outline-bg: rgba(255, 255, 255, 0.05);
+  --ws-hero-band-outline-border: rgba(255, 255, 255, 0.29);
+  --ws-hero-flow-bg: rgba(255, 255, 255, 0.07);
+  --ws-hero-flow-border: rgba(255, 255, 255, 0.21);
+  --ws-hero-flow-icon-bg: rgba(255, 255, 255, 0.13);
+  --ws-toast-bg: #143b4b;
+  --ws-toast-shadow: rgba(9, 39, 53, 0.23);
+  --ws-tooltip-bg: #0b1e30;
+  --ws-modal-backdrop: rgba(11, 36, 52, 0.68);
+
   --ws-glass-bg: rgba(255, 255, 255, 0.85);
   --ws-glass-bg-strong: rgba(255, 255, 255, 0.94);
   --ws-glass-border: rgba(255, 255, 255, 0.60);
@@ -88,6 +109,27 @@ body {
   --ws-sidebar-dot-shadow: rgba(43, 181, 167, 0.2);
   --ws-sidebar-help-border: rgba(255, 255, 255, 0.12);
   --ws-sidebar-help-bg: rgba(255, 255, 255, 0.03);
+
+  --ws-bg-warning-soft: #382400;
+  --ws-border-warning-soft: #5e3f00;
+  --ws-bg-danger-soft: #381210;
+  --ws-border-danger-soft: #5e1c18;
+  --ws-bg-success-soft: #0e3020;
+  --ws-border-success-soft: #185237;
+  --ws-bg-info-soft: #102940;
+  --ws-hero-band-bg: #111f2b;
+  --ws-hero-band-ring: rgba(255, 255, 255, 0.08);
+  --ws-hero-band-glow-1: rgba(255, 255, 255, 0.02);
+  --ws-hero-band-glow-2: rgba(255, 255, 255, 0.015);
+  --ws-hero-band-outline-bg: rgba(255, 255, 255, 0.04);
+  --ws-hero-band-outline-border: rgba(255, 255, 255, 0.15);
+  --ws-hero-flow-bg: rgba(255, 255, 255, 0.05);
+  --ws-hero-flow-border: rgba(255, 255, 255, 0.15);
+  --ws-hero-flow-icon-bg: rgba(255, 255, 255, 0.10);
+  --ws-toast-bg: #172a38;
+  --ws-toast-shadow: rgba(0, 0, 0, 0.4);
+  --ws-tooltip-bg: #07111a;
+  --ws-modal-backdrop: rgba(0, 0, 0, 0.7);
 
   --ws-glass-bg: rgba(17, 31, 43, 0.85);
   --ws-glass-bg-strong: rgba(17, 31, 43, 0.94);
@@ -127,6 +169,27 @@ body {
   --ws-sidebar-help-border: rgba(255, 255, 255, 0.17);
   --ws-sidebar-help-bg: rgba(255, 255, 255, 0.04);
 
+  --ws-bg-warning-soft: #fff8e7;
+  --ws-border-warning-soft: #f0dfb8;
+  --ws-bg-danger-soft: #fff4f1;
+  --ws-border-danger-soft: #f0d5cf;
+  --ws-bg-success-soft: #eff8f3;
+  --ws-border-success-soft: #d4ebdc;
+  --ws-bg-info-soft: #eaf2fa;
+  --ws-hero-band-bg: #183c55;
+  --ws-hero-band-ring: rgba(255, 255, 255, 0.12);
+  --ws-hero-band-glow-1: rgba(255, 255, 255, 0.024);
+  --ws-hero-band-glow-2: rgba(255, 255, 255, 0.02);
+  --ws-hero-band-outline-bg: rgba(255, 255, 255, 0.05);
+  --ws-hero-band-outline-border: rgba(255, 255, 255, 0.29);
+  --ws-hero-flow-bg: rgba(255, 255, 255, 0.07);
+  --ws-hero-flow-border: rgba(255, 255, 255, 0.21);
+  --ws-hero-flow-icon-bg: rgba(255, 255, 255, 0.13);
+  --ws-toast-bg: #143b4b;
+  --ws-toast-shadow: rgba(9, 39, 53, 0.23);
+  --ws-tooltip-bg: #0b1e30;
+  --ws-modal-backdrop: rgba(11, 36, 52, 0.68);
+
   --ws-glass-bg: rgba(255, 255, 255, 0.85);
   --ws-glass-bg-strong: rgba(255, 255, 255, 0.94);
   --ws-glass-border: rgba(255, 255, 255, 0.60);
@@ -164,6 +227,27 @@ body {
     --ws-sidebar-dot-shadow: rgba(43, 181, 167, 0.2);
     --ws-sidebar-help-border: rgba(255, 255, 255, 0.12);
     --ws-sidebar-help-bg: rgba(255, 255, 255, 0.03);
+
+  --ws-bg-warning-soft: #382400;
+  --ws-border-warning-soft: #5e3f00;
+  --ws-bg-danger-soft: #381210;
+  --ws-border-danger-soft: #5e1c18;
+  --ws-bg-success-soft: #0e3020;
+  --ws-border-success-soft: #185237;
+  --ws-bg-info-soft: #102940;
+  --ws-hero-band-bg: #111f2b;
+  --ws-hero-band-ring: rgba(255, 255, 255, 0.08);
+  --ws-hero-band-glow-1: rgba(255, 255, 255, 0.02);
+  --ws-hero-band-glow-2: rgba(255, 255, 255, 0.015);
+  --ws-hero-band-outline-bg: rgba(255, 255, 255, 0.04);
+  --ws-hero-band-outline-border: rgba(255, 255, 255, 0.15);
+  --ws-hero-flow-bg: rgba(255, 255, 255, 0.05);
+  --ws-hero-flow-border: rgba(255, 255, 255, 0.15);
+  --ws-hero-flow-icon-bg: rgba(255, 255, 255, 0.10);
+  --ws-toast-bg: #172a38;
+  --ws-toast-shadow: rgba(0, 0, 0, 0.4);
+  --ws-tooltip-bg: #07111a;
+  --ws-modal-backdrop: rgba(0, 0, 0, 0.7);
 
     --ws-glass-bg: rgba(17, 31, 43, 0.85);
     --ws-glass-bg-strong: rgba(17, 31, 43, 0.94);

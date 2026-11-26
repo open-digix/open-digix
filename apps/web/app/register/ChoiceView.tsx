@@ -23,30 +23,14 @@ export default function ChoiceView({ onSelectTenant, onSelectJoin }: ChoiceViewP
         </div>
         <div className="pitch">
           <h2>
-            Quy trình rõ ràng.
+            Ứng dụng linh hoạt.
             <br />
-            Công việc liền mạch.
+            Dữ liệu độc lập.
           </h2>
           <p>
-            Thiết kế quy trình bằng mô tả, kiểm tra trước khi xuất bản, vận
-            hành và truy vết trên cùng một nền tảng mở.
+            Doanh nghiệp ghép các ứng dụng ERP/CRM từ tính năng có sẵn, mỗi ứng
+            dụng có dữ liệu và quyền riêng.
           </p>
-          <div className="steps" aria-hidden="true">
-            <div className="step">
-              <b>01</b>
-              <span>Thiết kế</span>
-            </div>
-            <i>→</i>
-            <div className="step">
-              <b>02</b>
-              <span>Kiểm tra</span>
-            </div>
-            <i>→</i>
-            <div className="step">
-              <b>03</b>
-              <span>Vận hành</span>
-            </div>
-          </div>
         </div>
         <div className="side-foot">
           <small>DigiX Lab · Phần mềm nguồn mở</small>

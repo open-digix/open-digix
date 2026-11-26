@@ -35,6 +35,26 @@
   --ws-sidebar-dot-shadow: rgba(45, 212, 191, 0.1);
   --ws-sidebar-help-border: rgba(255, 255, 255, 0.17);
   --ws-sidebar-help-bg: rgba(255, 255, 255, 0.04);
+  --ws-bg-warning-soft: #fff8e7;
+  --ws-border-warning-soft: #f0dfb8;
+  --ws-bg-danger-soft: #fff4f1;
+  --ws-border-danger-soft: #f0d5cf;
+  --ws-bg-success-soft: #eff8f3;
+  --ws-border-success-soft: #d4ebdc;
+  --ws-bg-info-soft: #eaf2fa;
+  --ws-hero-band-bg: #183c55;
+  --ws-hero-band-ring: rgba(255, 255, 255, 0.12);
+  --ws-hero-band-glow-1: rgba(255, 255, 255, 0.024);
+  --ws-hero-band-glow-2: rgba(255, 255, 255, 0.02);
+  --ws-hero-band-outline-bg: rgba(255, 255, 255, 0.05);
+  --ws-hero-band-outline-border: rgba(255, 255, 255, 0.29);
+  --ws-hero-flow-bg: rgba(255, 255, 255, 0.07);
+  --ws-hero-flow-border: rgba(255, 255, 255, 0.21);
+  --ws-hero-flow-icon-bg: rgba(255, 255, 255, 0.13);
+  --ws-toast-bg: #143b4b;
+  --ws-toast-shadow: rgba(9, 39, 53, 0.23);
+  --ws-tooltip-bg: #0b1e30;
+  --ws-modal-backdrop: rgba(11, 36, 52, 0.68);
 
   /* Durations */
   --ws-dur-fast: 150ms;
@@ -340,7 +360,7 @@
 }
 
 .ws-root .workspace-tag {
-  padding:30px 27px 15px;color:var(--ws-sidebar-text);font-weight:700;letter-spacing:.12em;font-size:9px;display:flex;align-items:center;gap:8px
+  padding:30px 27px 15px;color:var(--ws-sidebar-text);font-weight:700;letter-spacing:.12em;font-size:11px;display:flex;align-items:center;gap:8px
 }
 
 .ws-root .workspace-dot {
@@ -352,7 +372,7 @@
 }
 
 .ws-root .nav-group-label {
-  padding:25px 16px 8px;color:var(--ws-sidebar-text);font-size:10px;font-weight:700;letter-spacing:.13em
+  padding:25px 16px 8px;color:var(--ws-sidebar-text);font-size:11px;font-weight:700;letter-spacing:.13em
 }
 
 .ws-root .nav-link {
@@ -372,7 +392,7 @@
 }
 
 .ws-root .nav-link .count {
-  margin-left:auto;background:var(--ws-accent);color:var(--ws-bg-surface);padding:1px 7px;border-radius:20px;font-size:10px
+  margin-left:auto;background:var(--ws-accent);color:var(--ws-bg-surface);padding:1px 7px;border-radius:20px;font-size:12px
 }
 
 .ws-root .side-bottom {
@@ -404,11 +424,11 @@
 }
 
 .ws-root .help-card p {
-  font-size:11px;line-height:1.6;color:var(--ws-sidebar-text);margin:4px 0 12px
+  font-size:12px;line-height:1.6;color:var(--ws-sidebar-text);margin:4px 0 12px
 }
 
 .ws-root .help-card button {
-  border:0;background:none;padding:0;color:var(--ws-accent);font-size:11px;font-weight:700
+  border:0;background:none;padding:0;color:var(--ws-accent);font-size:12px;font-weight:700
 }
 
 .ws-root .help-card button span {
@@ -416,11 +436,11 @@
 }
 
 .ws-root .side-foot {
-  display:flex;justify-content:space-between;align-items:center;color:var(--ws-sidebar-text);font-size:10px;padding:17px 3px 0
+  display:flex;justify-content:space-between;align-items:center;color:var(--ws-sidebar-text);font-size:12px;padding:17px 3px 0
 }
 
 .ws-root .side-foot span {
-  font-size:9px;color:var(--ws-sidebar-text)
+  font-size:12px;color:var(--ws-sidebar-text)
 }
 
 .ws-root .main-column {
@@ -456,7 +476,7 @@
 }
 
 .ws-root .demo-pill {
-  white-space:nowrap;font-size:9px;font-weight:800;letter-spacing:.1em;color:var(--ws-warning);background:var(--ws-bg-warning-soft);border:1px solid var(--ws-border-warning-soft);padding:7px 10px;border-radius:6px
+  white-space:nowrap;font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--ws-warning);background:var(--ws-bg-warning-soft);border:1px solid var(--ws-border-warning-soft);padding:7px 10px;border-radius:6px
 }
 
 .ws-root .demo-pill span {
@@ -464,7 +484,7 @@
 }
 
 .ws-root .tenant-select {
-  display:flex;align-items:center;gap:9px;color:var(--ws-text-muted);font-size:11px;white-space:nowrap
+  display:flex;align-items:center;gap:9px;color:var(--ws-text-muted);font-size:12px;white-space:nowrap
 }
 
 .ws-root .tenant-name {
@@ -497,7 +517,7 @@
 }
 
 .ws-root .avatar-button {
-  width:34px;height:34px;border:0;border-radius:50%;background:var(--ws-bg-soft);color:var(--ws-accent);font-weight:800;font-size:11px
+  width:34px;height:34px;border:0;border-radius:50%;background:var(--ws-bg-soft);color:var(--ws-accent);font-weight:800;font-size:12px
 }
 
 .ws-root .mobile-menu {
@@ -548,7 +568,7 @@
 }
 
 .ws-root .eyebrow {
-  font-size:10px;color:var(--ws-accent);font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin:0 0 7px
+  font-size:11px;color:var(--ws-accent);font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin:0 0 7px
 }
 
 .ws-root .page-header h1 {
@@ -564,7 +584,7 @@
 }
 
 .ws-root .button {
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;border-radius:7px;padding:9px 14px;min-height:36px;background:var(--ws-bg-surface);color:var(--ws-text);font-size:11px;font-weight:700;white-space:nowrap;transition:background .15s,transform .15s,border .15s
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;border-radius:7px;padding:9px 14px;min-height:36px;background:var(--ws-bg-surface);color:var(--ws-text);font-size:12px;font-weight:700;white-space:nowrap;transition:background .15s,transform .15s,border .15s
 }
 
 .ws-root .button:hover {
@@ -616,7 +636,7 @@
 }
 
 .ws-root .hero-label {
-  color:var(--ws-focus);letter-spacing:.13em;font-size:10px;font-weight:800
+  color:var(--ws-focus);letter-spacing:.13em;font-size:11px;font-weight:800
 }
 
 .ws-root .hero-band h2 {
@@ -652,11 +672,11 @@
 }
 
 .ws-root .flow-node strong {
-  font-size:10px;display:block;white-space:nowrap
+  font-size:12px;display:block;white-space:nowrap
 }
 
 .ws-root .flow-node small {
-  font-size:9px;color:var(--ws-sidebar-text)
+  font-size:12px;color:var(--ws-sidebar-text)
 }
 
 .ws-root .flow-arrow {
@@ -680,7 +700,7 @@
 }
 
 .ws-root .stat-top {
-  display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--ws-text-muted);font-size:11px
+  display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--ws-text-muted);font-size:12px
 }
 
 .ws-root .stat-icon {
@@ -696,7 +716,7 @@
 }
 
 .ws-root .stat-note {
-  font-size:10px;color:var(--ws-text-muted)
+  font-size:12px;color:var(--ws-text-muted)
 }
 
 .ws-root .content-grid {
@@ -716,7 +736,7 @@
 }
 
 .ws-root .panel-head p {
-  font-size:10px;color:var(--ws-text-muted);margin:4px 0 0
+  font-size:12px;color:var(--ws-text-muted);margin:4px 0 0
 }
 
 .ws-root .panel-body {
@@ -724,7 +744,7 @@
 }
 
 .ws-root .text-link {
-  color:var(--ws-accent);border:0;background:none;font-size:10px;font-weight:800;padding:2px 0;white-space:nowrap
+  color:var(--ws-accent);border:0;background:none;font-size:12px;font-weight:800;padding:2px 0;white-space:nowrap
 }
 
 .ws-root .text-link:hover {
@@ -756,11 +776,11 @@
 }
 
 .ws-root .row-copy strong {
-  display:block;font-size:11px;color:var(--ws-text);line-height:1.5
+  display:block;font-size:12px;color:var(--ws-text);line-height:1.5
 }
 
 .ws-root .row-copy small {
-  font-size:10px;color:var(--ws-text-muted);display:block;margin-top:3px
+  font-size:12px;color:var(--ws-text-muted);display:block;margin-top:3px
 }
 
 .ws-root .row-end {
@@ -768,7 +788,7 @@
 }
 
 .ws-root .status {
-  display:inline-flex;align-items:center;gap:5px;white-space:nowrap;border-radius:5px;padding:4px 7px;font-size:9px;font-weight:700;background:var(--ws-bg-soft);color:var(--ws-success)
+  display:inline-flex;align-items:center;gap:5px;white-space:nowrap;border-radius:5px;padding:4px 7px;font-size:12px;font-weight:700;background:var(--ws-bg-soft);color:var(--ws-success)
 }
 
 .ws-root .status:before {
@@ -808,7 +828,7 @@
 }
 
 .ws-root .chart-labels {
-  display:flex;justify-content:space-between;font-size:9px;color:var(--ws-text-muted);padding-top:8px
+  display:flex;justify-content:space-between;font-size:12px;color:var(--ws-text-muted);padding-top:8px
 }
 
 .ws-root .insight {
@@ -820,7 +840,7 @@
 }
 
 .ws-root .insight p {
-  font-size:10px;color:var(--ws-text-muted);margin:2px 0 0
+  font-size:12px;color:var(--ws-text-muted);margin:2px 0 0
 }
 
 .ws-root .section-title {
@@ -840,7 +860,7 @@
 }
 
 .ws-root .data-table {
-  width:100%;border-collapse:collapse;text-align:left;font-size:11px
+  width:100%;border-collapse:collapse;text-align:left;font-size:12px
 }
 
 .ws-root .data-table th {
@@ -864,7 +884,7 @@
 }
 
 .ws-root .table-action {
-  border:0;color:var(--ws-teal);background:none;font-size:10px;font-weight:800
+  border:0;color:var(--ws-teal);background:none;font-size:12px;font-weight:800
 }
 
 .ws-root .filterbar {
@@ -876,7 +896,7 @@
 }
 
 .ws-root .search input {
-  width:100%;height:37px;border:1px solid var(--ws-line);background:var(--ws-surface);border-radius:7px;padding:0 13px 0 34px;font-size:11px;color:var(--ws-ink)
+  width:100%;height:37px;border:1px solid var(--ws-line);background:var(--ws-surface);border-radius:7px;padding:0 13px 0 34px;font-size:12px;color:var(--ws-ink)
 }
 
 .ws-root .search svg {
@@ -884,7 +904,7 @@
 }
 
 .ws-root .filterbar select, .ws-root .select {
-  height:37px;border:1px solid var(--ws-border);background:var(--ws-bg-surface);border-radius:7px;padding:0 29px 0 11px;font-size:11px;color:var(--ws-text)
+  height:37px;border:1px solid var(--ws-border);background:var(--ws-bg-surface);border-radius:7px;padding:0 29px 0 11px;font-size:12px;color:var(--ws-text)
 }
 
 .ws-root .tabs {
@@ -892,7 +912,7 @@
 }
 
 .ws-root .tab {
-  border:0;border-bottom:2px solid transparent;background:none;color:var(--ws-text-muted);white-space:nowrap;padding:11px 2px 12px;font-size:11px;font-weight:700
+  border:0;border-bottom:2px solid transparent;background:none;color:var(--ws-text-muted);white-space:nowrap;padding:11px 2px 12px;font-size:12px;font-weight:700
 }
 
 .ws-root .tab.active {
@@ -920,19 +940,19 @@
 }
 
 .ws-root .app-card p {
-  font-size:10px;color:var(--ws-text-muted);margin:0;line-height:1.65
+  font-size:12px;color:var(--ws-text-muted);margin:0;line-height:1.65
 }
 
 .ws-root .app-card-foot {
-  border-top:1px solid var(--ws-border);margin-top:auto;padding-top:14px;display:flex;justify-content:space-between;align-items:center;color:var(--ws-text-muted);font-size:10px
+  border-top:1px solid var(--ws-border);margin-top:auto;padding-top:14px;display:flex;justify-content:space-between;align-items:center;color:var(--ws-text-muted);font-size:12px
 }
 
 .ws-root .app-card-foot button {
-  font-weight:800;color:var(--ws-accent);border:0;background:none;font-size:10px
+  font-weight:800;color:var(--ws-accent);border:0;background:none;font-size:12px
 }
 
 .ws-root .info-banner {
-  display:flex;gap:10px;align-items:flex-start;background:var(--ws-bg-soft);border:1px solid var(--ws-border);border-radius:9px;color:var(--ws-accent);padding:12px 15px;font-size:11px;margin-bottom:18px
+  display:flex;gap:10px;align-items:flex-start;background:var(--ws-bg-soft);border:1px solid var(--ws-border);border-radius:9px;color:var(--ws-accent);padding:12px 15px;font-size:12px;margin-bottom:18px
 }
 
 .ws-root .info-banner b {
@@ -964,15 +984,15 @@
 }
 
 .ws-root .field label {
-  font-size:11px;font-weight:700;color:var(--ws-text)
+  font-size:12px;font-weight:700;color:var(--ws-text)
 }
 
 .ws-root .field small {
-  font-size:10px;color:var(--ws-text-muted)
+  font-size:12px;color:var(--ws-text-muted)
 }
 
 .ws-root .field input, .ws-root .field textarea, .ws-root .field select {
-  width:100%;border:1px solid var(--ws-border);border-radius:7px;background:var(--ws-bg-surface);color:var(--ws-text);padding:10px 11px;font-size:11px;min-height:37px
+  width:100%;border:1px solid var(--ws-border);border-radius:7px;background:var(--ws-bg-surface);color:var(--ws-text);padding:10px 11px;font-size:12px;min-height:37px
 }
 
 .ws-root .field textarea {
@@ -992,15 +1012,15 @@
 }
 
 .ws-root .step-num {
-  width:24px;height:24px;display:grid;place-items:center;border-radius:7px;background:var(--ws-bg-soft);color:var(--ws-accent);font-size:10px;font-weight:800;flex:none
+  width:24px;height:24px;display:grid;place-items:center;border-radius:7px;background:var(--ws-bg-soft);color:var(--ws-accent);font-size:12px;font-weight:800;flex:none
 }
 
 .ws-root .step-card h3, .ws-root .field-card h3 {
-  font-size:11px;margin:0 0 3px;color:var(--ws-text)
+  font-size:12px;margin:0 0 3px;color:var(--ws-text)
 }
 
 .ws-root .step-card p, .ws-root .field-card p {
-  font-size:10px;color:var(--ws-text-muted);margin:0
+  font-size:12px;color:var(--ws-text-muted);margin:0
 }
 
 .ws-root .step-card .text-link, .ws-root .field-card .text-link {
@@ -1012,7 +1032,7 @@
 }
 
 .ws-root .preview-top {
-  font-size:10px;color:var(--ws-text-muted);display:flex;justify-content:space-between
+  font-size:12px;color:var(--ws-text-muted);display:flex;justify-content:space-between
 }
 
 .ws-root .preview-title {
@@ -1020,15 +1040,15 @@
 }
 
 .ws-root .preview-desc {
-  font-size:10px;color:var(--ws-text-muted);margin-bottom:20px
+  font-size:12px;color:var(--ws-text-muted);margin-bottom:20px
 }
 
 .ws-root .preview-label {
-  font-size:9px;font-weight:700;color:var(--ws-text);display:block;margin-bottom:5px
+  font-size:12px;font-weight:700;color:var(--ws-text);display:block;margin-bottom:5px
 }
 
 .ws-root .preview-input {
-  border:1px solid var(--ws-border);border-radius:6px;height:30px;margin-bottom:12px;background:var(--ws-bg-surface);padding:6px 8px;color:var(--ws-text-muted);font-size:9px
+  border:1px solid var(--ws-border);border-radius:6px;height:30px;margin-bottom:12px;background:var(--ws-bg-surface);padding:6px 8px;color:var(--ws-text-muted);font-size:12px
 }
 
 .ws-root .preview-footer {
@@ -1036,11 +1056,11 @@
 }
 
 .ws-root .preview-footer span {
-  background:var(--ws-accent);color:white;padding:7px 12px;border-radius:5px;font-size:9px;font-weight:700
+  background:var(--ws-accent);color:white;padding:7px 12px;border-radius:5px;font-size:12px;font-weight:700
 }
 
 .ws-root .preview-note {
-  background:var(--ws-bg-surface-2);border-top:1px solid var(--ws-border);color:var(--ws-text-muted);font-size:10px;padding:13px 20px
+  background:var(--ws-bg-surface-2);border-top:1px solid var(--ws-border);color:var(--ws-text-muted);font-size:12px;padding:13px 20px
 }
 
 .ws-root .check-list {
@@ -1048,7 +1068,7 @@
 }
 
 .ws-root .check-list li {
-  display:flex;gap:11px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--ws-border);font-size:11px
+  display:flex;gap:11px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--ws-border);font-size:12px
 }
 
 .ws-root .check-list li:first-child {
@@ -1064,7 +1084,7 @@
 }
 
 .ws-root .check-list strong {
-  display:block;font-size:11px
+  display:block;font-size:12px
 }
 
 .ws-root .check-list small {
@@ -1080,11 +1100,11 @@
 }
 
 .ws-root .diagram-box h3 {
-  margin:0 0 10px;font-size:11px;color:var(--ws-text)
+  margin:0 0 10px;font-size:12px;color:var(--ws-text)
 }
 
 .ws-root .diagram-step {
-  border:1px solid var(--ws-border);border-left:3px solid var(--ws-focus);background:var(--ws-bg-surface);border-radius:6px;padding:10px;font-size:10px;margin:7px 0;color:var(--ws-text)
+  border:1px solid var(--ws-border);border-left:3px solid var(--ws-focus);background:var(--ws-bg-surface);border-radius:6px;padding:10px;font-size:12px;margin:7px 0;color:var(--ws-text)
 }
 
 .ws-root .diagram-step small {
@@ -1100,7 +1120,7 @@
 }
 
 .ws-root .record-card .row-copy strong {
-  font-size:11px
+  font-size:12px
 }
 
 .ws-root .record-card .status {
@@ -1120,7 +1140,7 @@
 }
 
 .ws-root .detail-pair {
-  display:flex;justify-content:space-between;gap:20px;padding:8px 0;font-size:11px;border-bottom:1px dashed var(--ws-border)
+  display:flex;justify-content:space-between;gap:20px;padding:8px 0;font-size:12px;border-bottom:1px dashed var(--ws-border)
 }
 
 .ws-root .detail-pair:last-child {
@@ -1140,7 +1160,7 @@
 }
 
 .ws-root .timeline li {
-  position:relative;padding:0 0 19px 25px;border-left:1px solid var(--ws-border);margin-left:8px;font-size:10px;color:var(--ws-text-muted)
+  position:relative;padding:0 0 19px 25px;border-left:1px solid var(--ws-border);margin-left:8px;font-size:12px;color:var(--ws-text-muted)
 }
 
 .ws-root .timeline li:last-child {
@@ -1156,7 +1176,7 @@
 }
 
 .ws-root .timeline strong {
-  display:block;color:var(--ws-text);font-size:11px
+  display:block;color:var(--ws-text);font-size:12px
 }
 
 .ws-root .timeline small {
@@ -1168,7 +1188,7 @@
 }
 
 .ws-root .report-bar {
-  display:grid;grid-template-columns:90px 1fr 25px;align-items:center;gap:10px;font-size:10px;color:var(--ws-text-muted)
+  display:grid;grid-template-columns:90px 1fr 25px;align-items:center;gap:10px;font-size:12px;color:var(--ws-text-muted)
 }
 
 .ws-root .report-bar b {
@@ -1196,11 +1216,11 @@
 }
 
 .ws-root .assistant-empty p {
-  font-size:11px;color:var(--ws-text-muted);max-width:420px;margin:auto
+  font-size:12px;color:var(--ws-text-muted);max-width:420px;margin:auto
 }
 
 .ws-root .prompt-chip {
-  border:1px solid var(--ws-border);background:var(--ws-bg-surface);border-radius:7px;padding:9px 12px;color:var(--ws-text);font-size:10px
+  border:1px solid var(--ws-border);background:var(--ws-bg-surface);border-radius:7px;padding:9px 12px;color:var(--ws-text);font-size:12px
 }
 
 .ws-root .prompt-row {
@@ -1212,15 +1232,15 @@
 }
 
 .ws-root .chat-input input {
-  border:0;flex:1;min-width:0;outline:none;font-size:11px
+  border:0;flex:1;min-width:0;outline:none;font-size:12px
 }
 
 .ws-root .chat-input button {
-  border:0;background:var(--ws-accent);color:white;padding:7px 12px;border-radius:6px;font-size:10px;font-weight:700
+  border:0;background:var(--ws-accent);color:white;padding:7px 12px;border-radius:6px;font-size:12px;font-weight:700
 }
 
 .ws-root .chat-message {
-  max-width:610px;margin:14px auto;padding:14px;border:1px solid var(--ws-border);background:var(--ws-bg-surface-2);border-radius:9px;font-size:11px;color:var(--ws-text);text-align:left
+  max-width:610px;margin:14px auto;padding:14px;border:1px solid var(--ws-border);background:var(--ws-bg-surface-2);border-radius:9px;font-size:12px;color:var(--ws-text);text-align:left
 }
 
 .ws-root .setting-row {
@@ -1232,19 +1252,19 @@
 }
 
 .ws-root .setting-row strong {
-  font-size:11px
+  font-size:12px
 }
 
 .ws-root .setting-row small {
-  display:block;color:var(--ws-text-muted);font-size:10px;margin-top:4px
+  display:block;color:var(--ws-text-muted);font-size:12px;margin-top:4px
 }
 
 .ws-root .role-tag {
-  border-radius:5px;background:var(--ws-bg-surface-2);color:var(--ws-info);font-size:9px;font-weight:700;padding:4px 7px
+  border-radius:5px;background:var(--ws-bg-surface-2);color:var(--ws-info);font-size:12px;font-weight:700;padding:4px 7px
 }
 
 .ws-root .empty {
-  padding:40px 20px;text-align:center;color:var(--ws-text-muted);font-size:11px
+  padding:40px 20px;text-align:center;color:var(--ws-text-muted);font-size:12px
 }
 
 .ws-root .empty strong {
@@ -1268,7 +1288,7 @@
 }
 
 .ws-root .modal-head p {
-  font-size:10px;color:var(--ws-text-muted);margin:4px 0 0
+  font-size:12px;color:var(--ws-text-muted);margin:4px 0 0
 }
 
 .ws-root .modal-close {
@@ -1284,7 +1304,7 @@
 }
 
 .ws-root .toast {
-  position:fixed;right:22px;bottom:22px;z-index:90;background:var(--ws-toast-bg);color:var(--ws-text-on-accent);padding:12px 17px;border-radius:8px;box-shadow:0 10px 30px var(--ws-toast-shadow);font-size:11px;max-width:350px
+  position:fixed;right:22px;bottom:22px;z-index:90;background:var(--ws-toast-bg);color:var(--ws-text-on-accent);padding:12px 17px;border-radius:8px;box-shadow:0 10px 30px var(--ws-toast-shadow);font-size:12px;max-width:350px
 }
 
 .ws-root .toast.error {
@@ -1292,7 +1312,7 @@
 }
 
 .ws-root .kbd {
-  font-family:Consolas,monospace;background:var(--ws-bg-surface-2);border:1px solid var(--ws-border);border-radius:4px;padding:2px 5px;font-size:10px
+  font-family:Consolas,monospace;background:var(--ws-bg-surface-2);border:1px solid var(--ws-border);border-radius:4px;padding:2px 5px;font-size:12px
 }
 
 .ws-root .muted {
@@ -1385,7 +1405,7 @@
   }
   .ws-root.mini .nav-link .count,
   .ws-root:not(.pinned):not(.peek) .nav-link .count {
-    position:absolute;top:5px;right:8px;padding:0 5px;font-size:9px
+    position:absolute;top:5px;right:8px;padding:0 5px;font-size:12px
   }
   .ws-root.mini .collapse-btn,
   .ws-root:not(.pinned):not(.peek) .collapse-btn {
@@ -1474,7 +1494,7 @@
   .ws-root .tenant-select select,
   .ws-root .tenant-select-dropdown {
     max-width:90px;
-    font-size:10px;
+    font-size:12px;
     overflow:hidden;
     text-overflow:ellipsis;
     white-space:nowrap
@@ -1604,7 +1624,7 @@
 }
 
 .ws-root .flow-stage {
-  display:flex;align-items:center;gap:9px;position:relative;color:var(--ws-text-muted);font-size:10px;font-weight:700;white-space:nowrap
+  display:flex;align-items:center;gap:9px;position:relative;color:var(--ws-text-muted);font-size:12px;font-weight:700;white-space:nowrap
 }
 
 .ws-root .flow-stage:not(:last-child):after {
@@ -1624,7 +1644,7 @@
 }
 
 .ws-root .flow-stage span:not(.flow-stage-label) {
-  display:grid;place-items:center;flex:none;width:24px;height:24px;border-radius:50%;background:var(--ws-bg-surface-2);color:var(--ws-text-muted);font-size:9px
+  display:grid;place-items:center;flex:none;width:24px;height:24px;border-radius:50%;background:var(--ws-bg-surface-2);color:var(--ws-text-muted);font-size:12px
 }
 
 .ws-root .flow-stage.active {
@@ -1660,12 +1680,12 @@
 }
 
 .ws-root .flow-form-foot span {
-  font-size:9px;color:var(--ws-text-muted)
+  font-size:12px;color:var(--ws-text-muted)
 }
 
 .ws-root code,
 .ws-root .flow-form-foot code {
-  color:var(--ws-text-muted);font-size:9px;overflow-wrap:anywhere;word-break:break-all;white-space:normal
+  color:var(--ws-text-muted);font-size:12px;overflow-wrap:anywhere;word-break:break-all;white-space:normal
 }
 
 .ws-root .flow-form-foot>div {
@@ -1685,15 +1705,15 @@
 }
 
 .ws-root .flow-side-list b {
-  display:block;font-size:11px;color:var(--ws-text)
+  display:block;font-size:12px;color:var(--ws-text)
 }
 
 .ws-root .flow-side-list span {
-  display:block;font-size:10px;color:var(--ws-text-muted);margin-top:3px;line-height:1.7
+  display:block;font-size:12px;color:var(--ws-text-muted);margin-top:3px;line-height:1.7
 }
 
 .ws-root .flow-tip {
-  background:var(--ws-bg-surface-2);border:1px solid var(--ws-border);color:var(--ws-text-muted);border-radius:7px;padding:12px;font-size:10px;line-height:1.7;margin-top:17px
+  background:var(--ws-bg-surface-2);border:1px solid var(--ws-border);color:var(--ws-text-muted);border-radius:7px;padding:12px;font-size:12px;line-height:1.7;margin-top:17px
 }
 
 .ws-root .flow-intro {
@@ -1705,15 +1725,15 @@
 }
 
 .ws-root .flow-intro p {
-  font-size:10px;color:var(--ws-sidebar-text);margin:5px 0 0
+  font-size:12px;color:var(--ws-sidebar-text);margin:5px 0 0
 }
 
 .ws-root .flow-intro>span {
-  font-size:9px;color:var(--ws-focus);border:1px solid var(--ws-intro-pill-border);padding:6px 9px;border-radius:5px;white-space:nowrap;font-weight:800
+  font-size:12px;color:var(--ws-focus);border:1px solid var(--ws-intro-pill-border);padding:6px 9px;border-radius:5px;white-space:nowrap;font-weight:800
 }
 
 .ws-root .flow-field-no {
-  font-size:9px;color:var(--ws-accent);margin-right:5px
+  font-size:12px;color:var(--ws-accent);margin-right:5px
 }
 
 .ws-root .flow-compare {
@@ -1725,11 +1745,11 @@
 }
 
 .ws-root .flow-source-block b {
-  display:block;color:var(--ws-text);font-size:10px;margin-bottom:6px
+  display:block;color:var(--ws-text);font-size:12px;margin-bottom:6px
 }
 
 .ws-root .flow-source-block p {
-  white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ws-text-muted);font-size:10px;line-height:1.65;margin:0
+  white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ws-text-muted);font-size:12px;line-height:1.65;margin:0
 }
 
 .ws-root .flow-summary-grid {
@@ -1745,11 +1765,11 @@
 }
 
 .ws-root .flow-summary-grid span {
-  display:block;color:var(--ws-text-muted);font-size:9px;margin-top:5px
+  display:block;color:var(--ws-text-muted);font-size:12px;margin-top:5px
 }
 
 .ws-root .flow-mini-title {
-  font-size:11px;color:var(--ws-text);margin:18px 0 8px
+  font-size:12px;color:var(--ws-text);margin:18px 0 8px
 }
 
 .ws-root .flow-summary-item {
@@ -1761,15 +1781,15 @@
 }
 
 .ws-root .flow-summary-item span {
-  font-size:10px;font-weight:700
+  font-size:12px;font-weight:700
 }
 
 .ws-root .flow-summary-item small {
-  color:var(--ws-text-muted);font-size:9px
+  color:var(--ws-text-muted);font-size:12px
 }
 
 .ws-root .flow-issue {
-  display:block;width:100%;background:var(--ws-bg-warning-soft);border:1px solid var(--ws-border-warning-soft);border-left:3px solid var(--ws-warning);border-radius:6px;padding:10px 11px;margin:8px 0;text-align:left;color:var(--ws-warning);font-size:10px
+  display:block;width:100%;background:var(--ws-bg-warning-soft);border:1px solid var(--ws-border-warning-soft);border-left:3px solid var(--ws-warning);border-radius:6px;padding:10px 11px;margin:8px 0;text-align:left;color:var(--ws-warning);font-size:12px
 }
 
 .ws-root .flow-issue.blocking {
@@ -1777,15 +1797,15 @@
 }
 
 .ws-root .flow-issue b {
-  display:block;font-size:10px;overflow-wrap:anywhere
+  display:block;font-size:12px;overflow-wrap:anywhere
 }
 
 .ws-root .flow-issue p {
-  margin:3px 0 0;color:var(--ws-text-muted);font-size:10px;line-height:1.55
+  margin:3px 0 0;color:var(--ws-text-muted);font-size:12px;line-height:1.55
 }
 
 .ws-root .flow-good {
-  background:var(--ws-bg-success-soft);border:1px solid var(--ws-border-success-soft);color:var(--ws-success);border-radius:7px;padding:11px 13px;font-size:10px;margin:10px 0
+  background:var(--ws-bg-success-soft);border:1px solid var(--ws-border-success-soft);color:var(--ws-success);border-radius:7px;padding:11px 13px;font-size:12px;margin:10px 0
 }
 
 .ws-root .flow-builder-layout {
@@ -1801,7 +1821,7 @@
 }
 
 .ws-root .flow-tab-intro {
-  color:var(--ws-text-muted);font-size:10px;line-height:1.7;margin:0 0 16px
+  color:var(--ws-text-muted);font-size:12px;line-height:1.7;margin:0 0 16px
 }
 
 .ws-root .flow-edit-row {
@@ -1813,11 +1833,11 @@
 }
 
 .ws-root .flow-edit-row>span:last-child {
-  font-size:9px;font-weight:800;white-space:nowrap
+  font-size:12px;font-weight:800;white-space:nowrap
 }
 
 .ws-root .flow-row-index {
-  background:var(--ws-bg-soft);color:var(--ws-accent);width:25px;height:25px;display:grid;place-items:center;border-radius:6px;font-size:9px;font-weight:800;flex:none
+  background:var(--ws-bg-soft);color:var(--ws-accent);width:25px;height:25px;display:grid;place-items:center;border-radius:6px;font-size:12px;font-weight:800;flex:none
 }
 
 .ws-root .flow-row-main {
@@ -1825,11 +1845,11 @@
 }
 
 .ws-root .flow-row-main b {
-  display:block;color:var(--ws-text);font-size:11px
+  display:block;color:var(--ws-text);font-size:12px
 }
 
 .ws-root .flow-row-main small {
-  display:block;color:var(--ws-text-muted);font-size:9px;margin-top:3px;overflow-wrap:anywhere
+  display:block;color:var(--ws-text-muted);font-size:12px;margin-top:3px;overflow-wrap:anywhere
 }
 
 .ws-root .flow-canvas {
@@ -1845,15 +1865,15 @@
 }
 
 .ws-root .flow-canvas-node span {
-  font-size:8px;color:var(--ws-accent);font-weight:800;letter-spacing:.07em
+  font-size:11px;color:var(--ws-accent);font-weight:800;letter-spacing:.07em
 }
 
 .ws-root .flow-canvas-node b {
-  display:block;font-size:10px;color:var(--ws-text);margin-top:3px
+  display:block;font-size:12px;color:var(--ws-text);margin-top:3px
 }
 
 .ws-root .flow-canvas-node small {
-  font-size:9px;color:var(--ws-text-muted)
+  font-size:12px;color:var(--ws-text-muted)
 }
 
 .ws-root .flow-canvas-arrow {
@@ -1865,7 +1885,7 @@
 }
 
 .ws-root .flow-validation {
-  display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border-radius:7px;font-size:11px
+  display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border-radius:7px;font-size:12px
 }
 
 .ws-root .flow-validation.valid {
@@ -1877,7 +1897,7 @@
 }
 
 .ws-root .flow-validation span {
-  font-size:9px;opacity:.8
+  font-size:12px;opacity:.8
 }
 
 .ws-root .flow-builder-side .panel-body {
@@ -1889,7 +1909,7 @@
     display:none
   }
   .ws-root .flow-stage {
-    font-size:9px
+    font-size:12px
   }
 }
 
@@ -1922,7 +1942,7 @@
     gap:6px;
     white-space:nowrap;
     flex:none;
-    font-size:11px;
+    font-size:12px;
     color:var(--ws-text-muted)
   }
   .ws-root .flow-stage:not(.active) .flow-stage-label {
@@ -1930,13 +1950,13 @@
   }
   .ws-root .flow-stage.active .flow-stage-label {
     display:inline;
-    font-size:11px;
+    font-size:12px;
     font-weight:700;
     color:var(--ws-accent);
     white-space:nowrap
   }
   .ws-root .flow-stage span:not(.flow-stage-label) {
-    width:22px;height:22px;font-size:9px;
+    width:22px;height:22px;font-size:12px;
     flex:none
   }
   .ws-root .flow-form-foot, .ws-root .flow-intro {
