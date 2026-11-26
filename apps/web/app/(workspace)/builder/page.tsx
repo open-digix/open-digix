@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { Metadata } from "next";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -21,6 +22,10 @@ import { getTenantContext } from "../../../lib/api/server";
 import { listApps, getAppConfigApiMode } from "../../../lib/app-config/client";
 import BuilderAppList from "../../../components/builder/BuilderAppList";
 import type { AppSummary } from "../../../lib/app-config/types";
+
+export const metadata: Metadata = {
+  title: "Thiết kế ứng dụng · DigiX",
+};
 
 export default async function BuilderPage() {
   await connection();
