@@ -156,8 +156,8 @@ describe('AppController (e2e)', () => {
         tenantName: 'Acme Corporation',
         tenantSlug: 'acme-corp',
         admin: {
-          firstName: 'Nguyen',
-          lastName: 'Van A',
+          firstName: 'Claude',
+          lastName: 'Mẫu Thử',
           email: 'admin@example.com',
           username: 'admin',
           password: 'correct-horse-battery',
@@ -173,8 +173,8 @@ describe('AppController (e2e)', () => {
     expect(keycloakAdmin.createUser).toHaveBeenCalledWith({
       username: 'admin',
       email: 'admin@example.com',
-      firstName: 'Nguyen',
-      lastName: 'Van A',
+      firstName: 'Mẫu Thử',
+      lastName: 'Claude',
       password: 'correct-horse-battery',
     });
     expect(tenantAdminRepository.createTenantAdmin).toHaveBeenCalledWith({
@@ -183,7 +183,7 @@ describe('AppController (e2e)', () => {
       identityIssuer: 'http://localhost:8080/realms/digix',
       identitySubject: 'keycloak-subject',
       email: 'admin@example.com',
-      displayName: 'Nguyen Van A',
+      displayName: 'Mẫu Thử Claude',
     });
   });
 

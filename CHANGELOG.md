@@ -40,6 +40,11 @@ Mọi thay đổi đáng chú ý của dự án sẽ được ghi nhận tại �
   - Cơ chế xác nhận đổi ứng dụng bằng `ConfirmDialog` tránh mất dữ liệu dở dang.
   - Bàn phím điều hướng toàn diện (Enter gửi, Shift+Enter xuống dòng, Esc đóng drawer/dialog), các vùng thông báo động gắn `aria-live="polite"`.
 
+### Sửa lỗi rà soát 26/11 trang ngoài, Keycloak, cài đặt, cỡ chữ (WEB-UX01, #71)
+- **Chuẩn hóa câu chữ & thông điệp DigiX v2.5:** Thay thế toàn bộ nội dung giả tưởng (Alpha/Beta, 51s, BE-08, Thiết kế -> Kiểm tra) tại landing, đăng ký doanh nghiệp, điều khoản và trang lỗi bằng câu chữ DigiX thực tế.
+- **Theme Keycloak:** Đồng bộ giao diện đăng nhập Keycloak với thiết kế DigiX (thang màu, bo góc, tiêu đề, nút bấm, thông báo lỗi).
+- **Trang Cài đặt & Tiêu đề trang:** Tách giao diện cài đặt tài khoản, cấu hình chung; bổ sung metadata tiêu đề đầy đủ cho toàn bộ các trang workspace.
+- **Chuẩn hóa cỡ chữ:** Loại bỏ toàn bộ cỡ chữ dưới 11px theo thang chữ thiết kế UI-04.
 
 ### Đăng xuất hoàn tất phiên SSO Keycloak (FRONT-LOGOUT, #64)
 - **Đổi route đăng xuất sang POST:** Chuyển `/api/auth/keycloak-logout` sang phương thức `POST` để ngăn ngừa đăng xuất ngoài ý muốn qua link `GET` từ bên ngoài (yêu cầu `GET` trả về HTTP 405 Method Not Allowed kèm `Allow: POST`).
