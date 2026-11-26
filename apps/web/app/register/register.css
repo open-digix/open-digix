@@ -6,7 +6,7 @@
   --teal-strong: var(--ws-accent, #0b776f);
   --teal-hover: var(--ws-accent-hover, #0a665f);
   --teal-light: #2dd4bf;
-  --ink: var(--ws-sidebar-bg, #112b45);
+  --ink: var(--ws-text, #172b3a);
   --ink-2: var(--ws-text-muted, #526878);
   --line: var(--ws-border, #d8e1e8);
   --surface: var(--ws-bg-surface, #ffffff);

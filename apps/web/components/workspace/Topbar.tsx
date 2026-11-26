@@ -21,6 +21,7 @@ import { usePathname } from "next/navigation";
 import TenantSelect from "./TenantSelect";
 import AppSelect from "./AppSelect";
 import LogoutButton from "../../app/components/LogoutButton";
+import ThemeSelector from "./ThemeSelector";
 import type { MeMembership, MeUser } from "../../lib/tenant/types";
 import { getRoleLabel } from "../../lib/tenant/types";
 import { getRuntimeSync } from "../../lib/app-runtime/fixtures";
@@ -212,14 +213,17 @@ export default function Topbar({
                 position: "absolute",
                 right: 0,
                 top: 42,
-                background: "var(--ws-bg-surface)",
-                border: "1px solid var(--ws-border)",
-                borderRadius: 8,
+                background: "var(--ws-glass-bg-strong, var(--ws-bg-surface))",
+                backdropFilter: "var(--ws-glass-blur)",
+                WebkitBackdropFilter: "var(--ws-glass-blur)",
+                border: "1px solid var(--ws-glass-border, var(--ws-border))",
+                borderRadius: 10,
                 boxShadow: "var(--ws-shadow)",
                 padding: "12px 16px",
-                minWidth: 200,
+                minWidth: 220,
                 zIndex: 80,
                 color: "var(--ws-text)",
+                animation: "ws-fade-in-scale var(--ws-dur-fast) var(--ws-ease)",
               }}
             >
               <div style={{ fontWeight: 700, fontSize: 12 }}>{displayName}</div>
@@ -251,7 +255,16 @@ export default function Topbar({
               )}
               <div
                 style={{
-                  borderTop: "1px solid var(--ws-border)",
+                  borderTop: "1px solid var(--ws-glass-border, var(--ws-border))",
+                  marginTop: 8,
+                  paddingTop: 8,
+                }}
+              >
+                <ThemeSelector />
+              </div>
+              <div
+                style={{
+                  borderTop: "1px solid var(--ws-glass-border, var(--ws-border))",
                   marginTop: 8,
                   paddingTop: 8,
                   display: "flex",

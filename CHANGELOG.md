@@ -20,6 +20,21 @@ Mọi thay đổi đáng chú ý của dự án sẽ được ghi nhận tại �
 
 ## [Chưa phát hành] - 26/11/2026
 
+### Giao diện Sáng/Tối/Hệ thống, kính mờ và chuyển động (WEB-UI04 PR 2, #84)
+- **Chế độ Sáng / Tối / Hệ thống (SSR & Cookie):**
+  - Quản lý theme bằng cookie `digix_theme` (thời hạn 1 năm, `SameSite=Lax`, `Secure` trên HTTPS).
+  - Khởi tạo SSR trong `layout.tsx` bằng việc đọc cookie và gán thuộc tính `data-theme` trên thẻ `<html>` ngay từ HTML phản hồi đầu tiên.
+  - Tự động đồng bộ theo hệ thống qua `@media (prefers-color-scheme: dark)` khi người dùng chọn chế độ Hệ thống.
+- **Bộ chọn giao diện (`ThemeSelector`):**
+  - Tích hợp vào menu hồ sơ cá nhân trên Topbar dưới dạng `role="radiogroup"` 3 tùy chọn: Sáng, Tối, Hệ thống.
+  - Hỗ trợ đầy đủ phím mũi tên (ArrowLeft/Right/Up/Down), Home, End, và phím Space để kích hoạt; đồng bộ tức thì DOM và cookie.
+- **Kính mờ (Glassmorphism) & Hiệu ứng chuyển động:**
+  - Áp dụng kính mờ chuẩn 85% cho Topbar, Thẻ thống kê (`stat-card`), Panel nội dung và 94% cho menu tài khoản qua các biến `--ws-glass-bg`, `--ws-glass-border`, `--ws-glass-blur`.
+  - Hiệu ứng đốm sáng nền `--ws-canvas-glow` tạo chiều sâu thị giác.
+  - Dự phòng chuẩn qua `@supports not (backdrop-filter: blur(1px))` chuyển về nền đặc `--ws-bg-surface` và viền `--ws-border`.
+  - Chuyển động nhẹ nhàng: hoạt ảnh trang vào `ws-page-enter` (200ms) và mở menu `ws-fade-in-scale` (150ms).
+  - Tôn trọng tùy chọn hệ thống qua `@media (prefers-reduced-motion: reduce)`.
+
 ### Nền tảng semantic token giao diện theo vai trò (WEB-UI04 PR 1, #84)
 - **Hệ thống semantic token UI-04 (`globals.css`, `workspace.css`):**
   - Bổ sung bộ token ngữ nghĩa `:root` cho chế độ Sáng hiện tại: `--ws-bg-canvas`, `--ws-bg-surface`, `--ws-bg-surface-2`, `--ws-bg-soft`, `--ws-text`, `--ws-text-muted`, `--ws-text-on-accent`, `--ws-border`, `--ws-border-strong`, `--ws-accent`, `--ws-accent-hover`, `--ws-focus`, `--ws-danger`, `--ws-warning`, `--ws-success`, `--ws-info`, `--ws-sidebar-bg`, `--ws-sidebar-text`.
