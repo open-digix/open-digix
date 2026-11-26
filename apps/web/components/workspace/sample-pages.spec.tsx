@@ -52,18 +52,17 @@ describe("Sample Data Workspace Pages", () => {
     expect(screen.getByText("Nhận định vận hành")).toBeInTheDocument();
   });
 
-  it("SettingsPage renders configuration rows and save toast", () => {
+  it("SettingsPage renders configuration rows and operational rules", () => {
     render(<SettingsPage />);
 
     expect(
       screen.getByText("Thiết lập không gian làm việc"),
     ).toBeInTheDocument();
-
-    const saveButton = screen.getByText("Lưu thay đổi");
-    fireEvent.click(saveButton);
-
     expect(
-      screen.getByText(/Đã lưu thiết lập \(mẫu — không gửi tới hệ thống\)/),
+      screen.getByText("Nguyên tắc Không tự duyệt (No Self-Approval)"),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Lưu thay đổi"),
+    ).not.toBeInTheDocument();
   });
 });

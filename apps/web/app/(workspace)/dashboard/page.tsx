@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
+import type { Metadata } from "next";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { getTenantContext } from "../../../lib/api/server";
 import DashboardOverview from "../../../components/workspace/DashboardOverview";
+
+export const metadata: Metadata = {
+  title: "Tổng quan · DigiX",
+};
 
 export default async function DashboardPage() {
   await connection();

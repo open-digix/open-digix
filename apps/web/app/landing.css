@@ -171,7 +171,7 @@
 .landing-eyebrow {
   margin-bottom: 17px;
   color: #a4e6dc;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.23em;
 }
@@ -328,7 +328,7 @@
 .landing-auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 2px 42px 30px 0; padding: 4px; border-radius: 11px; background: #edf3f5; }
 .landing-auth-tabs button { min-height: 39px; border: 0; border-radius: 8px; background: transparent; color: #607482; font-size: 13px; font-weight: 600; }
 .landing-auth-tabs button.active { background: #fff; color: var(--landing-navy); box-shadow: 0 2px 8px #112b451a; }
-.landing-auth-label { margin: 0 0 10px; color: var(--landing-teal); font-size: 10px; font-weight: 700; letter-spacing: 0.18em; }
+.landing-auth-label { margin: 0 0 10px; color: var(--landing-teal); font-size: 11px; font-weight: 700; letter-spacing: 0.18em; }
 .landing-auth-dialog h2 { margin: 0 0 14px; font-size: clamp(25px, 5vw, 32px); line-height: 1.2; letter-spacing: -0.035em; }
 .landing-auth-dialog > p:not(.landing-auth-label) { margin: 0; color: #526878; font-size: 14px; line-height: 1.65; }
 .landing-auth-primary { display: inline-flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; min-height: 48px; margin-top: 26px; padding: 0 17px; border: 0; border-radius: 10px; background: var(--landing-teal); color: #fff; font-size: 14px; font-weight: 600; text-align: left; }

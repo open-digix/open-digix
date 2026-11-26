@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Báo cáo · DigiX",
+};
+
 export default function ReportsPage() {
   return (
     <div className="page">

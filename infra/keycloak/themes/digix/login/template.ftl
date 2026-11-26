@@ -15,15 +15,8 @@
       <img src="${url.resourcesPath}/img/digix-logo-dark.svg" alt="DigiX Lab" width="94" height="40">
     </div>
     <div class="pitch">
-      <h2 class="s1">Quy trình rõ ràng.<br>Công việc liền mạch.</h2>
-      <p class="s2">Thiết kế quy trình bằng mô tả, kiểm tra trước khi xuất bản, vận hành và truy vết trên cùng một nền tảng mở.</p>
-      <div class="steps s3" aria-hidden="true">
-        <div class="step"><b>01</b><span>Thiết kế</span></div>
-        <i>→</i>
-        <div class="step"><b>02</b><span>Kiểm tra</span></div>
-        <i>→</i>
-        <div class="step"><b>03</b><span>Vận hành</span></div>
-      </div>
+      <h2 class="s1">Ứng dụng linh hoạt.<br>Dữ liệu độc lập.</h2>
+      <p class="s2">Doanh nghiệp ghép các ứng dụng ERP/CRM từ tính năng có sẵn, mỗi ứng dụng có dữ liệu và quyền riêng.</p>
     </div>
     <div class="side-foot">
       <small>DigiX Lab · Phần mềm nguồn mở</small>

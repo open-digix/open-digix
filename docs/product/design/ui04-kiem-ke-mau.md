@@ -6,8 +6,8 @@
 
 | Tệp tin | `--ws-c-*` trước (lượt dùng) | `--ws-c-*` sau (lượt dùng) | Mã hex trước | Mã hex sau | Ghi chú |
 |---|---|---|---|---|---|
-| `apps/web/app/(workspace)/workspace.css` | 451 | 0 | 223 | 241 | Giảm toàn bộ 451 lượt dùng `var(--ws-c-*)` về 0; mã hex chỉ tồn tại trong khối khai báo biến gốc `.ws-root` (209 alias palette tương thích ngược + token ngữ nghĩa) |
-| `apps/web/app/globals.css` | 0 | 0 | 4 | 22 | Khối semantic token `:root` toàn cục dùng chung cho toàn bộ ứng dụng |
+| `apps/web/app/(workspace)/workspace.css` | 451 | 0 | 223 | 251 | Giảm toàn bộ 451 lượt dùng `var(--ws-c-*)` về 0; mã hex chỉ tồn tại trong khối khai báo biến gốc `.ws-root` (209 alias palette tương thích ngược + token ngữ nghĩa) |
+| `apps/web/app/globals.css` | 0 | 0 | 4 | 32 | Khối semantic token `:root` toàn cục dùng chung cho toàn bộ ứng dụng |
 | `apps/web/app/register/register.css` | 0 | 0 | 35 | 18 | Toàn bộ 16 vị trí dùng hex rải rác đã chuyển sang biến ngữ nghĩa; 18 mã hex còn lại chỉ nằm trong khối khai báo biến cục bộ ban đầu |
 | `apps/web/app/landing.css` | 0 | 0 | 52 | 52 | Thẻ lỗi đăng nhập `.landing-auth-error-card` dùng 100% token semantic chung; 0 mã hex và 0 `--ws-c-*` trong selector này |
 

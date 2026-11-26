@@ -102,7 +102,7 @@ export default function DashboardOverview({
         <div className="hero-copy">
           <span className="hero-label">DIGIX LAB · WORKSPACE</span>
           <h2>
-            Quy trình rõ ràng.
+            Ứng dụng linh hoạt.
             <br />
             Công việc liền mạch.
           </h2>

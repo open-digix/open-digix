@@ -132,8 +132,8 @@ function toKeycloakUserInput(
   return {
     username: input.admin.username,
     email: input.admin.email,
-    firstName: input.admin.firstName,
-    lastName: input.admin.lastName,
+    firstName: input.admin.lastName,
+    lastName: input.admin.firstName,
     password: input.admin.password,
   };
 }
@@ -191,6 +191,6 @@ function toRepositoryInput(
     identityIssuer,
     identitySubject,
     email: input.admin.email,
-    displayName: `${input.admin.firstName} ${input.admin.lastName}`,
+    displayName: `${input.admin.lastName} ${input.admin.firstName}`,
   };
 }
