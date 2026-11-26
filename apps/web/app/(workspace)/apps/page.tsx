@@ -21,21 +21,41 @@ import Link from "next/link";
 import { listAppsAction } from "../../../lib/app-config/actions";
 import type { AppSummary } from "../../../lib/app-config/types";
 import { useMockToast } from "../../../components/workspace/MockToast";
-
-function getAppInitials(name: string): string {
-  const words = name.trim().split(/\s+/).filter(Boolean);
-  if (words.length >= 2) {
-    return (words[0][0] + words[1][0]).toUpperCase();
-  }
-  return (words[0]?.slice(0, 2) || "DX").toUpperCase();
-}
+import { getAppInitials } from "../../../lib/app-runtime/initials";
 
 export default function AppsPage() {
   const [apps, setApps] = useState<AppSummary[]>([]);
-  const [tab, setTab] = useState<"all" | "published" | "draft">("all");
+  const [tab, setTab] = useState<"all" | "published" | "draft">(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const t = params.get("tab");
+        if (t === "draft" || t === "published") return t;
+      } catch {
+        // ignore
+      }
+    }
+    return "all";
+  });
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const { ToastContainer } = useMockToast();
+
+  useEffect(() => {
+    const handlePopState = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const t = params.get("tab");
+        if (t === "draft" || t === "published" || t === "all") {
+          setTab(t);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -148,7 +168,7 @@ export default function AppsPage() {
                     Mở ứng dụng →
                   </Link>
                 ) : (
-                  <Link href={`/builder/edit?appId=${app.appId}`} className="button secondary">
+                  <Link href={`/builder/${app.appId}`} className="button secondary">
                     Chỉnh sửa →
                   </Link>
                 )}

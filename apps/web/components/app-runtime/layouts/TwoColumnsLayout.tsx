@@ -49,17 +49,17 @@ export default function TwoColumnsLayout({
   }
 
   return (
-    // Dùng container query @container và containerType: "inline-size"
+    // Dùng container query trên class two-columns-container
     // để layout thay đổi chính xác theo độ rộng khung (cả chế độ xem thử lẫn runtime)
     <div
-      className="@container w-full"
+      className="two-columns-container"
       style={{ containerType: "inline-size" }}
       data-testid="two-columns-layout"
     >
-      <div className="grid grid-cols-1 @[768px]:grid-cols-12 gap-6 w-full">
+      <div className="two-columns-grid">
         {/* Vùng main: chiếm 12 cột trên màn nhỏ/mobile (<768px), 8 cột trên màn lớn (>=768px) */}
         <div
-          className="col-span-1 @[768px]:col-span-8 flex flex-col gap-6"
+          className="two-columns-main"
           data-testid="zone-main"
         >
           {mainComponents.length > 0 ? (
@@ -80,7 +80,7 @@ export default function TwoColumnsLayout({
 
         {/* Vùng side: tự động xếp xuống dưới main trên màn nhỏ/mobile (<768px), chiếm 4 cột trên màn lớn */}
         <div
-          className="col-span-1 @[768px]:col-span-4 flex flex-col gap-6"
+          className="two-columns-side"
           data-testid="zone-side"
         >
           {sideComponents.length > 0 ? (

@@ -232,7 +232,7 @@ export default function Sidebar({
         {/* Thiết kế ứng dụng - chỉ cho designer, publisher, tenant_admin, admin, owner */}
         {canAccessBuilder && (
           <Link
-            href="/builder"
+            href="/apps?tab=draft"
             className={`nav-link ${isActive("/builder") ? "active" : ""}`}
             aria-current={isActive("/builder") ? "page" : undefined}
             data-tip="Thiết kế ứng dụng"
