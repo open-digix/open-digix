@@ -337,6 +337,36 @@
 .landing-auth-dialog.landing-auth-error-card {
   margin: auto;
   text-align: left;
+  background: var(--ws-bg-surface, #fff);
+  border-color: var(--ws-border, #dce8ed);
+  color: var(--ws-text, var(--landing-navy));
+}
+
+.landing-auth-error-card .landing-auth-label {
+  color: var(--ws-accent, var(--landing-teal));
+}
+
+.landing-auth-error-card > p:not(.landing-auth-label) {
+  color: var(--ws-text-muted, #526878);
+}
+
+.landing-auth-error-card .landing-auth-primary {
+  background: var(--ws-accent, var(--landing-teal));
+  color: var(--ws-text-on-accent, #fff);
+}
+
+.landing-auth-error-card .landing-auth-primary:hover {
+  background: var(--ws-accent-hover, #0b776f);
+}
+
+.landing-auth-error-card .landing-auth-secondary {
+  border-color: var(--ws-border, #dce8ed);
+  color: var(--ws-text, var(--landing-navy));
+}
+
+.landing-auth-error-card .landing-auth-secondary:hover {
+  background: var(--ws-bg-surface-2, #edf3f5);
+  border-color: var(--ws-border-strong, #cbd5e1);
 }
 
 .landing-auth-secondary {
