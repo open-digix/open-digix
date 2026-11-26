@@ -16,7 +16,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -83,6 +83,28 @@ export default function Sidebar({
 
   const currentApp = currentAppId ? (asyncApp ?? syncApp) : null;
 
+  const [isSpinning, setIsSpinning] = useState(false);
+  const markRef = useRef<SVGSVGElement | null>(null);
+  const isExpanded = Boolean(isPinned || isPeek || isOpen);
+  const wasExpandedRef = useRef<boolean>(isExpanded);
+
+  useEffect(() => {
+    const el = markRef.current;
+    if (!el) return;
+    const handleEnd = () => setIsSpinning(false);
+    el.addEventListener("animationend", handleEnd);
+    return () => {
+      el.removeEventListener("animationend", handleEnd);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!wasExpandedRef.current && isExpanded) {
+      setIsSpinning(true);
+    }
+    wasExpandedRef.current = isExpanded;
+  }, [isExpanded]);
+
   const isActive = (path: string) => {
     return pathname === path || pathname.startsWith(path + "/");
   };
@@ -109,23 +131,29 @@ export default function Sidebar({
         aria-label="Về danh mục ứng dụng DigiX Lab"
         onClick={onClose}
       >
+        <svg
+          ref={markRef}
+          className={`brand-mark ${isSpinning ? "spin" : ""}`}
+          viewBox="106 106 300 300"
+          width="40"
+          height="40"
+          aria-hidden="true"
+          onAnimationEnd={() => setIsSpinning(false)}
+        >
+          <path d="M136 120H200L240 200V232H208L136 160Z" fill="#FFFFFF" />
+          <path d="M376 120V184L296 240H264V208L336 120Z" fill="#2DD4BF" />
+          <path d="M376 392H312L272 312V280H304L376 352Z" fill="#FFFFFF" />
+          <path d="M136 392V328L216 272H248V304L176 392Z" fill="#FFFFFF" />
+        </svg>
         <Image
-          className="full"
-          src="/brand/digix-logo-dark.svg"
-          width={154}
-          height={32}
-          alt="DigiX Lab"
+          className="brand-wordmark"
+          src="/brand/digix-wordmark-dark.svg"
+          width={104}
+          height={49}
+          alt=""
+          aria-hidden="true"
           priority
         />
-        <svg className="mini" viewBox="0 0 512 512" aria-hidden="true">
-          <rect width="512" height="512" rx="116" fill="#112B45" />
-          <g transform="translate(26 26) scale(.9)">
-            <path d="M136 120H200L240 200V232H208L136 160Z" fill="#FFFFFF" />
-            <path d="M376 120V184L296 240H264V208L336 120Z" fill="#2DD4BF" />
-            <path d="M376 392H312L272 312V280H304L376 352Z" fill="#FFFFFF" />
-            <path d="M136 392V328L216 272H248V304L176 392Z" fill="#FFFFFF" />
-          </g>
-        </svg>
       </Link>
       <div className="workspace-tag">
         <span className="workspace-dot" /> <span className="t">KHÔNG GIAN LÀM VIỆC</span>
