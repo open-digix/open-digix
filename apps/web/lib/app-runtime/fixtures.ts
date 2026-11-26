@@ -59,3 +59,27 @@ export const FIXTURE_METAS: FixtureMeta[] = [
     app: FIXTURE_HYBRID,
   },
 ];
+
+export function getRuntimeSync(appId: string): PublishedAppV25 | null {
+  if (
+    appId === "11111111-1111-4111-8111-111111111111" ||
+    appId === "erp-a" ||
+    appId === "erp"
+  ) {
+    return FIXTURE_ERP_A;
+  }
+  if (
+    appId === "22222222-2222-4222-8222-222222222222" ||
+    appId === "crm-a" ||
+    appId === "crm"
+  ) {
+    return FIXTURE_CRM_A;
+  }
+  if (appId === "33333333-3333-4333-8333-333333333333" || appId === "crm-b") {
+    return FIXTURE_CRM_B;
+  }
+  if (appId === "44444444-4444-4444-8444-444444444444" || appId === "hybrid") {
+    return FIXTURE_HYBRID;
+  }
+  return null;
+}

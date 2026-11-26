@@ -64,7 +64,7 @@ export default function ActionComponent({
       style={{ padding: 20 }}
       data-testid={`action-${component.id}`}
     >
-      <div className="flex flex-col gap-3">
+      <div className="action-content">
         <div>
           <h4 style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 600 }}>
             {actionLabel}

@@ -16,9 +16,13 @@
 
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { getRuntimeSync } from "../../lib/app-runtime/fixtures";
+import { getRuntimeAction } from "../../lib/app-config/actions";
+import type { PublishedAppV25 } from "../../lib/app-runtime/types";
 
 interface SidebarProps {
   roles: string[];
@@ -52,19 +56,42 @@ export default function Sidebar({
   const pathname = usePathname();
 
   const canAccessBuilder = roles.some((r) =>
-    ["designer", "publisher", "tenant_admin"].includes(r),
+    ["designer", "publisher", "tenant_admin", "admin", "owner"].includes(r),
   );
 
+  // App routing detection
+  const matchApp = pathname.match(/^\/app\/([^/]+)/);
+  const currentAppId = matchApp ? matchApp[1] : null;
+
+  const syncApp = currentAppId ? getRuntimeSync(currentAppId) : null;
+  const [asyncApp, setAsyncApp] = useState<PublishedAppV25 | null>(null);
+
+  useEffect(() => {
+    if (!currentAppId) return;
+    let isMounted = true;
+    getRuntimeAction(currentAppId, { userRoles: roles })
+      .then((data) => {
+        if (isMounted) setAsyncApp(data);
+      })
+      .catch(() => {
+        if (isMounted) setAsyncApp(null);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [currentAppId, roles]);
+
+  const currentApp = currentAppId ? (asyncApp ?? syncApp) : null;
+
   const isActive = (path: string) => {
-    if (path === "/dashboard") return pathname === "/dashboard";
-    return pathname.startsWith(path);
+    return pathname === path || pathname.startsWith(path + "/");
   };
 
   const handleTipEnter =
     (text: string) =>
-    (e: React.MouseEvent<HTMLElement> | React.FocusEvent<HTMLElement>) => {
-      onShowTip?.(text, e.currentTarget);
-    };
+      (e: React.MouseEvent<HTMLElement> | React.FocusEvent<HTMLElement>) => {
+        onShowTip?.(text, e.currentTarget);
+      };
 
   return (
     <aside
@@ -78,8 +105,8 @@ export default function Sidebar({
     >
       <Link
         className="brand"
-        href="/dashboard"
-        aria-label="Về tổng quan DigiX Lab"
+        href="/apps"
+        aria-label="Về danh mục ứng dụng DigiX Lab"
         onClick={onClose}
       >
         <Image
@@ -105,33 +132,54 @@ export default function Sidebar({
       </div>
 
       <nav className="side-nav" id="side-nav">
-        {/* Nhóm CHUNG */}
-        <div className="nav-group-label">CHUNG</div>
-        <Link
-          href="/dashboard"
-          className={`nav-link ${isActive("/dashboard") ? "active" : ""}`}
-          aria-current={isActive("/dashboard") ? "page" : undefined}
-          data-tip="Tổng quan"
-          onClick={onClose}
-          onMouseEnter={handleTipEnter("Tổng quan")}
-          onMouseLeave={onHideTip}
-          onFocus={handleTipEnter("Tổng quan")}
-          onBlur={onHideTip}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            aria-hidden="true"
-          >
-            <rect x="3" y="3" width="7" height="9" rx="1" />
-            <rect x="14" y="3" width="7" height="5" rx="1" />
-            <rect x="14" y="12" width="7" height="9" rx="1" />
-            <rect x="3" y="16" width="7" height="5" rx="1" />
-          </svg>
-          <span className="lbl">Tổng quan</span>
-        </Link>
+        {/* Nhóm ứng dụng hiện tại (nếu đang trong /app/[appId]) */}
+        {currentAppId && currentApp && (
+          <div className="nav-app-group">
+            <div className="nav-group-label" style={{ textTransform: "uppercase" }}>
+              {currentApp.name}
+            </div>
+            {currentApp.pages.map((page, index) => {
+              const pageHref = `/app/${currentAppId}/${page.id}`;
+              const pageTitle = page.label || page.id;
+              const isPageActive =
+                pathname === pageHref ||
+                (pathname === `/app/${currentAppId}` && index === 0);
+
+              return (
+                <Link
+                  key={page.id}
+                  href={pageHref}
+                  className={`nav-link ${isPageActive ? "active" : ""}`}
+                  aria-current={isPageActive ? "page" : undefined}
+                  data-tip={pageTitle}
+                  onClick={onClose}
+                  onMouseEnter={handleTipEnter(pageTitle)}
+                  onMouseLeave={onHideTip}
+                  onFocus={handleTipEnter(pageTitle)}
+                  onBlur={onHideTip}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    aria-hidden="true"
+                  >
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <line x1="10" y1="9" x2="8" y2="9" />
+                  </svg>
+                  <span className="lbl">{pageTitle}</span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Nhóm HỆ THỐNG */}
+        <div className="nav-group-label">HỆ THỐNG</div>
         <Link
           href="/apps"
           className={`nav-link ${isActive("/apps") ? "active" : ""}`}
@@ -158,111 +206,6 @@ export default function Sidebar({
           <span className="lbl">Ứng dụng</span>
         </Link>
 
-        {/* Nhóm THIẾT KẾ - chỉ cho designer, publisher, tenant_admin */}
-        {canAccessBuilder && (
-          <>
-            <div className="nav-group-label">THIẾT KẾ</div>
-            <Link
-              href="/builder"
-              className={`nav-link ${isActive("/builder") ? "active" : ""}`}
-              aria-current={isActive("/builder") ? "page" : undefined}
-              data-tip="Thiết kế quy trình"
-              onClick={onClose}
-              onMouseEnter={handleTipEnter("Thiết kế quy trình")}
-              onMouseLeave={onHideTip}
-              onFocus={handleTipEnter("Thiết kế quy trình")}
-              onBlur={onHideTip}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                aria-hidden="true"
-              >
-                <circle cx="6" cy="6" r="3" />
-                <circle cx="18" cy="18" r="3" />
-                <path d="M6 9v3a6 6 0 0 0 6 6h3" />
-              </svg>
-              <span className="lbl">Thiết kế quy trình</span>
-            </Link>
-          </>
-        )}
-
-        {/* Nhóm VẬN HÀNH */}
-        <div className="nav-group-label">VẬN HÀNH</div>
-        <Link
-          href="/tasks"
-          className={`nav-link ${isActive("/tasks") ? "active" : ""}`}
-          aria-current={isActive("/tasks") ? "page" : undefined}
-          data-tip="Việc của tôi"
-          onClick={onClose}
-          onMouseEnter={handleTipEnter("Việc của tôi")}
-          onMouseLeave={onHideTip}
-          onFocus={handleTipEnter("Việc của tôi")}
-          onBlur={onHideTip}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            aria-hidden="true"
-          >
-            <path d="m9 11 3 3L22 4" />
-            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-          </svg>
-          <span className="lbl">Việc của tôi</span>
-        </Link>
-        <Link
-          href="/records"
-          className={`nav-link ${isActive("/records") ? "active" : ""}`}
-          aria-current={isActive("/records") ? "page" : undefined}
-          data-tip="Hồ sơ của tôi"
-          onClick={onClose}
-          onMouseEnter={handleTipEnter("Hồ sơ của tôi")}
-          onMouseLeave={onHideTip}
-          onFocus={handleTipEnter("Hồ sơ của tôi")}
-          onBlur={onHideTip}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            aria-hidden="true"
-          >
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <path d="M14 2v6h6" />
-            <path d="M16 13H8" />
-            <path d="M16 17H8" />
-            <path d="M10 9H8" />
-          </svg>
-          <span className="lbl">Hồ sơ của tôi</span>
-        </Link>
-        <Link
-          href="/reports"
-          className={`nav-link ${isActive("/reports") ? "active" : ""}`}
-          aria-current={isActive("/reports") ? "page" : undefined}
-          data-tip="Báo cáo"
-          onClick={onClose}
-          onMouseEnter={handleTipEnter("Báo cáo")}
-          onMouseLeave={onHideTip}
-          onFocus={handleTipEnter("Báo cáo")}
-          onBlur={onHideTip}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            aria-hidden="true"
-          >
-            <path d="M3 3v18h18" />
-            <path d="m19 9-5 5-4-4-3 3" />
-          </svg>
-          <span className="lbl">Báo cáo</span>
-        </Link>
         <Link
           href="/assistant"
           className={`nav-link ${isActive("/assistant") ? "active" : ""}`}
@@ -285,15 +228,43 @@ export default function Sidebar({
           </svg>
           <span className="lbl">Trợ lý</span>
         </Link>
+
+        {/* Thiết kế ứng dụng - chỉ cho designer, publisher, tenant_admin, admin, owner */}
+        {canAccessBuilder && (
+          <Link
+            href="/apps?tab=draft"
+            className={`nav-link ${isActive("/builder") ? "active" : ""}`}
+            aria-current={isActive("/builder") ? "page" : undefined}
+            data-tip="Thiết kế ứng dụng"
+            onClick={onClose}
+            onMouseEnter={handleTipEnter("Thiết kế ứng dụng")}
+            onMouseLeave={onHideTip}
+            onFocus={handleTipEnter("Thiết kế ứng dụng")}
+            onBlur={onHideTip}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              aria-hidden="true"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M3 9h18M9 21V9" />
+            </svg>
+            <span className="lbl">Thiết kế ứng dụng</span>
+          </Link>
+        )}
+
         <Link
           href="/settings"
           className={`nav-link ${isActive("/settings") ? "active" : ""}`}
           aria-current={isActive("/settings") ? "page" : undefined}
-          data-tip="Quản trị"
+          data-tip="Cài đặt"
           onClick={onClose}
-          onMouseEnter={handleTipEnter("Quản trị")}
+          onMouseEnter={handleTipEnter("Cài đặt")}
           onMouseLeave={onHideTip}
-          onFocus={handleTipEnter("Quản trị")}
+          onFocus={handleTipEnter("Cài đặt")}
           onBlur={onHideTip}
         >
           <svg
@@ -306,7 +277,7 @@ export default function Sidebar({
             <circle cx="12" cy="12" r="3" />
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
           </svg>
-          <span className="lbl">Quản trị</span>
+          <span className="lbl">Cài đặt</span>
         </Link>
       </nav>
 
@@ -332,7 +303,7 @@ export default function Sidebar({
           <span className="lbl">{isPinned ? "Bỏ ghim (tự thu gọn)" : "Ghim thanh bên"}</span>
         </button>
         <div className="side-foot">
-          DigiX Lab <span>Giao diện mẫu · 2026</span>
+          DigiX Lab <span>Khung ứng dụng · v2.5</span>
         </div>
       </div>
     </aside>

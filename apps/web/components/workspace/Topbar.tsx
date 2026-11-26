@@ -19,9 +19,13 @@
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import TenantSelect from "./TenantSelect";
+import AppSelect from "./AppSelect";
 import LogoutButton from "../../app/components/LogoutButton";
 import type { MeMembership, MeUser } from "../../lib/tenant/types";
 import { getRoleLabel } from "../../lib/tenant/types";
+import { getRuntimeSync } from "../../lib/app-runtime/fixtures";
+import { getRuntimeAction } from "../../lib/app-config/actions";
+import type { PublishedAppV25 } from "../../lib/app-runtime/types";
 
 interface TopbarProps {
   user: MeUser;
@@ -33,15 +37,12 @@ interface TopbarProps {
 }
 
 const BREADCRUMB_MAP: Record<string, string> = {
-  "/dashboard": "Tổng quan",
   "/apps": "Ứng dụng",
-  "/builder": "Thiết kế quy trình",
+  "/builder": "Thiết kế ứng dụng",
   "/builder/new": "Tạo ứng dụng",
-  "/tasks": "Việc của tôi",
-  "/records": "Hồ sơ của tôi",
-  "/reports": "Báo cáo",
+  "/builder/xem-mau": "Xem mẫu giao diện",
   "/assistant": "Trợ lý",
-  "/settings": "Quản trị",
+  "/settings": "Cài đặt",
 };
 
 export default function Topbar({
@@ -88,6 +89,30 @@ export default function Topbar({
     };
   }, [isProfileOpen]);
 
+  // App routing detection
+  const matchApp = pathname.match(/^\/app\/([^/]+)/);
+  const currentAppId = matchApp ? matchApp[1] : null;
+
+  const syncApp = currentAppId ? getRuntimeSync(currentAppId) : null;
+  const [asyncApp, setAsyncApp] = useState<PublishedAppV25 | null>(null);
+
+  useEffect(() => {
+    if (!currentAppId) return;
+    let isMounted = true;
+    getRuntimeAction(currentAppId, { userRoles: roles })
+      .then((data) => {
+        if (isMounted) setAsyncApp(data);
+      })
+      .catch(() => {
+        if (isMounted) setAsyncApp(null);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [currentAppId, roles]);
+
+  const currentApp = currentAppId ? (asyncApp ?? syncApp) : null;
+
   // Compute breadcrumb title
   let pageTitle = "Không gian làm việc";
   for (const [route, title] of Object.entries(BREADCRUMB_MAP)) {
@@ -97,7 +122,11 @@ export default function Topbar({
     }
   }
 
-  // Determine if this is a sample data screen (apps, tasks, records, reports, assistant, settings)
+  // Tenant name
+  const currentTenant = activeMemberships.find((m) => m.tenant.id === currentTenantId)?.tenant;
+  const tenantName = currentTenant?.name || "Doanh nghiệp";
+
+  // Determine if this is a sample data screen (apps, assistant, settings, or /app/...)
   const isSampleDataPage = [
     "/apps",
     "/tasks",
@@ -105,6 +134,7 @@ export default function Topbar({
     "/reports",
     "/assistant",
     "/settings",
+    "/app",
   ].some((p) => pathname.startsWith(p));
 
   // User display name & avatar initial
@@ -134,7 +164,15 @@ export default function Topbar({
         <div className="breadcrumb" id="breadcrumb">
           <span className="root">Không gian làm việc</span>
           <span className="sep">/</span>
-          <strong>{pageTitle}</strong>
+          {currentAppId ? (
+            <>
+              <span className="tenant-crumb">{tenantName}</span>
+              <span className="sep">/</span>
+              <strong>{currentApp ? `${currentApp.name} v${currentApp.version}` : "Ứng dụng"}</strong>
+            </>
+          ) : (
+            <strong>{pageTitle}</strong>
+          )}
         </div>
       </div>
 
@@ -149,6 +187,8 @@ export default function Topbar({
           activeMemberships={activeMemberships}
           currentTenantId={currentTenantId}
         />
+
+        <AppSelect currentTenantId={currentTenantId} />
 
         <div style={{ position: "relative" }}>
           <button
@@ -192,9 +232,10 @@ export default function Topbar({
                 <div
                   style={{
                     display: "flex",
-                    gap: 4,
                     flexWrap: "wrap",
-                    margin: "8px 0",
+                    gap: 4,
+                    marginTop: 8,
+                    marginBottom: 8,
                   }}
                 >
                   {roles.map((r) => (

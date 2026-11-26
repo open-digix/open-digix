@@ -446,11 +446,13 @@
   display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--ws-c-c68a24);margin-right:4px;vertical-align:2px
 }
 
-.ws-root .tenant-select {
+.ws-root .tenant-select,
+.ws-root .app-select {
   display:flex;align-items:center;gap:9px;color:var(--ws-c-718592);font-size:12px;white-space:nowrap
 }
 
-.ws-root .tenant-name {
+.ws-root .tenant-name,
+.ws-root .app-name {
   max-width:140px;
   overflow:hidden;
   text-overflow:ellipsis;
@@ -459,7 +461,9 @@
 }
 
 .ws-root .tenant-select select,
-.ws-root .tenant-select-dropdown {
+.ws-root .tenant-select-dropdown,
+.ws-root .app-select select,
+.ws-root .app-select-dropdown {
   border:0;background:transparent;color:var(--ws-c-233d4b);font-weight:700;max-width:180px;padding:4px 17px 4px 2px;cursor:pointer
 }
 
@@ -954,7 +958,7 @@
   font-size:12px;color:var(--ws-c-81929d)
 }
 
-.ws-root .field input, .ws-root .field textarea, .ws-root .field select {
+.ws-root .field input, .ws-root .field textarea, .ws-root .field select, .ws-root .input {
   width:100%;border:1px solid var(--ws-c-d8e3e9);border-radius:7px;background:var(--ws-surface);color:var(--ws-c-183747);padding:10px 11px;font-size:12px;min-height:37px
 }
 
@@ -962,7 +966,7 @@
   resize:vertical;min-height:90px;line-height:1.6
 }
 
-.ws-root .field input:focus, .ws-root .field textarea:focus, .ws-root .field select:focus {
+.ws-root .field input:focus, .ws-root .field textarea:focus, .ws-root .field select:focus, .ws-root .input:focus {
   border-color:var(--ws-accent)
 }
 
@@ -1945,6 +1949,67 @@
   }
 }
 
+/* App Runtime Layouts & Components */
+.ws-root .single-layout-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.ws-root .two-columns-container {
+  width: 100%;
+  container-type: inline-size;
+}
+
+.ws-root .two-columns-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  width: 100%;
+}
+
+.ws-root .two-columns-main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.ws-root .two-columns-side {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@container (min-width: 768px) {
+  .ws-root .two-columns-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .ws-root .two-columns-main {
+    grid-column: span 8 / span 8;
+  }
+  .ws-root .two-columns-side {
+    grid-column: span 4 / span 4;
+  }
+}
+
+.ws-root .action-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ws-root .detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .ws-root .detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 
 /* Trợ lý AI */
 .ws-root .assistant-view {

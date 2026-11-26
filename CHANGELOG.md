@@ -20,6 +20,28 @@ Mọi thay đổi đáng chú ý của dự án sẽ được ghi nhận tại �
 
 ## [Chưa phát hành] - 26/11/2026
 
+### Khung ứng dụng theo App & Điều hướng v2.5 (WEB-F07, #48)
+- **Thanh bên điều hướng theo ứng dụng (`Sidebar`):**
+  - Khi truy cập `/app/[appId]/...`: nhóm trên hiển thị tên app in hoa cùng danh sách các trang trong app (`/app/${appId}/${page.id}`); nhóm dưới là `HỆ THỐNG` gồm Ứng dụng (`/apps`), Trợ lý (`/assistant`), Thiết kế ứng dụng (`/builder`), Cài đặt (`/settings`).
+  - Khi ở ngoài app: thanh bên chỉ hiển thị nhóm `HỆ THỐNG`. Loại bỏ hoàn toàn các mục mẫu tĩnh cũ ("Tổng quan", "Việc của tôi", "Hồ sơ của tôi", "Báo cáo").
+  - Đổi icon "Thiết kế ứng dụng" sang nét vẽ khung lưới/bút vẽ chuẩn vector stroke 1.8.
+  - Logo thương hiệu bấm vào dẫn về `/apps`.
+- **Thanh tiêu đề & Bộ chọn ứng dụng (`Topbar`, `AppSelect`):**
+  - Thêm dropdown `AppSelect` cạnh `TenantSelect` trên thanh Topbar, liệt kê các app đã phát hành kèm phiên bản (`v${app.version}`), chuyển đổi an toàn có kiểm tra thay đổi chưa lưu (`confirmDiscardChanges`).
+  - Breadcrumb hiển thị phân cấp: `Không gian làm việc / <Tên Doanh nghiệp> / <Tên App> v<Version>` khi đang ở trong app.
+- **Khung hiển thị trang ứng dụng (`/app/[appId]/[[...page]]`):**
+  - Tích hợp `AppRenderer` và `MockDataSource` hiển thị dữ liệu runtime v2.5.
+  - Bảo vệ quyền và kiểm tra tồn tại an toàn: khi app không tồn tại hoặc tài khoản không có quyền truy cập, hiển thị thông báo an toàn "Không tìm thấy hoặc bạn không có quyền xem" kèm link về `/apps`, không làm lộ tên ứng dụng hay chi tiết lỗi kỹ thuật.
+- **Trang danh mục ứng dụng (`/apps`):**
+  - Danh sách tải động qua `listApps()` (thay thế mock tĩnh cũ).
+  - Tabs: "Tất cả", "Đang dùng" (`status === "published"`), "Bản nháp" (`status === "draft"`).
+  - Icon chữ cái đầu 2 từ (`getAppInitials`), mở ứng dụng dẫn trực tiếp tới `/app/${appId}`.
+- **Chuyển hướng an toàn các trang mẫu cũ:**
+  - Tự động chuyển hướng (`redirect("/apps")`) khi truy cập `/dashboard`, `/tasks`, `/records`, `/reports`.
+- **Chuẩn hóa thành phần giao diện runtime:**
+  - `FormComponent`: thay thế tiêu đề kỹ thuật bằng nhãn tiếng Việt theo hành động (`ACTION_TITLES`), bỏ badge nội bộ `{resource}:{action}`, chuyển đổi lưới layout sang CSS cục bộ.
+  - `TableComponent`: đổi cột `ID` thành `Mã`, loại bỏ badge `Tài nguyên: {resource}`, Việt hóa toàn bộ tiêu đề cột (`COLUMN_LABELS`), định dạng an toàn các ô dữ liệu dạng object.
+  - `AppRenderer`: bảo đảm huy hiệu "MẪU THỬ" không bị ngắt dòng trên viewport 375px.
 ### Giao diện Trợ lý AI (WEB-F09a, #72)
 - **Lớp API Trợ lý (`lib/assistant/client.ts`):**
   - Hàm `ask(appId, question)` trả về phản hồi chuẩn hợp đồng v2.5: `{ status: 'answered', answer, citations }`, `{ status: 'no_evidence' }`, hoặc `{ status: 'unavailable' }`.

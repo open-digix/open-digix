@@ -48,7 +48,7 @@ describe("layouts", () => {
     hidden: false,
   };
 
-  it("TwoColumnsLayout render container query @container và containerType inline-size", () => {
+  it("TwoColumnsLayout render container query container-type inline-size va cac class workspace", () => {
     const { container } = render(
       <TwoColumnsLayout
         components={[mainComp, sideComp]}
@@ -59,7 +59,7 @@ describe("layouts", () => {
     const layoutContainer = container.querySelector('[data-testid="two-columns-layout"]');
     expect(layoutContainer).toBeDefined();
     expect(layoutContainer?.getAttribute("style")).toContain("container-type: inline-size");
-    expect(layoutContainer?.className).toContain("@container");
+    expect(layoutContainer?.className).toContain("two-columns-container");
 
     const mainZone = container.querySelector('[data-testid="zone-main"]');
     const sideZone = container.querySelector('[data-testid="zone-side"]');
@@ -67,8 +67,8 @@ describe("layouts", () => {
     expect(sideZone).toBeDefined();
 
     // Kiểm tra class grid responsive container query
-    expect(mainZone?.className).toContain("@[768px]:col-span-8");
-    expect(sideZone?.className).toContain("@[768px]:col-span-4");
+    expect(mainZone?.className).toContain("two-columns-main");
+    expect(sideZone?.className).toContain("two-columns-side");
   });
 
   it("hiển thị trạng thái trống khi trang không có component nào", () => {

@@ -51,7 +51,7 @@ export default function SingleLayout({
   }
 
   return (
-    <div className="w-full flex flex-col gap-6" data-testid="single-layout">
+    <div className="single-layout-container" data-testid="single-layout">
       {mainComponents.map((comp) => (
         <RenderDynamicComponent
           key={comp.id}
