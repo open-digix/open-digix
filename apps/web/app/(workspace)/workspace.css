@@ -17,7 +17,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
 
 .ws-root {
-  /* Base semantic tokens */
+  /* UI-04 Semantic tokens - Che do Sang */
+  --ws-bg-canvas: #f6f8fa;
+  --ws-bg-surface: #ffffff;
+  --ws-bg-surface-2: #f1f5f7;
+  --ws-bg-soft: #edf5f4;
+  --ws-text: #172b3a;
+  --ws-text-muted: #5a6e7d;
+  --ws-text-on-accent: #ffffff;
+  --ws-border: #dce5eb;
+  --ws-border-strong: #758b99;
+  --ws-accent: #0b776f;
+  --ws-accent-hover: #075e59;
+  --ws-focus: #0d9488;
+  --ws-danger: #b42318;
+  --ws-warning: #8a5a00;
+  --ws-success: #176b4d;
+  --ws-info: #245a87;
+  --ws-sidebar-bg: #112b45;
+  --ws-sidebar-text: #b8cbd7;
+  --ws-sidebar-border: rgba(255, 255, 255, 0.07);
+  --ws-sidebar-hover: rgba(255, 255, 255, 0.07);
+  --ws-sidebar-active: rgba(43, 82, 107, 0.7);
+  --ws-sidebar-dot-shadow: rgba(45, 212, 191, 0.1);
+  --ws-sidebar-help-border: rgba(255, 255, 255, 0.17);
+  --ws-sidebar-help-bg: rgba(255, 255, 255, 0.04);
+
+  /* Base semantic tokens & aliases */
   --ws-navy: #112b45;
   --ws-navy-2: #183b55;
   --ws-teal: #0b776f;
@@ -46,14 +72,14 @@
   /* Compatibility aliases */
   --navy: var(--ws-navy);
   --navy-2: var(--ws-navy-2);
-  --teal: var(--ws-teal);
-  --teal-bright: var(--ws-teal-bright);
-  --ink: var(--ws-ink);
-  --muted: var(--ws-muted);
-  --line: var(--ws-line);
-  --canvas: var(--ws-canvas);
-  --white: var(--ws-white);
-  --soft: var(--ws-soft);
+  --teal: var(--ws-accent);
+  --teal-bright: var(--ws-focus);
+  --ink: var(--ws-text);
+  --muted: var(--ws-text-muted);
+  --line: var(--ws-border);
+  --canvas: var(--ws-bg-canvas);
+  --white: var(--ws-bg-surface);
+  --soft: var(--ws-bg-soft);
   --danger: var(--ws-danger);
   --warning: var(--ws-warning);
   --shadow: var(--ws-shadow);
@@ -302,11 +328,11 @@
 }
 
 .ws-root .sidebar {
-  width:var(--ws-sb-w);flex:none;background:var(--ws-navy);color:var(--ws-c-e2edf2);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;z-index:30
+  width:var(--ws-sb-w);flex:none;background:var(--ws-sidebar-bg);color:var(--ws-sidebar-text);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;z-index:30
 }
 
 .ws-root .brand {
-  height:84px;display:flex;align-items:center;padding:0 26px;border-bottom:1px solid var(--ws-c-ffffff12);gap:10px
+  height:84px;display:flex;align-items:center;padding:0 26px;border-bottom:1px solid var(--ws-sidebar-border);gap:10px
 }
 
 .ws-root .brand img, .ws-root .brand .full {
@@ -318,11 +344,11 @@
 }
 
 .ws-root .workspace-tag {
-  padding:30px 27px 15px;color:var(--ws-c-a7c0cf);font-weight:700;letter-spacing:.12em;font-size:9px;display:flex;align-items:center;gap:8px
+  padding:30px 27px 15px;color:var(--ws-sidebar-text);font-weight:700;letter-spacing:.12em;font-size:9px;display:flex;align-items:center;gap:8px
 }
 
 .ws-root .workspace-dot {
-  width:7px;height:7px;border-radius:50%;background:var(--ws-c-42d2c4);box-shadow:0 0 0 4px var(--ws-c-42d2c41a)
+  width:7px;height:7px;border-radius:50%;background:var(--ws-accent);box-shadow:0 0 0 4px var(--ws-sidebar-dot-shadow)
 }
 
 .ws-root .side-nav {
@@ -330,19 +356,19 @@
 }
 
 .ws-root .nav-group-label {
-  padding:25px 16px 8px;color:var(--ws-c-7795a8);font-size:10px;font-weight:700;letter-spacing:.13em
+  padding:25px 16px 8px;color:var(--ws-sidebar-text);font-size:10px;font-weight:700;letter-spacing:.13em
 }
 
 .ws-root .nav-link {
-  display:flex;align-items:center;gap:12px;padding:11px 15px;border-radius:8px;color:var(--ws-c-b8cbd7);font-weight:500;min-height:43px;transition:background .15s,color .15s
+  display:flex;align-items:center;gap:12px;padding:11px 15px;border-radius:8px;color:var(--ws-sidebar-text);font-weight:500;min-height:43px;transition:background .15s,color .15s
 }
 
 .ws-root .nav-link:hover {
-  background:var(--ws-c-ffffff12);color:var(--ws-surface)
+  background:var(--ws-sidebar-hover);color:var(--ws-bg-surface)
 }
 
 .ws-root .nav-link.active {
-  background:var(--ws-c-234a61);color:var(--ws-surface);font-weight:700;box-shadow:inset 3px 0 var(--ws-c-37c5b8)
+  background:var(--ws-sidebar-active);color:var(--ws-bg-surface);font-weight:700;box-shadow:inset 3px 0 var(--ws-accent)
 }
 
 .ws-root .nav-link svg {
@@ -350,19 +376,19 @@
 }
 
 .ws-root .nav-link .count {
-  margin-left:auto;background:var(--ws-accent);color:var(--ws-surface);padding:1px 7px;border-radius:20px;font-size:10px
+  margin-left:auto;background:var(--ws-accent);color:var(--ws-bg-surface);padding:1px 7px;border-radius:20px;font-size:10px
 }
 
 .ws-root .side-bottom {
-  margin-top:auto;padding:14px 12px 18px;border-top:1px solid var(--ws-c-ffffff12);flex:none
+  margin-top:auto;padding:14px 12px 18px;border-top:1px solid var(--ws-sidebar-border);flex:none
 }
 
 .ws-root .collapse-btn.pin-btn {
-  display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;color:var(--ws-c-9bb2bf);padding:10px 15px;border-radius:8px;white-space:nowrap;font-size:13px;cursor:pointer;transition:background .15s,color .15s
+  display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;color:var(--ws-sidebar-text);padding:10px 15px;border-radius:8px;white-space:nowrap;font-size:13px;cursor:pointer;transition:background .15s,color .15s
 }
 
 .ws-root .collapse-btn.pin-btn:hover {
-  background:var(--ws-c-ffffff12);color:var(--ws-surface)
+  background:var(--ws-sidebar-hover);color:var(--ws-bg-surface)
 }
 
 .ws-root .collapse-btn.pin-btn svg {
@@ -370,11 +396,11 @@
 }
 
 .ws-root .help-card {
-  border:1px solid var(--ws-c-ffffff2b);border-radius:12px;padding:16px;color:white;background:var(--ws-c-ffffff0a)
+  border:1px solid var(--ws-sidebar-help-border);border-radius:12px;padding:16px;color:white;background:var(--ws-sidebar-help-bg)
 }
 
 .ws-root .help-icon {
-  display:grid;place-items:center;width:25px;height:25px;border:1px solid var(--ws-c-70c3bc);color:var(--ws-c-a8ece3);border-radius:50%;font-weight:700;margin-bottom:9px
+  display:grid;place-items:center;width:25px;height:25px;border:1px solid var(--ws-accent);color:var(--ws-accent);border-radius:50%;font-weight:700;margin-bottom:9px
 }
 
 .ws-root .help-card strong {
@@ -382,11 +408,11 @@
 }
 
 .ws-root .help-card p {
-  font-size:11px;line-height:1.6;color:var(--ws-c-abc4d0);margin:4px 0 12px
+  font-size:11px;line-height:1.6;color:var(--ws-sidebar-text);margin:4px 0 12px
 }
 
 .ws-root .help-card button {
-  border:0;background:none;padding:0;color:var(--ws-c-84e3d7);font-size:11px;font-weight:700
+  border:0;background:none;padding:0;color:var(--ws-accent);font-size:11px;font-weight:700
 }
 
 .ws-root .help-card button span {
@@ -394,11 +420,11 @@
 }
 
 .ws-root .side-foot {
-  display:flex;justify-content:space-between;align-items:center;color:var(--ws-c-9bb2bf);font-size:10px;padding:17px 3px 0
+  display:flex;justify-content:space-between;align-items:center;color:var(--ws-sidebar-text);font-size:10px;padding:17px 3px 0
 }
 
 .ws-root .side-foot span {
-  font-size:9px;color:var(--ws-c-6f91a5)
+  font-size:9px;color:var(--ws-sidebar-text)
 }
 
 .ws-root .main-column {

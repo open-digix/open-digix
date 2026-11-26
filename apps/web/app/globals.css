@@ -3,6 +3,29 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* UI-04 Semantic tokens - Che do Sang (hien tai) */
+  --ws-bg-canvas: #f6f8fa;
+  --ws-bg-surface: #ffffff;
+  --ws-bg-surface-2: #f1f5f7;
+  --ws-bg-soft: #edf5f4;
+  --ws-text: #172b3a;
+  --ws-text-muted: #5a6e7d;
+  --ws-text-on-accent: #ffffff;
+  --ws-border: #dce5eb;
+  --ws-border-strong: #758b99;
+  --ws-accent: #0b776f;
+  --ws-accent-hover: #075e59;
+  --ws-focus: #0d9488;
+  --ws-danger: #b42318;
+  --ws-warning: #8a5a00;
+  --ws-success: #176b4d;
+  --ws-info: #245a87;
+  --ws-sidebar-bg: #112b45;
+  --ws-sidebar-text: #b8cbd7;
+  --ws-ease: cubic-bezier(.22, 1, .36, 1);
+  --ws-shadow-color: rgba(19, 45, 66, 0.045);
+  --ws-shadow: 0 8px 28px var(--ws-shadow-color);
 }
 
 @theme inline {
