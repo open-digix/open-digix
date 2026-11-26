@@ -373,6 +373,100 @@ describe('AppController (e2e)', () => {
     });
   });
 
+  it('/v1/catalog/features rejects a request without a Bearer token', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/v1/catalog/features')
+      .expect(401);
+
+    expect(response.body).toEqual({
+      error: {
+        code: 'AUTHENTICATION_REQUIRED',
+        message: 'A Bearer access token is required.',
+      },
+    });
+    expect(pool.query).not.toHaveBeenCalled();
+  });
+
+  it('/v1/catalog/features returns the versioned feature catalog', async () => {
+    const tenantId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    pool.query.mockResolvedValue({
+      rows: [identityRow(tenantId, ['employee'])],
+    });
+
+    const response = await request(app.getHttpServer())
+      .get('/v1/catalog/features')
+      .set('Authorization', 'Bearer valid-token')
+      .set('X-Tenant-Id', tenantId)
+      .expect(200);
+
+    const body = response.body as {
+      catalogVersion: string;
+      features: readonly { id: string }[];
+    };
+
+    expect(body.catalogVersion).toBe('2026-11-demo-1');
+    expect(body.features).toHaveLength(5);
+    expect(body.features.map(({ id }) => id)).toEqual([
+      'erp.materials',
+      'erp.purchase_requests',
+      'erp.inventory',
+      'crm.customers',
+      'crm.opportunities',
+    ]);
+  });
+
+  it('/v1/catalog/presets returns ERP, CRM and blank presets', async () => {
+    const tenantId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    pool.query.mockResolvedValue({
+      rows: [identityRow(tenantId, ['employee'])],
+    });
+
+    const response = await request(app.getHttpServer())
+      .get('/v1/catalog/presets')
+      .set('Authorization', 'Bearer valid-token')
+      .set('X-Tenant-Id', tenantId)
+      .expect(200);
+
+    expect(response.body).toEqual({
+      catalogVersion: '2026-11-demo-1',
+      presets: [
+        {
+          id: 'erp',
+          version: 1,
+          suggestedFeatures: [
+            'erp.materials',
+            'erp.purchase_requests',
+            'erp.inventory',
+          ],
+        },
+        {
+          id: 'crm',
+          version: 1,
+          suggestedFeatures: ['crm.customers', 'crm.opportunities'],
+        },
+        { id: 'blank', version: 1, suggestedFeatures: [] },
+      ],
+    });
+  });
+
+  it('/v1/catalog/features rejects a tenant outside the membership', async () => {
+    const tenantAlphaId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    const tenantBetaId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+    pool.query.mockResolvedValue({
+      rows: [identityRow(tenantAlphaId, ['employee'])],
+    });
+
+    const response = await request(app.getHttpServer())
+      .get('/v1/catalog/features')
+      .set('Authorization', 'Bearer valid-token')
+      .set('X-Tenant-Id', tenantBetaId)
+      .expect(403);
+
+    expect(response.body).toMatchObject({
+      error: { code: 'TENANT_ACCESS_DENIED' },
+    });
+  });
+
   it('tenant-scoped endpoints require X-Tenant-Id', async () => {
     const response = await request(app.getHttpServer())
       .get('/__test/tenant')
