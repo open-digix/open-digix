@@ -22,7 +22,7 @@ import { listAppsAction } from "../../../lib/app-config/actions";
 import type { AppSummary } from "../../../lib/app-config/types";
 import { useMockToast } from "../../../components/workspace/MockToast";
 
-export function getAppInitials(name: string): string {
+function getAppInitials(name: string): string {
   const words = name.trim().split(/\s+/).filter(Boolean);
   if (words.length >= 2) {
     return (words[0][0] + words[1][0]).toUpperCase();
