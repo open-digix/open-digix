@@ -23,11 +23,11 @@ describe("XemMauPage", () => {
   it("render thanh điều khiển xem mẫu, dropdown chọn fixture và vai trò", () => {
     render(<XemMauPage />);
 
-    expect(screen.getByText("Xem mẫu giao diện App v2.5")).toBeDefined();
+    expect(screen.getByText("Xem mẫu giao diện ứng dụng")).toBeDefined();
     expect(screen.getByLabelText("Chọn mẫu thử")).toBeDefined();
     expect(screen.getByLabelText("Chọn vai trò người dùng")).toBeDefined();
-    expect(screen.getByRole("button", { name: /1280px/i })).toBeDefined();
-    expect(screen.getByRole("button", { name: /375px/i })).toBeDefined();
+    expect(screen.getByRole("button", { name: /máy tính/i })).toBeDefined();
+    expect(screen.getByRole("button", { name: /điện thoại/i })).toBeDefined();
   });
 
   it("thay đổi fixture khi chọn từ dropdown", () => {
@@ -40,10 +40,10 @@ describe("XemMauPage", () => {
     expect(screen.getByText("Khách hàng của đội kinh doanh")).toBeDefined();
   });
 
-  it("chuyển đổi viewport giữa 1280px và 375px", () => {
+  it("chuyển đổi viewport giữa máy tính và điện thoại (375px)", () => {
     render(<XemMauPage />);
 
-    const phoneBtn = screen.getByRole("button", { name: /375px/i });
+    const phoneBtn = screen.getByRole("button", { name: /điện thoại/i });
     fireEvent.click(phoneBtn);
 
     const appRoot = screen.getByTestId("app-renderer-root");

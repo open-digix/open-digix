@@ -37,10 +37,11 @@ export default function TwoColumnsLayout({
   if (mainComponents.length === 0 && sideComponents.length === 0) {
     return (
       <div
-        className="p-12 text-center rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50"
+        className="panel"
+        style={{ padding: 48, textAlign: "center" }}
         data-testid="empty-page-state"
       >
-        <p className="text-zinc-600 dark:text-zinc-400 font-medium">
+        <p style={{ margin: 0, color: "var(--ws-muted)", fontWeight: 500 }}>
           Bạn chưa có quyền xem nội dung trang này
         </p>
       </div>
@@ -71,7 +72,7 @@ export default function TwoColumnsLayout({
               />
             ))
           ) : (
-            <div className="p-6 text-center text-xs text-zinc-400 border border-dashed rounded-lg">
+            <div style={{ padding: 24, textAlign: "center", fontSize: 12, color: "var(--ws-muted)", border: "1px dashed var(--ws-line)", borderRadius: 8 }}>
               Không có thành phần nào trong vùng chính.
             </div>
           )}
@@ -92,7 +93,7 @@ export default function TwoColumnsLayout({
               />
             ))
           ) : (
-            <div className="p-6 text-center text-xs text-zinc-400 border border-dashed rounded-lg">
+            <div style={{ padding: 24, textAlign: "center", fontSize: 12, color: "var(--ws-muted)", border: "1px dashed var(--ws-line)", borderRadius: 8 }}>
               Không có thành phần nào trong vùng phụ.
             </div>
           )}

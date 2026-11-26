@@ -59,34 +59,30 @@ export default function XemMauPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
-      {/* Thanh điều khiển xem mẫu phía trên */}
-      <header className="sticky top-0 z-40 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xs border-b border-zinc-200 dark:border-zinc-800 px-4 py-3 shadow-xs">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
-          {/* Tiêu đề & Breadcrumb */}
-          <div className="flex items-center gap-3">
-            <Link
-              href="/builder"
-              className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium flex items-center gap-1"
-            >
-              ← Quay lại Builder
-            </Link>
-            <span className="text-zinc-300 dark:text-zinc-700">|</span>
-            <div className="flex items-center gap-2">
-              <span className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-                Xem mẫu giao diện App v2.5
-              </span>
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-mono">
-                WEB-F03
-              </span>
-            </div>
-          </div>
+    <div className="page xem-mau-page">
+      {/* Page Header theo khuôn trang workspace chuẩn */}
+      <header className="page-header" style={{ marginBottom: 24 }}>
+        <div>
+          <div className="eyebrow">XEM THỬ GIAO DIỆN</div>
+          <h1 style={{ margin: "4px 0" }}>Xem mẫu giao diện ứng dụng</h1>
+          <p style={{ margin: 0, color: "var(--ws-muted)" }}>
+            Xem trước trải nghiệm hiển thị và phân quyền của ứng dụng v2.5 theo từng vai trò và khổ màn hình.
+          </p>
+        </div>
+        <div className="page-header-actions">
+          <Link href="/builder" className="button secondary">
+            ← Quay lại danh sách ứng dụng
+          </Link>
+        </div>
+      </header>
 
-          {/* Các bộ chọn: Fixture, Role, Viewport */}
-          <div className="flex flex-wrap items-center gap-3 text-xs">
+      {/* Panel bộ chọn: Mẫu thử, Vai trò, Khổ màn hình, Làm mới dữ liệu */}
+      <section className="panel" style={{ padding: "16px 20px", marginBottom: 24 }}>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-4 text-xs">
             {/* Chọn Fixture */}
-            <div className="flex items-center gap-1.5">
-              <label htmlFor="fixture-select" className="font-medium text-zinc-600 dark:text-zinc-400">
+            <div className="flex items-center gap-2">
+              <label htmlFor="fixture-select" style={{ fontWeight: 600, color: "var(--ws-muted)" }}>
                 Mẫu thử:
               </label>
               <select
@@ -97,7 +93,8 @@ export default function XemMauPage() {
                   setSelectedFixtureId(e.target.value);
                   setSelectedRoleId("");
                 }}
-                className="px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="input"
+                style={{ padding: "6px 12px", height: "auto", fontSize: 13 }}
               >
                 {FIXTURE_METAS.map((f) => (
                   <option key={f.id} value={f.id}>
@@ -107,9 +104,9 @@ export default function XemMauPage() {
               </select>
             </div>
 
-            {/* Chọn Vai trò (Role) */}
-            <div className="flex items-center gap-1.5">
-              <label htmlFor="role-select" className="font-medium text-zinc-600 dark:text-zinc-400">
+            {/* Chọn Vai trò */}
+            <div className="flex items-center gap-2">
+              <label htmlFor="role-select" style={{ fontWeight: 600, color: "var(--ws-muted)" }}>
                 Vai trò:
               </label>
               <select
@@ -117,7 +114,8 @@ export default function XemMauPage() {
                 aria-label="Chọn vai trò người dùng"
                 value={activeRoleId}
                 onChange={(e) => setSelectedRoleId(e.target.value)}
-                className="px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="input"
+                style={{ padding: "6px 12px", height: "auto", fontSize: 13 }}
               >
                 {availableRoles.map((r) => (
                   <option key={r.id} value={r.id}>
@@ -127,55 +125,85 @@ export default function XemMauPage() {
               </select>
             </div>
 
-            {/* Chọn Khổ màn hình (Viewport) */}
-            <div className="flex items-center bg-zinc-200 dark:bg-zinc-800 rounded-lg p-0.5" role="group" aria-label="Chọn kích thước màn hình">
-              <button
-                type="button"
-                onClick={() => setViewport("1280")}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
-                  viewport === "1280"
-                    ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-xs"
-                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-                }`}
-                aria-pressed={viewport === "1280"}
+            {/* Chọn Khổ màn hình */}
+            <div className="flex items-center gap-2">
+              <span style={{ fontWeight: 600, color: "var(--ws-muted)" }}>Khổ hiển thị:</span>
+              <div
+                role="group"
+                aria-label="Chọn kích thước màn hình"
+                className="flex items-center"
+                style={{
+                  border: "1px solid var(--ws-line)",
+                  borderRadius: 6,
+                  overflow: "hidden",
+                }}
               >
-                🖥️ 1280px
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewport("375")}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
-                  viewport === "375"
-                    ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-xs"
-                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-                }`}
-                aria-pressed={viewport === "375"}
-              >
-                📱 375px
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setViewport("1280")}
+                  style={{
+                    border: "none",
+                    padding: "6px 14px",
+                    fontSize: 12,
+                    fontWeight: viewport === "1280" ? 600 : 400,
+                    background: viewport === "1280" ? "var(--ws-accent)" : "transparent",
+                    color: viewport === "1280" ? "var(--ws-white)" : "var(--ws-ink)",
+                    cursor: "pointer",
+                  }}
+                  aria-pressed={viewport === "1280"}
+                >
+                  Máy tính
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewport("375")}
+                  style={{
+                    border: "none",
+                    padding: "6px 14px",
+                    fontSize: 12,
+                    fontWeight: viewport === "375" ? 600 : 400,
+                    background: viewport === "375" ? "var(--ws-accent)" : "transparent",
+                    color: viewport === "375" ? "var(--ws-white)" : "var(--ws-ink)",
+                    cursor: "pointer",
+                  }}
+                  aria-pressed={viewport === "375"}
+                >
+                  Điện thoại (375px)
+                </button>
+              </div>
             </div>
+          </div>
 
-            {/* Nút reset dữ liệu */}
+          {/* Nút reset dữ liệu */}
+          <div>
             <button
               type="button"
               onClick={handleResetData}
               title="Đặt lại dữ liệu mẫu về ban đầu"
-              className="px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-medium transition-colors"
+              className="button secondary"
+              style={{ fontSize: 12, padding: "6px 14px", height: "auto", display: "inline-flex", alignItems: "center", gap: 6 }}
             >
-              🔄 Làm mới dữ liệu
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3" />
+              </svg>
+              Làm mới dữ liệu
             </button>
           </div>
         </div>
-      </header>
+      </section>
 
       {/* Khu vực hiển thị App Renderer */}
-      <div className="flex-1 p-4 md:p-8 flex justify-center items-start">
+      <div className="flex justify-center items-start w-full">
         <div
-          className={`w-full transition-all duration-300 ${
-            viewport === "375"
-              ? "max-w-[375px] my-4 rounded-2xl border-4 border-zinc-800 dark:border-zinc-700 shadow-2xl overflow-hidden bg-white dark:bg-zinc-900"
-              : "max-w-7xl rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-900 overflow-hidden"
-          }`}
+          className="w-full transition-all duration-300"
+          style={{
+            maxWidth: viewport === "375" ? "375px" : "100%",
+            margin: viewport === "375" ? "0 auto" : "0",
+            borderRadius: viewport === "375" ? 16 : 8,
+            boxShadow: viewport === "375" ? "0 10px 30px rgba(0,0,0,0.12)" : "none",
+            border: viewport === "375" ? "2px solid var(--ws-line)" : "none",
+            overflow: "hidden",
+          }}
         >
           <AppRenderer
             app={currentFixture.app}

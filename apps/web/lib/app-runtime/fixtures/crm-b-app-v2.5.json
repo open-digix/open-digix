@@ -10,7 +10,7 @@
     { "id": "crm.opportunities", "version": 1 }
   ],
   "roles": [
-    { "id": "sales", "permissions": ["crm.customers.create", "crm.customers.read", "crm.customers.create_contact", "crm.opportunities.create", "crm.opportunities.read", "crm.opportunities.advance"] }
+    { "id": "sales", "permissions": ["crm.customers.customers.create", "crm.customers.customers.read", "crm.customers.contacts.create_contact", "crm.opportunities.opportunities.create", "crm.opportunities.opportunities.read", "crm.opportunities.opportunities.advance"] }
   ],
   "pages": [
     {

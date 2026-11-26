@@ -52,41 +52,68 @@ export default function ConfirmDialog({
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
 
+  // Giữ onClose mới nhất trong ref để effect không phụ thuộc vào inline callback của component cha
+  const onCloseRef = useRef(onClose);
   useEffect(() => {
-    if (!isOpen) return;
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
-    // Lưu lại phần tử đang được focus trước khi mở modal để trả lại focus khi đóng
-    previousActiveElementRef.current = document.activeElement as HTMLElement | null;
+  // Theo dõi trạng thái mở trước đó để CHỈ đặt focus khi vừa mở
+  const wasOpenRef = useRef(false);
 
-    // Chuyển focus vào bên trong modal (ưu tiên data-autofocus hoặc initialFocusRef)
-    const timer = setTimeout(() => {
-      if (initialFocusRef?.current) {
-        initialFocusRef.current.focus();
-      } else if (dialogRef.current) {
-        const autoFocusEl = dialogRef.current.querySelector<HTMLElement>(
-          '[data-autofocus="true"], [autofocus]'
-        );
-        if (autoFocusEl) {
-          autoFocusEl.focus();
-          return;
-        }
-        const focusables = dialogRef.current.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        );
-        if (focusables.length > 0) {
-          focusables[0].focus();
-        } else {
-          dialogRef.current.focus();
+  useEffect(() => {
+    if (!isOpen) {
+      if (wasOpenRef.current) {
+        wasOpenRef.current = false;
+        // Trả lại focus khi đóng modal
+        if (
+          previousActiveElementRef.current &&
+          typeof previousActiveElementRef.current.focus === "function"
+        ) {
+          previousActiveElementRef.current.focus();
         }
       }
-    }, 20);
+      return;
+    }
+
+    const justOpened = !wasOpenRef.current;
+    wasOpenRef.current = true;
+
+    let timer: NodeJS.Timeout | undefined;
+
+    // Chỉ tự động đặt focus vào autofocus/initialFocusRef ở lần ĐẦU TIÊN khi mở modal
+    if (justOpened) {
+      previousActiveElementRef.current = document.activeElement as HTMLElement | null;
+
+      timer = setTimeout(() => {
+        if (initialFocusRef?.current) {
+          initialFocusRef.current.focus();
+        } else if (dialogRef.current) {
+          const autoFocusEl = dialogRef.current.querySelector<HTMLElement>(
+            '[data-autofocus="true"], [autofocus]'
+          );
+          if (autoFocusEl) {
+            autoFocusEl.focus();
+            return;
+          }
+          const focusables = dialogRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusables.length > 0) {
+            focusables[0].focus();
+          } else {
+            dialogRef.current.focus();
+          }
+        }
+      }, 20);
+    }
 
     // Xử lý phím Esc và bẫy focus vòng (Focus trap)
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
         e.stopPropagation();
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -122,14 +149,10 @@ export default function ConfirmDialog({
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      clearTimeout(timer);
+      if (timer) clearTimeout(timer);
       document.removeEventListener("keydown", handleKeyDown);
-      // Trả lại focus khi đóng modal
-      if (previousActiveElementRef.current && typeof previousActiveElementRef.current.focus === "function") {
-        previousActiveElementRef.current.focus();
-      }
     };
-  }, [isOpen, onClose, initialFocusRef]);
+  }, [isOpen, initialFocusRef]);
 
   if (!isOpen) return null;
 
@@ -151,7 +174,7 @@ export default function ConfirmDialog({
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
-          onClose();
+          onCloseRef.current();
         }
       }}
     >
@@ -184,7 +207,7 @@ export default function ConfirmDialog({
             <button
               type="button"
               aria-label="Đóng"
-              onClick={onClose}
+              onClick={() => onCloseRef.current()}
               style={{
                 background: "transparent",
                 border: "none",

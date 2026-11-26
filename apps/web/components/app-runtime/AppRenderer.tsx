@@ -90,50 +90,54 @@ export default function AppRenderer({
 
   return (
     <div
-      className={`app-runtime-root flex flex-col w-full transition-all duration-200 ${
-        viewport === "375"
-          ? "max-w-[375px] mx-auto border-x border-zinc-200 dark:border-zinc-800 shadow-md bg-zinc-50 dark:bg-zinc-950 min-h-[640px]"
-          : "w-full max-w-7xl mx-auto"
-      }`}
+      className={`app-runtime-root flex flex-col w-full ${viewport === "375" ? "max-w-[375px]" : ""}`}
+      style={{
+        maxWidth: viewport === "375" ? "375px" : "100%",
+        margin: "0 auto",
+      }}
       data-testid="app-renderer-root"
       data-viewport={viewport}
     >
-      {/* Banner MẪU THỬ (PREVIEW) */}
+      {/* Banner MẪU THỬ (PREVIEW) sử dụng info-banner */}
       {isMock && (
         <div
-          role="note"
+          role="status"
           aria-label="Thông báo chế độ mẫu thử"
-          className="px-4 py-2 bg-amber-500/15 dark:bg-amber-500/20 text-amber-900 dark:text-amber-200 border-b border-amber-300/40 dark:border-amber-700/50 text-xs font-medium flex items-center justify-between"
+          className="info-banner"
+          style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}
           data-testid="mock-preview-banner"
         >
-          <div className="flex items-center gap-2">
-            <span className="text-amber-600 dark:text-amber-400 font-bold">⚠️ MẪU THỬ (PREVIEW)</span>
-            <span className="hidden sm:inline text-amber-800/80 dark:text-amber-200/80">
-              Dữ liệu mô phỏng, thao tác không ghi vào cơ sở dữ liệu thật
-            </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <strong>MẪU THỬ</strong>
+            <span>– Dữ liệu mô phỏng, thao tác không ghi vào cơ sở dữ liệu thật.</span>
           </div>
           {roleId && (
-            <span className="font-mono text-[11px] px-1.5 py-0.5 rounded bg-amber-200/50 dark:bg-amber-900/40">
-              Role: {roleId}
+            <span className="badge" style={{ fontSize: 11, background: "var(--ws-soft)", color: "var(--ws-teal)" }}>
+              Vai trò: {roleId}
             </span>
           )}
         </div>
       )}
 
       {/* Header ứng dụng & Tabs chuyển trang */}
-      <div className="px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 truncate">
+      <div className="panel" style={{ padding: "16px 20px", marginBottom: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>
             {normalizedApp.name}
           </h2>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-mono">
+          <span className="badge" style={{ fontSize: 11, background: "var(--ws-canvas)", color: "var(--ws-muted)" }}>
             v{normalizedApp.version}
           </span>
         </div>
 
-        {/* Thanh tab trang */}
+        {/* Thanh tab trang của hệ thống */}
         {visiblePages.length > 0 && (
-          <nav aria-label="Menu các trang trong ứng dụng" className="flex items-center gap-1 overflow-x-auto">
+          <nav aria-label="Menu các trang trong ứng dụng" className="tabs" style={{ borderBottom: "none", margin: 0 }}>
             {visiblePages.map((page) => {
               const isActive = activePage?.id === page.id;
               return (
@@ -141,11 +145,7 @@ export default function AppRenderer({
                   key={page.id}
                   type="button"
                   onClick={() => handleSelectPage(page.id)}
-                  className={`px-3.5 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-colors ${
-                    isActive
-                      ? "bg-blue-600 text-white shadow-xs"
-                      : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                  }`}
+                  className={`tab ${isActive ? "active" : ""}`}
                   aria-current={isActive ? "page" : undefined}
                 >
                   {page.label}
@@ -157,10 +157,10 @@ export default function AppRenderer({
       </div>
 
       {/* Vùng nội dung trang */}
-      <main className="p-4 sm:p-6 flex-1">
+      <main className="flex-1 w-full">
         {!activePage ? (
-          <div className="p-12 text-center rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-            <p className="text-zinc-500 text-sm">
+          <div className="panel" style={{ padding: 48, textAlign: "center" }}>
+            <p style={{ margin: 0, color: "var(--ws-muted)", fontSize: 14 }}>
               Không có trang nào phù hợp với vai trò hiện tại.
             </p>
           </div>

@@ -35,12 +35,18 @@ describe("visibility rules", () => {
 
   const buyerRole: AppRole = {
     id: "buyer",
-    permissions: ["erp.materials.read", "erp.purchase_requests.create"],
+    permissions: [
+      "erp.materials.materials.read",
+      "erp.purchase_requests.requests.create",
+    ],
   };
 
   const approverRole: AppRole = {
     id: "approver",
-    permissions: ["erp.materials.read", "erp.purchase_requests.approve"],
+    permissions: [
+      "erp.materials.materials.read",
+      "erp.purchase_requests.requests.approve",
+    ],
   };
 
   const tableComp: NormalizedComponent = {
@@ -113,7 +119,7 @@ describe("visibility rules", () => {
       visibleToRoles: ["manager"],
     };
     expect(isComponentVisible(restrictedComp, sampleApp, buyerRole, "buyer")).toBe(false);
-    expect(isComponentVisible(restrictedComp, sampleApp, { id: "manager", permissions: ["erp.materials.read"] }, "manager")).toBe(true);
+    expect(isComponentVisible(restrictedComp, sampleApp, { id: "manager", permissions: ["erp.materials.materials.read"] }, "manager")).toBe(true);
 
     const page: NormalizedPage = {
       id: "p1",

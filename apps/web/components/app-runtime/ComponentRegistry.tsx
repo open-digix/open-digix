@@ -40,15 +40,26 @@ export function FallbackComponentBlock({ component }: { component: NormalizedCom
   return (
     <div
       role="alert"
-      className="p-4 rounded-xl border-2 border-dashed border-amber-300 dark:border-amber-700/60 bg-amber-50/60 dark:bg-amber-950/20 text-amber-900 dark:text-amber-200 text-sm flex items-start gap-3"
+      className="info-banner"
+      style={{
+        borderColor: "var(--ws-warning)",
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 12,
+        padding: 16,
+      }}
       data-testid={`fallback-${component.id}`}
     >
-      <span className="text-lg leading-none">⚠️</span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0, marginTop: 2, color: "var(--ws-warning)" }}>
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+        <line x1="12" y1="9" x2="12" y2="13" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg>
       <div>
-        <p className="font-medium">
-          Thành phần chưa hỗ trợ: <code className="font-mono px-1 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40">{component.type}</code> (phiên bản {component.componentVersion})
+        <p style={{ margin: 0, fontWeight: 600 }}>
+          Thành phần chưa hỗ trợ: <code>{component.type}</code> (phiên bản {component.componentVersion})
         </p>
-        <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+        <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--ws-muted)" }}>
           ID: {component.id} | Tài nguyên: {component.resource} | Vùng: {component.zone}
         </p>
       </div>

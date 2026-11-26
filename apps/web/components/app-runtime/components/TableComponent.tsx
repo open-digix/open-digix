@@ -98,16 +98,17 @@ export default function TableComponent({
 
   return (
     <div
-      className="p-5 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col"
+      className="panel"
+      style={{ padding: 20 }}
       data-testid={`table-${component.id}`}
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
-          <h4 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+          <h4 style={{ margin: "0 0 2px", fontSize: 16, fontWeight: 600 }}>
             {displayTitle}
           </h4>
-          <span className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">
-            Tài nguyên: {resource}
+          <span style={{ fontSize: 12, color: "var(--ws-muted)" }}>
+            Tài nguyên: <code>{resource}</code>
           </span>
         </div>
 
@@ -117,47 +118,53 @@ export default function TableComponent({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Tìm kiếm..."
-            className="px-3 py-1.5 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="input"
+            style={{ padding: "6px 12px", height: "auto", fontSize: 13 }}
           />
           <button
             type="button"
             onClick={handleReload}
-            title="Tải lại"
-            className="p-1.5 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 transition-colors"
+            title="Tải lại dữ liệu"
+            className="button secondary"
+            style={{ padding: "6px 10px", height: "auto" }}
           >
-            ↻
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3" />
+            </svg>
           </button>
         </div>
       </div>
 
-      <div className="overflow-x-auto w-full rounded-lg border border-zinc-200 dark:border-zinc-800">
-        <table className="w-full text-left text-sm text-zinc-800 dark:text-zinc-200 border-collapse">
-          <thead className="bg-zinc-50 dark:bg-zinc-800/80 text-xs text-zinc-500 dark:text-zinc-400 uppercase font-medium">
+      <div className="table-wrap">
+        <table className="data-table">
+          <thead>
             <tr>
-              <th className="px-4 py-2.5">ID</th>
+              <th style={{ width: 80 }}>ID</th>
               {columns.map((col) => (
-                <th key={col} className="px-4 py-2.5 capitalize">
+                <th key={col} style={{ textTransform: "capitalize" }}>
                   {col}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+          <tbody>
             {filteredItems.length === 0 ? (
               <tr>
-                <td colSpan={columns.length + 1} className="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
+                <td colSpan={columns.length + 1} style={{ textAlign: "center", padding: "32px 16px", color: "var(--ws-muted)" }}>
                   {loading ? "Đang tải dữ liệu..." : "Chưa có bản ghi nào."}
                 </td>
               </tr>
             ) : (
               filteredItems.map((row) => (
-                <tr key={String(row.id)} className="hover:bg-zinc-50/70 dark:hover:bg-zinc-800/50 transition-colors">
-                  <td className="px-4 py-2.5 font-mono text-xs font-semibold text-blue-600 dark:text-blue-400">
+                <tr key={String(row.id)}>
+                  <td style={{ fontWeight: 600, color: "var(--ws-teal)" }}>
                     {String(row.id)}
                   </td>
                   {columns.map((col) => (
-                    <td key={col} className="px-4 py-2.5 text-xs">
-                      {typeof row[col] === "object" ? JSON.stringify(row[col]) : String(row[col] ?? "")}
+                    <td key={col}>
+                      {typeof row[col] === "object"
+                        ? JSON.stringify(row[col])
+                        : String(row[col] ?? "-")}
                     </td>
                   ))}
                 </tr>
@@ -168,14 +175,14 @@ export default function TableComponent({
       </div>
 
       {nextCursor && (
-        <div className="mt-4 flex justify-center">
+        <div style={{ marginTop: 16, textAlign: "center" }}>
           <button
             type="button"
             onClick={handleLoadMore}
             disabled={loading}
-            className="px-4 py-1.5 text-xs font-medium rounded-lg text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-50 transition-colors"
+            className="button secondary"
           >
-            {loading ? "Đang tải thêm..." : "Tải thêm"}
+            {loading ? "Đang tải thêm..." : "Xem thêm bản ghi"}
           </button>
         </div>
       )}

@@ -66,14 +66,15 @@ export default function FormComponent({
 
   return (
     <div
-      className="p-5 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm"
+      className="panel"
+      style={{ padding: 20 }}
       data-testid={`form-${component.id}`}
     >
-      <div className="flex items-center justify-between mb-4">
-        <h4 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <h4 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
           {displayTitle}
         </h4>
-        <span className="text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-mono">
+        <span className="badge" style={{ fontSize: 11, background: "var(--ws-soft)", color: "var(--ws-teal)" }}>
           {resource}:{action}
         </span>
       </div>
@@ -81,55 +82,59 @@ export default function FormComponent({
       {feedback && (
         <div
           role="alert"
-          className="mb-4 p-3 rounded-lg text-sm bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800"
+          className="info-banner"
+          style={{ marginBottom: 16 }}
         >
           {feedback}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {resource === "requests" && (
           <>
             <div>
-              <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label htmlFor="req-title" style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ws-muted)", marginBottom: 4 }}>
                 Tiêu đề yêu cầu mua
               </label>
               <input
+                id="req-title"
                 type="text"
                 name="title"
                 required
                 value={formData.title || ""}
                 onChange={handleChange}
                 placeholder="Ví dụ: Mua vật tư đợt 2 DA..."
-                className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input"
               />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                <label htmlFor="req-requester" style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ws-muted)", marginBottom: 4 }}>
                   Người đề xuất
                 </label>
                 <input
+                  id="req-requester"
                   type="text"
                   name="requester"
                   required
                   value={formData.requester || ""}
                   onChange={handleChange}
                   placeholder="Họ và tên..."
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="input"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                <label htmlFor="req-total" style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ws-muted)", marginBottom: 4 }}>
                   Dự toán ước tính (VNĐ)
                 </label>
                 <input
+                  id="req-total"
                   type="number"
                   name="totalEstimated"
                   value={formData.totalEstimated || ""}
                   onChange={handleChange}
                   placeholder="Ví dụ: 25000000"
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="input"
                 />
               </div>
             </div>
@@ -140,45 +145,48 @@ export default function FormComponent({
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                <label htmlFor="cust-code" style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ws-muted)", marginBottom: 4 }}>
                   Mã khách hàng
                 </label>
                 <input
+                  id="cust-code"
                   type="text"
                   name="code"
                   required
                   value={formData.code || ""}
                   onChange={handleChange}
                   placeholder="KH-..."
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="input"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                <label htmlFor="cust-name" style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ws-muted)", marginBottom: 4 }}>
                   Tên doanh nghiệp
                 </label>
                 <input
+                  id="cust-name"
                   type="text"
                   name="name"
                   required
                   value={formData.name || ""}
                   onChange={handleChange}
                   placeholder="Tên công ty/khách hàng..."
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="input"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label htmlFor="cust-industry" style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ws-muted)", marginBottom: 4 }}>
                 Lĩnh vực / Ngành nghề
               </label>
               <input
+                id="cust-industry"
                 type="text"
                 name="industry"
                 value={formData.industry || ""}
                 onChange={handleChange}
                 placeholder="Xây dựng, Bất động sản..."
-                className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input"
               />
             </div>
           </>
@@ -187,45 +195,48 @@ export default function FormComponent({
         {resource === "opportunities" && (
           <>
             <div>
-              <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+              <label htmlFor="opp-title" style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ws-muted)", marginBottom: 4 }}>
                 Tiêu đề cơ hội
               </label>
               <input
+                id="opp-title"
                 type="text"
                 name="title"
                 required
                 value={formData.title || ""}
                 onChange={handleChange}
                 placeholder="Ví dụ: Cung cấp vật tư hoàn thiện DA..."
-                className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input"
               />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                <label htmlFor="opp-cust" style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ws-muted)", marginBottom: 4 }}>
                   Tên khách hàng
                 </label>
                 <input
+                  id="opp-cust"
                   type="text"
                   name="customerName"
                   required
                   value={formData.customerName || ""}
                   onChange={handleChange}
                   placeholder="Tên khách hàng..."
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="input"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                <label htmlFor="opp-val" style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ws-muted)", marginBottom: 4 }}>
                   Giá trị dự kiến (VNĐ)
                 </label>
                 <input
+                  id="opp-val"
                   type="number"
                   name="value"
                   value={formData.value || ""}
                   onChange={handleChange}
                   placeholder="100000000"
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="input"
                 />
               </div>
             </div>
@@ -234,26 +245,27 @@ export default function FormComponent({
 
         {resource !== "requests" && resource !== "customers" && resource !== "opportunities" && (
           <div>
-            <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <label htmlFor="misc-name" style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ws-muted)", marginBottom: 4 }}>
               Thông tin bản ghi ({resource})
             </label>
             <input
+              id="misc-name"
               type="text"
               name="name"
               required
               value={formData.name || ""}
               onChange={handleChange}
               placeholder="Nhập thông tin..."
-              className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="input"
             />
           </div>
         )}
 
-        <div className="flex justify-end pt-2">
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-xs"
+            className="button primary"
           >
             {isSubmitting ? "Đang gửi..." : "Lưu dữ liệu"}
           </button>

@@ -23,16 +23,13 @@ export interface PermissionTarget {
 }
 
 /**
- * Kiểm tra quyền của một vai trò trên feature/resource/action theo Hợp đồng v2.5.
+ * Kiểm tra quyền của một vai trò trên feature/resource/action theo Hợp đồng v2.5 (#67).
  *
- * CHỈ nhận 2 dạng tên quyền trong role.permissions:
- * 1. `<featureId>.<action>` (ví dụ: `erp.purchase_requests.approve`, `erp.materials.read`)
- * 2. `<featureId>.<resource>.<action>` (ví dụ: `erp.purchase_requests.requests.create`)
+ * QUY TẮC: Quyền nghiệp vụ CHỈ nhận duy nhất định dạng:
+ * `<featureId>.<resource>.<action>` (ví dụ: `erp.inventory.stock.read`, `erp.purchase_requests.requests.create`).
  *
- * TUYỆT ĐỐI KHÔNG chấp nhận `<resource>.<action>` đứng một mình (ví dụ `stock.read`),
- * vì thiếu featureId sẽ có nguy cơ khớp nhầm sang feature khác có cùng tên resource.
- *
- * Các quyền hệ thống (ví dụ `share.manage`, `ai.sources.manage`) được quản lý riêng và không suy ra từ feature.
+ * Không chấp nhận dạng rút gọn 2 phần `<featureId>.<action>` hay `<resource>.<action>`.
+ * Các quyền hệ thống (ví dụ `share.manage`, `ai.sources.manage`) được quản lý riêng qua hasSystemPermission.
  */
 export function hasPermission(
   role: AppRole | undefined | null,
@@ -43,17 +40,13 @@ export function hasPermission(
   }
 
   const { featureId, resource, action } = target;
-  if (!featureId || !action) {
+  if (!featureId || !resource || !action) {
     return false;
   }
 
-  // Dạng 1: <featureId>.<action>
-  const format1 = `${featureId}.${action}`;
-
-  // Dạng 2: <featureId>.<resource>.<action>
-  const format2 = resource ? `${featureId}.${resource}.${action}` : "";
-
-  return role.permissions.includes(format1) || (format2 ? role.permissions.includes(format2) : false);
+  // Định dạng chuẩn duy nhất: <featureId>.<resource>.<action>
+  const permission = `${featureId}.${resource}.${action}`;
+  return role.permissions.includes(permission);
 }
 
 /**

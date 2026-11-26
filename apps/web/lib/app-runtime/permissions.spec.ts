@@ -22,15 +22,15 @@ describe("hasPermission", () => {
   const sampleRole: AppRole = {
     id: "buyer",
     permissions: [
-      "erp.materials.read",
-      "erp.purchase_requests.create",
+      "erp.materials.materials.read",
       "erp.purchase_requests.requests.create",
-      "crm.opportunities.advance",
-      "stock.read", // Dạng sai đứng 1 mình
+      "erp.inventory.stock.read",
+      "erp.purchase_requests.create", // Dạng cũ 2 phần (bị từ chối)
+      "stock.read", // Dạng sai đứng 1 mình (bị từ chối)
     ],
   };
 
-  it("khớp dạng 1: <featureId>.<action>", () => {
+  it("khớp đúng dạng 3 phần: <featureId>.<resource>.<action>", () => {
     expect(
       hasPermission(sampleRole, {
         featureId: "erp.materials",
@@ -41,16 +41,6 @@ describe("hasPermission", () => {
 
     expect(
       hasPermission(sampleRole, {
-        featureId: "crm.opportunities",
-        resource: "opportunities",
-        action: "advance",
-      })
-    ).toBe(true);
-  });
-
-  it("khớp dạng 2: <featureId>.<resource>.<action>", () => {
-    expect(
-      hasPermission(sampleRole, {
         featureId: "erp.purchase_requests",
         resource: "requests",
         action: "create",
@@ -58,9 +48,43 @@ describe("hasPermission", () => {
     ).toBe(true);
   });
 
+  it("từ chối dạng cũ 2 phần <featureId>.<action>", () => {
+    expect(
+      hasPermission(sampleRole, {
+        featureId: "erp.purchase_requests",
+        resource: "requests",
+        action: "create_legacy",
+      })
+    ).toBe(false);
+  });
+
+  it("cấp erp.inventory.stock.read KHÔNG cho xem thành phần đọc receipts", () => {
+    // Có stock.read
+    expect(
+      hasPermission(sampleRole, {
+        featureId: "erp.inventory",
+        resource: "stock",
+        action: "read",
+      })
+    ).toBe(true);
+
+    // Không có receipts.read -> bị từ chối
+    expect(
+      hasPermission(sampleRole, {
+        featureId: "erp.inventory",
+        resource: "receipts",
+        action: "read",
+      })
+    ).toBe(false);
+  });
+
   it("từ chối <resource>.<action> đứng một mình (ví dụ stock.read)", () => {
-    // Role có "stock.read", nhưng không có featureId tiền tố
-    const result = hasPermission(sampleRole, {
+    // Role có "stock.read", nhưng không có featureId tiền tố erp.inventory.stock.read
+    const roleWithBadPermission: AppRole = {
+      id: "test",
+      permissions: ["stock.read"],
+    };
+    const result = hasPermission(roleWithBadPermission, {
       featureId: "erp.inventory",
       resource: "stock",
       action: "read",

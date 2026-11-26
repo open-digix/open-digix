@@ -56,32 +56,46 @@ export default function DetailComponent({
 
   return (
     <div
-      className="p-5 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm"
+      className="panel"
+      style={{ padding: 20 }}
       data-testid={`detail-${component.id}`}
     >
-      <div className="flex items-center justify-between mb-4">
-        <h4 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <h4 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
           {displayTitle}
         </h4>
-        <span className="text-xs px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-mono">
+        <span className="badge" style={{ fontSize: 11 }}>
           {resource}
         </span>
       </div>
 
       {loading ? (
-        <div className="py-6 text-center text-sm text-zinc-500">Đang tải bản ghi...</div>
+        <div style={{ padding: "24px 0", textAlign: "center", fontSize: 13, color: "var(--ws-muted)" }}>
+          Đang tải bản ghi...
+        </div>
       ) : !record ? (
-        <div className="py-6 text-center text-sm text-zinc-500">Không có bản ghi nào.</div>
+        <div style={{ padding: "24px 0", textAlign: "center", fontSize: 13, color: "var(--ws-muted)" }}>
+          Không có bản ghi nào.
+        </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {Object.entries(record).map(([key, val]) => (
-            <div key={key} className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-100 dark:border-zinc-800">
-              <span className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 capitalize mb-1">
+            <div
+              key={key}
+              className="detail-pair"
+              style={{
+                padding: 12,
+                border: "1px solid var(--ws-line)",
+                borderRadius: 6,
+                background: "var(--ws-canvas)",
+              }}
+            >
+              <span style={{ display: "block", fontSize: 11, fontWeight: 600, color: "var(--ws-muted)", textTransform: "capitalize", marginBottom: 4 }}>
                 {key}
               </span>
-              <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 break-words">
+              <strong style={{ fontSize: 13, wordBreak: "break-word" }}>
                 {typeof val === "object" ? JSON.stringify(val) : String(val ?? "-")}
-              </span>
+              </strong>
             </div>
           ))}
         </div>

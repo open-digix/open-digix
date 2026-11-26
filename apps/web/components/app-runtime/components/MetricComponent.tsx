@@ -68,26 +68,31 @@ export default function MetricComponent({
 
   return (
     <div
-      className="p-5 bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between"
+      className="stat-card"
+      style={{ padding: 20, display: "flex", flexDirection: "column", justifyContent: "space-between" }}
       data-testid={`metric-${component.id}`}
     >
-      <div className="flex items-center justify-between">
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <h4 style={{ margin: 0, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ws-muted)" }}>
           {displayTitle}
         </h4>
-        <span className="p-1.5 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400 text-xs">
-          📊
+        <span style={{ color: "var(--ws-teal)" }} aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10" />
+            <line x1="12" y1="20" x2="12" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="14" />
+          </svg>
         </span>
       </div>
 
-      <div className="my-3">
-        <span className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+      <div style={{ margin: "14px 0 8px" }}>
+        <span style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em", color: "var(--ws-ink)" }}>
           {metricValue}
         </span>
       </div>
 
-      <p className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
-        <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+      <p style={{ margin: 0, fontSize: 12, color: "var(--ws-muted)", display: "flex", alignItems: "center", gap: 6 }}>
+        <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: "var(--ws-teal)" }} />
         {subText}
       </p>
     </div>

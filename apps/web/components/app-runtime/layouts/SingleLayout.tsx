@@ -39,10 +39,11 @@ export default function SingleLayout({
   if (mainComponents.length === 0) {
     return (
       <div
-        className="p-12 text-center rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50"
+        className="panel"
+        style={{ padding: 48, textAlign: "center" }}
         data-testid="empty-page-state"
       >
-        <p className="text-zinc-600 dark:text-zinc-400 font-medium">
+        <p style={{ margin: 0, color: "var(--ws-muted)", fontWeight: 500 }}>
           Bạn chưa có quyền xem nội dung trang này
         </p>
       </div>
