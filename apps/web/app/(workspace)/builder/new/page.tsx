@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { Metadata } from "next";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -24,6 +25,10 @@ import {
   getAppConfigApiMode,
 } from "../../../../lib/app-config/client";
 import NewAppWizard from "../../../../components/app-builder/NewAppWizard";
+
+export const metadata: Metadata = {
+  title: "Tạo ứng dụng · DigiX",
+};
 
 export default async function NewAppPage() {
   await connection();

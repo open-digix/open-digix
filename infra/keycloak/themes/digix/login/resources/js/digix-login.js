@@ -67,6 +67,7 @@
   if (hasAlert || hasFieldError) {
     var passwordInput = document.getElementById('password');
     if (passwordInput) {
+      passwordInput.value = '';
       passwordInput.focus();
     }
   }
@@ -124,7 +125,7 @@
       var originalText = link.textContent.trim() || 'Gửi lại';
       link.setAttribute('aria-disabled', 'true');
       link.classList.add('is-disabled');
-      link.textContent = 'Gửi lại sau ' + left + 's';
+      link.textContent = 'Gửi lại sau ' + left + ' giây';
 
       link.addEventListener('click', function (e) {
         if (link.getAttribute('aria-disabled') === 'true') {
@@ -140,7 +141,7 @@
           link.classList.remove('is-disabled');
           link.textContent = originalText;
         } else {
-          link.textContent = 'Gửi lại sau ' + left + 's';
+          link.textContent = 'Gửi lại sau ' + left + ' giây';
         }
       }, 1000);
     });

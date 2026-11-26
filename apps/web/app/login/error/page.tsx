@@ -19,7 +19,7 @@ import type { Metadata } from "next";
 import LoginErrorView from "./LoginErrorView";
 
 export const metadata: Metadata = {
-  title: "Lỗi đăng nhập | DigiX",
+  title: "Lỗi đăng nhập · DigiX",
   description: "Trang thông báo lỗi xác thực và hỗ trợ đăng nhập DigiX.",
 };
 

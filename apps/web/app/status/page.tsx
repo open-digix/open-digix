@@ -1,5 +1,8 @@
 import { connection } from "next/server";
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
+
+export const instant = false;
 
 type Health = { status: string; database: string };
 
@@ -29,7 +32,12 @@ async function HealthStatus() {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  await connection();
+  if (process.env.NODE_ENV === "production") {
+    notFound();
+  }
+
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center gap-6 p-8">
       <h1 className="text-4xl font-semibold">DigiX</h1>
