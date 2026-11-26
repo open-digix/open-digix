@@ -4,6 +4,11 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Get,
+  Param,
+  Query,
+  StreamableFile,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -15,6 +20,8 @@ import {
 import type { StoredFileScanStatus } from './stored-file.repository';
 import { StoredFileService } from './stored-file.service';
 import { StoredFileUploadInterceptor } from './stored-file-upload.interceptor';
+import { FileAccess } from './file-access.service';
+import type { Response } from 'express';
 
 export interface UploadedMultipartFile {
   originalname: string;
@@ -36,7 +43,10 @@ export interface StoredFileResponse {
 @TenantScoped()
 @Controller('v1/files')
 export class StoredFileController {
-  constructor(private readonly storedFiles: StoredFileService) {}
+  constructor(
+    private readonly storedFiles: StoredFileService,
+    private readonly access?: FileAccess,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -44,6 +54,7 @@ export class StoredFileController {
   async upload(
     @UploadedFile() file: UploadedMultipartFile | undefined,
     @CurrentTenantContext() context: TenantContext,
+    @Query('recordId') recordId?: string,
   ): Promise<StoredFileResponse> {
     if (!file) {
       throw new BadRequestException({
@@ -60,6 +71,7 @@ export class StoredFileController {
       contentType: file.mimetype,
       body: file.buffer,
       createdByMembershipId: context.membership.id,
+      ...(recordId ? { recordId } : {}),
     });
 
     return {
@@ -72,5 +84,48 @@ export class StoredFileController {
       scanStatus: metadata.scanStatus,
       createdAt: metadata.createdAt.toISOString(),
     };
+  }
+
+  @Get(':id/download-url')
+  getDownloadUrl(
+    @Param('id') id: string,
+    @CurrentTenantContext() context: TenantContext,
+  ) {
+    return this.access!.getDownloadUrl(id, {
+      tenantId: context.membership.tenant.id,
+      membershipId: context.membership.id,
+    });
+  }
+
+  @Get(':id/content')
+  async download(
+    @Param('id') id: string,
+    @CurrentTenantContext() context: TenantContext,
+    @Query('expires') expires: string,
+    @Query('signature') signature: string,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<StreamableFile> {
+    const { file, object } = await this.access!.download(
+      id,
+      {
+        tenantId: context.membership.tenant.id,
+        membershipId: context.membership.id,
+      },
+      expires,
+      signature,
+    );
+    response.setHeader('Cache-Control', 'no-store');
+    response.setHeader('X-Content-Type-Options', 'nosniff');
+    response.setHeader(
+      'Content-Disposition',
+      `attachment; filename*=UTF-8''${encodeURIComponent(file.originalName)}`,
+    );
+    return new StreamableFile(
+      object.body as NodeJS.ReadableStream as import('node:stream').Readable,
+      {
+        type: 'application/octet-stream',
+        length: file.sizeBytes,
+      },
+    );
   }
 }

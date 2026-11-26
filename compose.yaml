@@ -144,6 +144,14 @@ services:
       start_period: 15s
     restart: unless-stopped
 
+  antivirus:
+    image: clamav/clamav:1.4
+    environment:
+      CLAMAV_NO_FRESHCLAMD: "false"
+    volumes:
+      - clamav_data:/var/lib/clamav
+    restart: unless-stopped
+
   api:
     build: ./apps/api
     command:
@@ -171,6 +179,10 @@ services:
       S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-true}
       STORAGE_UPLOAD_MAX_BYTES: ${STORAGE_UPLOAD_MAX_BYTES:-10485760}
       STORAGE_UPLOAD_ALLOWED_CONTENT_TYPES: ${STORAGE_UPLOAD_ALLOWED_CONTENT_TYPES:-application/pdf,image/jpeg,image/png,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet}
+      CLAMAV_HOST: antivirus
+      CLAMAV_PORT: 3310
+      CLAMAV_TIMEOUT_MS: ${CLAMAV_TIMEOUT_MS:-30000}
+      FILE_URL_SIGNING_KEY: ${FILE_URL_SIGNING_KEY:?Set FILE_URL_SIGNING_KEY in .env}
       WORKFLOW_BASE_URL: ${WORKFLOW_BASE_URL:-http://workflow-engine:8080/flowable-rest}
       WORKFLOW_USERNAME: ${FLOWABLE_REST_ADMIN_USER:-rest-admin}
       WORKFLOW_PASSWORD: ${FLOWABLE_REST_ADMIN_PASSWORD:?Set FLOWABLE_REST_ADMIN_PASSWORD in .env}
@@ -180,6 +192,8 @@ services:
         condition: service_healthy
       object-storage:
         condition: service_healthy
+      antivirus:
+        condition: service_started
       workflow-engine:
         condition: service_healthy
       keycloak:
@@ -297,3 +311,4 @@ volumes:
   keycloak_postgres_data:
   workflow_postgres_data:
   object_storage_data:
+  clamav_data:

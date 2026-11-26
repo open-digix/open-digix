@@ -8,10 +8,17 @@ import { StoredFileController } from './stored-file.controller';
 import { StoredFileRepository } from './stored-file.repository';
 import { StoredFileService } from './stored-file.service';
 import { StoredFileUploadInterceptor } from './stored-file-upload.interceptor';
+import { ClamavScanner } from './clamav-scanner';
+import { loadScannerConfig } from './scanner.config';
+import { FILE_SCANNER, SCANNER_CONFIG } from './storage.constants';
+import { FileAccess } from './file-access.service';
 
 @Module({
   controllers: [StoredFileController],
   providers: [
+    { provide: SCANNER_CONFIG, useFactory: loadScannerConfig },
+    { provide: FILE_SCANNER, useClass: ClamavScanner },
+    FileAccess,
     {
       provide: STORAGE_CONFIG,
       useFactory: loadStorageConfig,
@@ -33,6 +40,7 @@ import { StoredFileUploadInterceptor } from './stored-file-upload.interceptor';
     StorageObjectService,
     StoredFileRepository,
     StoredFileService,
+    FileAccess,
   ],
 })
 export class StorageModule implements OnApplicationShutdown {

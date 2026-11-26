@@ -5,9 +5,12 @@ import {
   Injectable,
   PayloadTooLargeException,
   UnsupportedMediaTypeException,
+  NotFoundException,
 } from '@nestjs/common';
 import type { StorageConfig } from './storage.config';
 import { STORAGE_CONFIG } from './storage.constants';
+import { FILE_SCANNER } from './storage.constants';
+import type { FileScanner } from './clamav-scanner';
 import { createStorageObjectKey } from './storage-object-key';
 import { StorageObjectService } from './storage-object.service';
 import {
@@ -30,6 +33,7 @@ export class StoredFileService {
     private readonly objectStorage: StorageObjectService,
     private readonly repository: StoredFileRepository,
     @Inject(STORAGE_CONFIG) private readonly config: StorageConfig,
+    @Inject(FILE_SCANNER) private readonly scanner?: FileScanner,
   ) {}
 
   async uploadPending(
@@ -61,6 +65,19 @@ export class StoredFileService {
       });
     }
 
+    if (
+      input.recordId &&
+      !(await this.repository.recordOwnedBy(
+        input.tenantId,
+        input.recordId,
+        input.createdByMembershipId,
+      ))
+    ) {
+      throw new NotFoundException({
+        error: { code: 'RECORD_NOT_FOUND', message: 'Record not found.' },
+      });
+    }
+
     const storageKey = createStorageObjectKey(input.tenantId);
     const checksumSha256 = createHash('sha256')
       .update(input.body)
@@ -72,8 +89,9 @@ export class StoredFileService {
       contentType,
     });
 
+    let metadata: StoredFileMetadata;
     try {
-      return await this.repository.createPending({
+      metadata = await this.repository.createPending({
         tenantId: input.tenantId,
         recordId: input.recordId,
         storageKey,
@@ -95,5 +113,16 @@ export class StoredFileService {
 
       throw databaseError;
     }
+    // Once persisted, never delete the object without removing its metadata.
+    // A failed scan or status update leaves it inaccessible (pending/failed).
+    if (!this.scanner) return metadata;
+    let status: 'clean' | 'rejected' | 'failed';
+    try {
+      status = await this.scanner.scan(input.body);
+    } catch {
+      status = 'failed';
+    }
+    await this.repository.setScanStatus(input.tenantId, metadata.id, status);
+    return { ...metadata, scanStatus: status };
   }
 }
