@@ -2,14 +2,14 @@
 
 **Mục tiêu:** Kiểm kê toàn bộ biến màu `--ws-c-*` và mã màu trực tiếp theo vị trí, vai trò ngữ nghĩa và ánh xạ sang hệ thống semantic token UI-04 trước khi triển khai chế độ Sáng/Tối.
 
-## 1. Thống kê trước khi chuyển
+## 1. Thống kê trước và sau khi chuyển
 
-| Tệp tin | Số lượng `--ws-c-*` | Số lượng mã hex trực tiếp |
-|---|---|---|
-| `apps/web/app/(workspace)/workspace.css` | 451 | 223 |
-| `apps/web/app/globals.css` | 0 | 4 |
-| `apps/web/app/register/register.css` | 0 | 35 |
-| `apps/web/app/landing.css` (khối thẻ lỗi đăng nhập) | 0 | 52 |
+| Tệp tin | `--ws-c-*` trước | `--ws-c-*` sau | Mã hex trước | Mã hex sau | Ghi chú |
+|---|---|---|---|---|---|
+| `apps/web/app/(workspace)/workspace.css` | 451 | 399 | 223 | 241 | Giảm 52 lượt `--ws-c-*` trong layout & component cơ bản; mã hex tăng ở khối token root semantic |
+| `apps/web/app/globals.css` | 0 | 0 | 4 | 22 | Thêm khối semantic token `:root` toàn cục dùng chung |
+| `apps/web/app/register/register.css` | 0 | 0 | 35 | 35 | Chuyển toàn bộ 13 biến alias form sang đọc biến semantic toàn cục |
+| `apps/web/app/landing.css` | 0 | 0 | 52 | 60 | Thẻ lỗi đăng nhập `.landing-auth-error-card` chuyển sang đọc token semantic |
 
 ## 2. Bảng ánh xạ theo vị trí, vai trò ngữ nghĩa và biến mới
 
