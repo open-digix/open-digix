@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
+import { AuditModule } from './audit/audit.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { BuilderModule } from './builder/builder.module';
 import { CatalogModule } from './catalog/catalog.module';
@@ -20,6 +21,7 @@ import { WorkflowModule } from './workflow/workflow.module';
 @Module({
   imports: [
     DatabaseModule,
+    AuditModule,
     AuthModule,
     IdentityModule,
     OnboardingModule,
