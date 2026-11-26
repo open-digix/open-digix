@@ -14,9 +14,29 @@
  * limitations under the License.
  */
 
-import type { CatalogFeature, CatalogPreset } from './catalog.types';
+import type {
+  CatalogAction,
+  CatalogFeature,
+  CatalogPreset,
+} from './catalog.types';
 
-const feature = <T extends CatalogFeature>(value: T): T => Object.freeze(value);
+const action = (
+  featureId: string,
+  resource: string,
+  actionName: string,
+): CatalogAction => ({
+  resource,
+  action: actionName,
+  permission: `${featureId}.${resource}.${actionName}`,
+});
+
+const feature = (value: Omit<CatalogFeature, 'permissions'>): CatalogFeature =>
+  Object.freeze({
+    ...value,
+    permissions: [
+      ...new Set(value.actions.map(({ permission }) => permission)),
+    ],
+  });
 
 export const CATALOG_FEATURES = Object.freeze([
   feature({
@@ -24,11 +44,10 @@ export const CATALOG_FEATURES = Object.freeze([
     version: 1,
     domain: 'erp',
     resources: ['materials'],
-    actions: ['materials.create', 'materials.read', 'materials.update_note'],
-    permissions: [
-      'erp.materials.create',
-      'erp.materials.read',
-      'erp.materials.update_note',
+    actions: [
+      action('erp.materials', 'materials', 'create'),
+      action('erp.materials', 'materials', 'read'),
+      action('erp.materials', 'materials', 'update_note'),
     ],
     dependencies: [],
     components: ['form', 'table', 'detail', 'action'],
@@ -38,20 +57,13 @@ export const CATALOG_FEATURES = Object.freeze([
     id: 'erp.purchase_requests',
     version: 1,
     domain: 'erp',
-    resources: ['purchase_requests', 'purchase_request_lines'],
+    resources: ['requests'],
     actions: [
-      'requests.create',
-      'requests.read',
-      'requests.submit',
-      'requests.approve',
-      'requests.reject',
-    ],
-    permissions: [
-      'erp.purchase_requests.create',
-      'erp.purchase_requests.read',
-      'erp.purchase_requests.submit',
-      'erp.purchase_requests.approve',
-      'erp.purchase_requests.reject',
+      action('erp.purchase_requests', 'requests', 'create'),
+      action('erp.purchase_requests', 'requests', 'read'),
+      action('erp.purchase_requests', 'requests', 'submit'),
+      action('erp.purchase_requests', 'requests', 'approve'),
+      action('erp.purchase_requests', 'requests', 'reject'),
     ],
     dependencies: ['erp.materials'],
     components: ['form', 'table', 'detail', 'action'],
@@ -61,12 +73,11 @@ export const CATALOG_FEATURES = Object.freeze([
     id: 'erp.inventory',
     version: 1,
     domain: 'erp',
-    resources: ['inventory_receipts', 'inventory_receipt_lines', 'stock'],
-    actions: ['receipts.receive', 'receipts.read', 'stock.read'],
-    permissions: [
-      'erp.inventory.receive',
-      'erp.inventory.read',
-      'erp.inventory.stock_read',
+    resources: ['receipts', 'stock'],
+    actions: [
+      action('erp.inventory', 'receipts', 'receive'),
+      action('erp.inventory', 'receipts', 'read'),
+      action('erp.inventory', 'stock', 'read'),
     ],
     dependencies: ['erp.materials'],
     components: ['table', 'detail', 'metric', 'action'],
@@ -78,16 +89,10 @@ export const CATALOG_FEATURES = Object.freeze([
     domain: 'crm',
     resources: ['customers', 'contacts'],
     actions: [
-      'customers.create',
-      'customers.read',
-      'contacts.create_contact',
-      'contacts.read',
-    ],
-    permissions: [
-      'crm.customers.create',
-      'crm.customers.read',
-      'crm.customers.create_contact',
-      'crm.customers.contacts_read',
+      action('crm.customers', 'customers', 'create'),
+      action('crm.customers', 'customers', 'read'),
+      action('crm.customers', 'contacts', 'create_contact'),
+      action('crm.customers', 'contacts', 'read'),
     ],
     dependencies: [],
     components: ['form', 'table', 'detail', 'action'],
@@ -99,14 +104,9 @@ export const CATALOG_FEATURES = Object.freeze([
     domain: 'crm',
     resources: ['opportunities'],
     actions: [
-      'opportunities.create',
-      'opportunities.read',
-      'opportunities.advance',
-    ],
-    permissions: [
-      'crm.opportunities.create',
-      'crm.opportunities.read',
-      'crm.opportunities.advance',
+      action('crm.opportunities', 'opportunities', 'create'),
+      action('crm.opportunities', 'opportunities', 'read'),
+      action('crm.opportunities', 'opportunities', 'advance'),
     ],
     dependencies: ['crm.customers'],
     components: ['form', 'table', 'detail', 'metric', 'action'],

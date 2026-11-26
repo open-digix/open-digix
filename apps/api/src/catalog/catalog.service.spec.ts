@@ -24,11 +24,27 @@ describe('CatalogService', () => {
 
     expect(features[0]).toMatchObject({
       id: 'erp.materials',
-      actions: ['materials.create', 'materials.read', 'materials.update_note'],
+      actions: [
+        {
+          resource: 'materials',
+          action: 'create',
+          permission: 'erp.materials.materials.create',
+        },
+        {
+          resource: 'materials',
+          action: 'read',
+          permission: 'erp.materials.materials.read',
+        },
+        {
+          resource: 'materials',
+          action: 'update_note',
+          permission: 'erp.materials.materials.update_note',
+        },
+      ],
       permissions: [
-        'erp.materials.create',
-        'erp.materials.read',
-        'erp.materials.update_note',
+        'erp.materials.materials.create',
+        'erp.materials.materials.read',
+        'erp.materials.materials.update_note',
       ],
       components: ['form', 'table', 'detail', 'action'],
       status: 'supported',
@@ -36,9 +52,21 @@ describe('CatalogService', () => {
     expect(features[4]).toMatchObject({
       id: 'crm.opportunities',
       actions: [
-        'opportunities.create',
-        'opportunities.read',
-        'opportunities.advance',
+        {
+          resource: 'opportunities',
+          action: 'create',
+          permission: 'crm.opportunities.opportunities.create',
+        },
+        {
+          resource: 'opportunities',
+          action: 'read',
+          permission: 'crm.opportunities.opportunities.read',
+        },
+        {
+          resource: 'opportunities',
+          action: 'advance',
+          permission: 'crm.opportunities.opportunities.advance',
+        },
       ],
       dependencies: ['crm.customers'],
       components: ['form', 'table', 'detail', 'metric', 'action'],

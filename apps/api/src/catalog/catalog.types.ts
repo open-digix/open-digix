@@ -23,12 +23,18 @@ export type CatalogDomain = 'erp' | 'crm';
 export type CatalogComponent =
   'form' | 'table' | 'detail' | 'metric' | 'action';
 
+export interface CatalogAction {
+  readonly resource: string;
+  readonly action: string;
+  readonly permission: string;
+}
+
 export interface CatalogFeature {
   readonly id: string;
   readonly version: CatalogSchemaVersion;
   readonly domain: CatalogDomain;
   readonly resources: readonly string[];
-  readonly actions: readonly string[];
+  readonly actions: readonly CatalogAction[];
   readonly permissions: readonly string[];
   readonly dependencies: readonly string[];
   readonly components: readonly CatalogComponent[];
