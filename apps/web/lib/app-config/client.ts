@@ -15,7 +15,7 @@
  */
 
 import "server-only";
-import { getTenantContext, apiCall } from "../api/server";
+import { getTenantContext, apiCall, ApiError } from "../api/server";
 import type {
   AppSummary,
   CatalogResponse,
@@ -62,7 +62,17 @@ async function getRequiredTenantId(): Promise<string> {
  */
 export async function getCatalogFeatures(): Promise<CatalogResponse> {
   if (getAppConfigApiMode() === "api") {
-    return apiCall<CatalogResponse>("/v1/catalog/features");
+    try {
+      return await apiCall<CatalogResponse>("/v1/catalog/features");
+    } catch (err: unknown) {
+      if (err instanceof ApiError && err.status === 404) {
+        return {
+          catalogVersion: MOCK_CATALOG_VERSION,
+          features: MOCK_CATALOG_FEATURES,
+        };
+      }
+      throw err;
+    }
   }
 
   return {
@@ -76,7 +86,17 @@ export async function getCatalogFeatures(): Promise<CatalogResponse> {
  */
 export async function getPresets(): Promise<PresetsResponse> {
   if (getAppConfigApiMode() === "api") {
-    return apiCall<PresetsResponse>("/v1/catalog/presets");
+    try {
+      return await apiCall<PresetsResponse>("/v1/catalog/presets");
+    } catch (err: unknown) {
+      if (err instanceof ApiError && err.status === 404) {
+        return {
+          catalogVersion: MOCK_CATALOG_VERSION,
+          presets: MOCK_CATALOG_PRESETS,
+        };
+      }
+      throw err;
+    }
   }
 
   return {
