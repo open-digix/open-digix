@@ -49,7 +49,28 @@ Mọi thay đổi đáng chú ý của dự án sẽ được ghi nhận tại �
 - **Ánh xạ mã lỗi API thật:** Bắt trọn 6 mã lỗi (`TENANT_SLUG_TAKEN`, `EMAIL_TAKEN`, `USERNAME_TAKEN`, `VALIDATION_FAILED`, `RATE_LIMITED`, `UNAVAILABLE`), hỗ trợ phân bổ lỗi `issues` về từng ô nhập bao gồm cả `/admin`.
 - **Sửa lỗi giao diện ô Điều khoản sử dụng:** Loại bỏ `marginTop: -12` gây đè chữ; thông báo lỗi căn chỉnh dưới dòng điều khoản, thụt lề 28px thẳng hàng với văn bản, bổ sung `aria-invalid` và `aria-describedby` trên ô checkbox.
 
-## 24/11/2026
+### Lớp API cấu hình app v2.5 và Tạo app với 3 lối vào, chọn chức năng (WEB-F01/F02, #46)
+- **Tầng kết nối API cấu hình app v2.5 (`lib/app-config/`):**
+  - Định nghĩa kiểu dữ liệu `types.ts` bám sát 2 schema JSON (`digix-app-draft-v2.5` và `digix-app-v2.5`), cho phép các trường `action?`, `label?` tùy chọn và `FeatureId` định kiểu linh hoạt theo danh mục server.
+  - Bảng nhãn tiếng Việt `feature-labels.ts` hiển thị tên, mô tả chức năng và nhóm miền thân thiện.
+  - Bộ tính toán phụ thuộc `dependencies.ts` (pure functions) tính toán chính xác phụ thuộc còn thiếu (`getMissingDependencies`) và chức năng bị ảnh hưởng khi hủy chọn (`getAffectedDependents`).
+  - Hỗ trợ 2 chế độ `APP_CONFIG_API_MODE`:
+    - `mock` (mặc định): lưu trữ nháp trong bộ nhớ server phân vùng theo tenant (`mock-store.ts`), có catalog 5 chức năng chuẩn và 3 presets (`erp`, `crm`, `blank`), validator bắt chước server trả lỗi chi tiết theo `path`.
+    - `api`: kết nối trực tiếp các route Gateway `/v1/catalog/*` và `/v1/apps*` qua `apiCall`.
+  - Quy trình tạo app 2 bước an toàn: `POST /v1/apps` khởi tạo ứng dụng nhận `lockVersion`, sau đó `PATCH /v1/apps/:appId/drafts/:version` lưu danh sách chức năng đã chọn; nếu bước 2 lỗi vẫn giữ app và báo hướng dẫn tiếp tục sửa.
+- **Wizard tạo app 3 bước (`/builder/new`):**
+  - **Bước 1 (Chọn lối vào):** 3 lựa chọn "Bắt đầu với ERP", "Bắt đầu với CRM" và "Tạo từ trống"; giải thích rõ đây là gợi ý khởi đầu, không khóa loại app hay quyền; cơ chế cảnh báo hỏi xác nhận khi quay lại đổi lối vào sau khi đã tùy chỉnh chức năng.
+  - **Bước 2 (Chọn chức năng):** Phân nhóm ERP/CRM rõ ràng; hiển thị tài nguyên, hành động, phụ thuộc; gợi ý bật kèm phụ thuộc khi kích hoạt chức năng thiếu nền tảng; cảnh báo khi bỏ chọn chức năng đang làm phụ thuộc cho chức năng khác.
+  - **Bước 3 (Thông tin ứng dụng):** Nhập tên ứng dụng, tự sinh mã `appKey` chuẩn regex `^[a-z][a-z0-9_-]{1,63}$` và cho phép sửa; hiển thị lỗi trùng mã `APP_KEY_CONFLICT` (409) trực tiếp dưới ô nhập; hỗ trợ lưu nháp rỗng.
+- **Màn hình quản trị bản nháp v2.5 (`/builder/[appId]`):**
+  - Hiển thị tóm tắt chức năng đã chọn, lối vào (hoặc "Không ghi nhận lối vào"), phiên bản khóa `lockVersion`.
+  - Nút "Sửa chức năng" mở hộp thoại điều chỉnh và lưu qua `patchDraft` có kiểm soát optimistic concurrency (báo lỗi 409 khi có phiên khác sửa).
+  - Nút "Kiểm tra bản nháp" gọi validator và hiển thị lỗi trực quan theo `path`.
+  - Cảnh báo nháp rỗng: "Chưa thể xuất bản: cần chọn ít nhất một chức năng".
+- **Danh sách ứng dụng (`/builder`):**
+  - Nạp danh sách từ server (`listApps()`), ngừng đọc `localStorage` làm nguồn chính.
+  - Phân nhóm riêng cho các bản nháp v1 cũ lưu trên trình duyệt với nhãn "Quy trình v1", đảm bảo mở và chỉnh sửa được bình thường qua Builder v1.
+- **Kiểm thử tự động:** Bổ sung 4 test suites mới (36 tests mới) cho `dependencies`, `client`, `NewAppWizard` và `AppSummaryView`.
 
 ### Đăng ký doanh nghiệp mới (UI-03, chuẩn bị cho backend #35)
 - **Màn hình chọn hình thức (`/register`):** Hiển thị 2 lựa chọn trực quan "Tạo doanh nghiệp mới" (dành cho người đại diện công ty) và "Tham gia doanh nghiệp có sẵn" (gửi yêu cầu cấp tài khoản, kế thừa R3 với nút quay lại "← Chọn lại").

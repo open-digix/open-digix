@@ -18,7 +18,9 @@ import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getTenantContext } from "../../../lib/api/server";
+import { listApps, getAppConfigApiMode } from "../../../lib/app-config/client";
 import BuilderAppList from "../../../components/builder/BuilderAppList";
+import type { AppSummary } from "../../../lib/app-config/types";
 
 export default async function BuilderPage() {
   await connection();
@@ -58,11 +60,21 @@ export default async function BuilderPage() {
   }
 
   const canEdit = roles.some((r) => ["designer", "tenant_admin"].includes(r));
+  const isMockMode = getAppConfigApiMode() === "mock";
+  let apps: AppSummary[] = [];
+
+  try {
+    apps = await listApps();
+  } catch {
+    apps = [];
+  }
 
   return (
     <BuilderAppList
       tenantId={currentTenant?.id ?? "default"}
       canEdit={canEdit}
+      apps={apps}
+      isMockMode={isMockMode}
     />
   );
 }
