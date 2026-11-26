@@ -18,8 +18,12 @@ import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getTenantContext } from "../../../../lib/api/server";
-import Stepper from "../../../../components/builder/Stepper";
-import CreateAppForm from "../../../../components/builder/CreateAppForm";
+import {
+  getCatalogFeatures,
+  getPresets,
+  getAppConfigApiMode,
+} from "../../../../lib/app-config/client";
+import NewAppWizard from "../../../../components/app-builder/NewAppWizard";
 
 export default async function NewAppPage() {
   await connection();
@@ -55,26 +59,20 @@ export default async function NewAppPage() {
     );
   }
 
-  return (
-    <div className="page">
-      <header className="page-header">
-        <div>
-          <div className="eyebrow">THIẾT KẾ / BƯỚC 01</div>
-          <h1>Tạo ứng dụng mới</h1>
-          <p>
-            Khởi tạo ứng dụng và bản nháp phiên bản 1 trong{" "}
-            <strong>{currentTenant?.name}</strong>
-          </p>
-        </div>
-        <div className="page-header-actions">
-          <Link href="/builder" className="button secondary">
-            ← Danh sách ứng dụng
-          </Link>
-        </div>
-      </header>
+  const isMockMode = getAppConfigApiMode() === "mock";
+  const [catalogRes, presetsRes] = await Promise.all([
+    getCatalogFeatures(),
+    getPresets(),
+  ]);
 
-      <Stepper currentStep="create" />
-      <CreateAppForm tenantId={currentTenant?.id ?? "default"} />
+  return (
+    <div className="page new-app-page">
+      <NewAppWizard
+        initialFeatures={catalogRes.features}
+        initialPresets={presetsRes.presets}
+        tenantName={currentTenant?.name}
+        isMockMode={isMockMode}
+      />
     </div>
   );
 }

@@ -20,6 +20,12 @@ import Link from "next/link";
 import { getTenantContext } from "../../../../lib/api/server";
 import { isValidUUID } from "../../../../lib/builder/types";
 import { getDraftAction } from "../../../../lib/builder/actions";
+import {
+  getDraft as getDraftV25,
+  getCatalogFeatures,
+  getAppConfigApiMode,
+} from "../../../../lib/app-config/client";
+import AppSummaryView from "../../../../components/app-builder/AppSummaryView";
 import Stepper from "../../../../components/builder/Stepper";
 import SourceEditor from "../../../../components/builder/SourceEditor";
 import NormalizeView from "../../../../components/builder/NormalizeView";
@@ -32,7 +38,7 @@ import type {
 
 interface BuilderAppPageProps {
   params: Promise<{ appId: string }>;
-  searchParams: Promise<{ step?: string }>;
+  searchParams: Promise<{ step?: string; "canh-bao"?: string }>;
 }
 
 export default async function BuilderAppPage({
@@ -47,7 +53,9 @@ export default async function BuilderAppPage({
   }
 
   const { appId } = await params;
-  const { step = "source" } = await searchParams;
+  const resolvedSearchParams = await searchParams;
+  const step = resolvedSearchParams.step || "source";
+  const canhBao = resolvedSearchParams["canh-bao"];
 
   if (!isValidUUID(appId)) {
     return (
@@ -86,6 +94,36 @@ export default async function BuilderAppPage({
     );
   }
 
+  // First, check if this is a v2.5 draft
+  let v25Draft: Awaited<ReturnType<typeof getDraftV25>> | null = null;
+  let v25CatalogFeatures: Awaited<ReturnType<typeof getCatalogFeatures>>["features"] = [];
+  const isMockMode = getAppConfigApiMode() === "mock";
+
+  try {
+    const draft = await getDraftV25(appId);
+    if (draft?.definition?.schemaVersion === "2.5") {
+      v25Draft = draft;
+      const catalogRes = await getCatalogFeatures();
+      v25CatalogFeatures = catalogRes.features;
+    }
+  } catch {
+    // If not found in v2.5 store, fallback to v1 workflow below
+  }
+
+  if (v25Draft?.definition?.schemaVersion === "2.5") {
+    return (
+      <AppSummaryView
+        initialDraft={v25Draft.definition}
+        initialLockVersion={v25Draft.lockVersion}
+        catalogFeatures={v25CatalogFeatures}
+        isMockMode={isMockMode}
+        canEdit={canEdit}
+        canhBao={canhBao}
+      />
+    );
+  }
+
+  // --- Fallback to Legacy v1.0 Workflow ---
   const validStep = (
     ["source", "normalize", "edit", "validate"].includes(step)
       ? step
@@ -126,7 +164,7 @@ export default async function BuilderAppPage({
       <header className="page-header">
         <div>
           <div className="eyebrow">
-            THIẾT KẾ / BƯỚC{" "}
+            THIẾT KẾ QUY TRÌNH v1 / BƯỚC{" "}
             {validStep === "source"
               ? "02"
               : validStep === "normalize"

@@ -312,7 +312,7 @@ export default function BuilderView({
               </button>
             </div>
             <div className="modal-body">
-              <p style={{ margin: "0 0 16px", color: "var(--ws-text)" }}>
+              <p style={{ margin: "0 0 16px", color: "var(--ws-ink)" }}>
                 Bạn đã chỉnh sửa nội dung bản nháp. Cần lưu bản nháp thành công trước khi chuyển sang bước Kiểm tra để kết quả kiểm tra chính xác với nội dung mới nhất.
               </p>
               <div className="modal-actions">
