@@ -16,7 +16,7 @@
 
 "use server";
 
-import { getTenantContext } from "../api/server";
+import { getTenantContext, ApiError, formatApiErrorVi } from "../api/server";
 import {
   createApp,
   getCatalogFeatures,
@@ -106,6 +106,42 @@ export async function createAppWithFeaturesAction(input: {
       patchFailed: false,
     };
   } catch (err: unknown) {
+    if (err instanceof ApiError) {
+      const formatted = formatApiErrorVi({
+        code: err.code,
+        message: err.message,
+        issues: err.issues,
+      });
+
+      const hasV25Rejection = err.issues?.some(
+        (iss) =>
+          iss.path === "/schemaVersion" ||
+          iss.path === "/startingPoint" ||
+          iss.path === "/goal",
+      );
+
+      let errorMsg = formatted.title;
+      if (formatted.issues.length > 0) {
+        errorMsg +=
+          ": " +
+          formatted.issues
+            .map((i) => `${i.fieldLabel} (${i.message})`)
+            .join("; ");
+      }
+      if (hasV25Rejection) {
+        errorMsg +=
+          " (Backend hiện tại chưa hỗ trợ cấu trúc ứng dụng v2.5; cần cập nhật API backend).";
+      }
+
+      return {
+        ok: false,
+        status: err.status,
+        code: err.code,
+        kind: err.kind,
+        error: errorMsg,
+      };
+    }
+
     const errorObj = err as {
       status?: number;
       code?: string;

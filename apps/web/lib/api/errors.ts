@@ -56,6 +56,12 @@ export const FIELD_PATH_LABELS: Record<string, string> = {
   "/goal": "Mục tiêu quy trình",
   "/sections": "Cấu trúc dữ liệu",
   "/": "Nội dung mô tả",
+  "/schemaVersion": "Phiên bản schema",
+  "/startingPoint": "Điểm xuất phát",
+  "/presetVersion": "Phiên bản mẫu dựng sẵn",
+  "/name": "Tên ứng dụng",
+  "/appKey": "Mã ứng dụng",
+  "/features": "Danh sách chức năng",
 };
 
 export const ERROR_CODE_MESSAGES: Record<string, string> = {
