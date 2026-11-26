@@ -29,8 +29,10 @@ import type {
 import {
   getFeatureLabel,
   getFeatureDescription,
+  formatFeatureActionsByResource,
 } from "../../lib/app-config/feature-labels";
 import {
+  getDraftV25Action,
   patchDraftFeaturesAction,
   validateDraftAction,
 } from "../../lib/app-config/actions";
@@ -57,6 +59,8 @@ interface AppSummaryViewProps {
   initialLockVersion: number;
   catalogFeatures: CatalogFeature[];
   isMockMode?: boolean;
+  canEdit?: boolean;
+  canhBao?: string;
 }
 
 export default function AppSummaryView({
@@ -64,11 +68,15 @@ export default function AppSummaryView({
   initialLockVersion,
   catalogFeatures,
   isMockMode = true,
+  canEdit = true,
+  canhBao,
 }: AppSummaryViewProps) {
   const router = useRouter();
 
   const [draft, setDraft] = useState<AppDraftDefinitionV25>(initialDraft);
   const [lockVersion, setLockVersion] = useState<number>(initialLockVersion);
+  const [showWarning, setShowWarning] = useState<boolean>(canhBao === "chua-luu-chuc-nang");
+  const [isReloading, setIsReloading] = useState<boolean>(false);
 
   // Edit feature modal
   const [isEditingFeatures, setIsEditingFeatures] = useState<boolean>(false);
@@ -90,6 +98,7 @@ export default function AppSummaryView({
   const selectedIds = draft.features.map((f) => f.id);
 
   const handleOpenEdit = () => {
+    if (!canEdit) return;
     setEditingSelectedFeatures([...selectedIds]);
     setSaveError(null);
     setIsConflict(false);
@@ -102,6 +111,26 @@ export default function AppSummaryView({
         ? prev.filter((id) => id !== featureId)
         : [...prev, featureId],
     );
+  };
+
+  const handleReloadDraft = async () => {
+    setIsReloading(true);
+    try {
+      const res = await getDraftV25Action(draft.appId);
+      if (res.ok && res.draft && res.lockVersion !== undefined) {
+        setDraft(res.draft);
+        setLockVersion(res.lockVersion);
+        setEditingSelectedFeatures(res.draft.features.map((f) => f.id));
+        setSaveError(null);
+        setIsConflict(false);
+      } else {
+        router.refresh();
+      }
+    } catch {
+      router.refresh();
+    } finally {
+      setIsReloading(false);
+    }
   };
 
   const handleSaveFeatures = async () => {
@@ -179,6 +208,42 @@ export default function AppSummaryView({
           <div>
             <strong>MẪU THỬ</strong> – Dữ liệu được lưu trong bộ nhớ máy chủ và sẽ mất khi khởi động lại máy chủ.
           </div>
+        </div>
+      )}
+
+      {/* Banner Cảnh báo chưa lưu chức năng */}
+      {showWarning && (
+        <div
+          className="info-banner"
+          role="alert"
+          style={{
+            borderColor: "var(--ws-warning, #f59e0b)",
+            background: "rgba(245, 158, 11, 0.08)",
+            marginBottom: 20,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <div>
+            ⚠️ <strong>Đã tạo bản nháp nhưng chưa lưu được chức năng đã chọn.</strong>{" "}
+            Bấm &quot;Sửa chức năng&quot; bên dưới để chọn lại.
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowWarning(false)}
+            style={{
+              background: "transparent",
+              border: "none",
+              fontSize: 16,
+              cursor: "pointer",
+              color: "var(--ws-muted)",
+              padding: "4px 8px",
+            }}
+            aria-label="Đóng thông báo cảnh báo"
+          >
+            ✕
+          </button>
         </div>
       )}
 
@@ -262,13 +327,15 @@ export default function AppSummaryView({
           <h2 style={{ margin: 0, fontSize: 18 }}>
             Chức năng đã cấu hình ({selectedIds.length})
           </h2>
-          <button
-            type="button"
-            className="button secondary"
-            onClick={handleOpenEdit}
-          >
-            Sửa chức năng
-          </button>
+          {canEdit && (
+            <button
+              type="button"
+              className="button secondary"
+              onClick={handleOpenEdit}
+            >
+              Sửa chức năng
+            </button>
+          )}
         </div>
 
         {selectedIds.length === 0 ? (
@@ -301,7 +368,7 @@ export default function AppSummaryView({
                   {feat && (
                     <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12, color: "var(--ws-muted)" }}>
                       <span>📁 <strong>Tài nguyên:</strong> {feat.resources.join(", ")}</span>
-                      <span>⚡ <strong>Hành động:</strong> {feat.actions.join(", ")}</span>
+                      <span>⚡ <strong>Hành động:</strong> {formatFeatureActionsByResource(feat.actions)}</span>
                       {feat.dependencies.length > 0 && (
                         <span>🔗 <strong>Phụ thuộc:</strong> {feat.dependencies.map((d) => getFeatureLabel(d)).join(", ")}</span>
                       )}
@@ -356,9 +423,10 @@ export default function AppSummaryView({
                   type="button"
                   className="button secondary"
                   style={{ marginTop: 8 }}
-                  onClick={() => router.refresh()}
+                  onClick={handleReloadDraft}
+                  disabled={isReloading}
                 >
-                  Tải lại trang ngay
+                  {isReloading ? "Đang tải lại..." : "Tải lại trang ngay"}
                 </button>
               )}
             </div>

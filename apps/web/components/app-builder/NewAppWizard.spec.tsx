@@ -301,4 +301,33 @@ describe("NewAppWizard Component (TC-START)", () => {
     // Still at step 1
     expect(screen.getByRole("heading", { name: "Chọn lối vào khởi tạo" })).toBeInTheDocument();
   });
+
+  it("redirects with warning query param when patch features fails during creation", async () => {
+    vi.mocked(actions.createAppWithFeaturesAction).mockResolvedValueOnce({
+      ok: true,
+      appId: "app-partial-id",
+      patchFailed: true,
+      error: "Lỗi kết nối mạng",
+    });
+
+    render(
+      <NewAppWizard
+        initialFeatures={MOCK_CATALOG_FEATURES}
+        initialPresets={MOCK_CATALOG_PRESETS}
+      />,
+    );
+
+    fireEvent.click(screen.getByText("Bắt đầu với ERP"));
+    fireEvent.click(screen.getByRole("button", { name: /Tiếp tục: Thông tin ứng dụng/i }));
+
+    const nameInput = screen.getByLabelText(/Tên ứng dụng/i);
+    fireEvent.change(nameInput, { target: { value: "Ứng dụng Một Phần" } });
+
+    const submitBtn = screen.getByRole("button", { name: "Lưu bản nháp" });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith("/builder/app-partial-id?canh-bao=chua-luu-chuc-nang");
+    });
+  });
 });

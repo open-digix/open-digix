@@ -198,7 +198,9 @@ export function createMockApp(
 
   return {
     appId,
+    version: 1,
     lockVersion: 1,
+    definition,
     draft: definition,
   };
 }

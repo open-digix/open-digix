@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type { FeatureAction } from "./types";
+
 export interface FeatureLabelInfo {
   label: string;
   description: string;
@@ -62,6 +64,53 @@ export const PRESET_LABELS: Record<string, { label: string; description: string 
     description: "Không chọn sẵn chức năng nào; tự do lựa chọn và tùy biến cấu hình theo nhu cầu riêng.",
   },
 };
+
+export const RESOURCE_LABELS: Record<string, string> = {
+  materials: "Vật tư",
+  requests: "Yêu cầu mua",
+  receipts: "Phiếu nhập",
+  stock: "Tồn kho",
+  customers: "Khách hàng",
+  contacts: "Người liên hệ",
+  opportunities: "Cơ hội",
+};
+
+export const ACTION_LABELS: Record<string, string> = {
+  read: "xem",
+  create: "tạo",
+  update_note: "sửa ghi chú",
+  submit: "gửi duyệt",
+  approve: "phê duyệt",
+  reject: "từ chối",
+  receive: "nhận",
+  create_contact: "thêm liên hệ",
+  advance: "chuyển bước",
+};
+
+export function formatResourceLabel(resource: string): string {
+  return RESOURCE_LABELS[resource] || resource;
+}
+
+export function formatActionLabel(action: string): string {
+  return ACTION_LABELS[action] || action;
+}
+
+/**
+ * Định dạng danh sách hành động gom nhóm theo từng resource:
+ * Ví dụ: "Phiếu nhập: nhận, xem · Tồn kho: xem"
+ */
+export function formatFeatureActionsByResource(actions: FeatureAction[]): string {
+  if (!actions || actions.length === 0) return "";
+  const groups = new Map<string, string[]>();
+  for (const a of actions) {
+    const list = groups.get(a.resource) || [];
+    list.push(formatActionLabel(a.action));
+    groups.set(a.resource, list);
+  }
+  return Array.from(groups.entries())
+    .map(([resource, actionLabels]) => `${formatResourceLabel(resource)}: ${actionLabels.join(", ")}`)
+    .join(" · ");
+}
 
 /**
  * Returns user-friendly Vietnamese label for a feature id.

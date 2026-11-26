@@ -16,6 +16,7 @@
 
 "use server";
 
+import { getTenantContext } from "../api/server";
 import {
   createApp,
   getCatalogFeatures,
@@ -25,6 +26,7 @@ import {
   validateDraft,
 } from "./client";
 import type {
+  AppDraftDefinitionV25,
   CatalogFeature,
   CatalogPreset,
   FeatureId,
@@ -38,6 +40,7 @@ export interface CreateAppActionResult {
   patchFailed?: boolean;
   status?: number;
   code?: string;
+  kind?: string;
   error?: string;
   message?: string;
 }
@@ -49,6 +52,27 @@ export async function createAppWithFeaturesAction(input: {
   selectedFeatures: FeatureId[];
 }): Promise<CreateAppActionResult> {
   try {
+    const context = await getTenantContext();
+    if (!context) {
+      return {
+        ok: false,
+        status: 401,
+        code: "UNAUTHENTICATED",
+        error: "Yêu cầu đăng nhập.",
+      };
+    }
+
+    const canEdit = context.roles.some((r) => ["designer", "tenant_admin"].includes(r));
+    if (!canEdit) {
+      return {
+        ok: false,
+        status: 403,
+        code: "FORBIDDEN",
+        kind: "forbidden",
+        error: "Chỉ vai trò Thiết kế (designer) hoặc Quản trị doanh nghiệp (tenant_admin) mới có quyền thao tác này.",
+      };
+    }
+
     // Step 1: POST /v1/apps
     const created = await createApp({
       schemaVersion: "2.5",
@@ -71,7 +95,7 @@ export async function createAppWithFeaturesAction(input: {
           appId: created.appId,
           patchFailed: true,
           message:
-            "Đã tạo nháp nhưng chưa lưu được chức năng. Bạn có thể tiếp tục cấu hình chức năng trong màn hình quản trị nháp.",
+            "Đã tạo bản nháp nhưng chưa lưu được chức năng đã chọn. Bấm \"Sửa chức năng\" để chọn lại.",
         };
       }
     }
@@ -92,6 +116,7 @@ export async function createAppWithFeaturesAction(input: {
       ok: false,
       status: errorObj.status,
       code: errorObj.code ?? "CREATE_FAILED",
+      kind: errorObj.kind,
       error: errorObj.message ?? "Không thể tạo ứng dụng.",
     };
   }
@@ -110,6 +135,27 @@ export async function patchDraftFeaturesAction(
   error?: string;
 }> {
   try {
+    const context = await getTenantContext();
+    if (!context) {
+      return {
+        ok: false,
+        status: 401,
+        code: "UNAUTHENTICATED",
+        error: "Yêu cầu đăng nhập.",
+      };
+    }
+
+    const canEdit = context.roles.some((r) => ["designer", "tenant_admin"].includes(r));
+    if (!canEdit) {
+      return {
+        ok: false,
+        status: 403,
+        code: "FORBIDDEN",
+        kind: "forbidden",
+        error: "Chỉ vai trò Thiết kế (designer) hoặc Quản trị doanh nghiệp (tenant_admin) mới có quyền thao tác này.",
+      };
+    }
+
     const updated = await patchDraft(appId, {
       lockVersion,
       features: selectedFeatures.map((id) => ({ id, version: 1 })),
@@ -134,12 +180,34 @@ export async function patchDraftFeaturesAction(
 
     return {
       ok: false,
-      status,
+      status: isConflict ? 409 : status,
       kind: isConflict ? "conflict" : errorObj.kind,
-      code: errorObj.code ?? (isConflict ? "VERSION_CONFLICT" : "PATCH_FAILED"),
+      code: isConflict ? "VERSION_CONFLICT" : errorObj.code ?? "PATCH_FAILED",
       error: isConflict
-        ? "Bản nháp đã thay đổi, vui lòng tải lại."
-        : (errorObj.message ?? "Không thể cập nhật chức năng."),
+        ? "Bản nháp đã được chỉnh sửa bởi phiên khác. Vui lòng tải lại trang để xem nội dung mới nhất."
+        : errorObj.message ?? "Không thể lưu cập nhật chức năng.",
+    };
+  }
+}
+
+export async function getDraftV25Action(appId: string): Promise<{
+  ok: boolean;
+  draft?: AppDraftDefinitionV25;
+  lockVersion?: number;
+  error?: string;
+}> {
+  try {
+    const res = await getDraft(appId);
+    return {
+      ok: true,
+      draft: res.definition,
+      lockVersion: res.lockVersion,
+    };
+  } catch (err: unknown) {
+    const errorObj = err as { message?: string };
+    return {
+      ok: false,
+      error: errorObj.message || "Không thể tải lại bản nháp.",
     };
   }
 }
@@ -168,26 +236,16 @@ export async function validateDraftAction(appId: string): Promise<{
   }
 }
 
-export async function getAppConfigCatalogAction(): Promise<{
+export async function fetchCatalogAction(): Promise<{
   features: CatalogFeature[];
   presets: CatalogPreset[];
 }> {
-  const [featRes, presetRes] = await Promise.all([
+  const [featuresRes, presetsRes] = await Promise.all([
     getCatalogFeatures(),
     getPresets(),
   ]);
   return {
-    features: featRes.features,
-    presets: presetRes.presets,
+    features: featuresRes.features,
+    presets: presetsRes.presets,
   };
-}
-
-export async function getDraftAction(appId: string) {
-  try {
-    const draft = await getDraft(appId);
-    return { ok: true, draft };
-  } catch (err: unknown) {
-    const errorObj = err as { message?: string };
-    return { ok: false, error: errorObj.message ?? "Không thể tải bản nháp." };
-  }
 }

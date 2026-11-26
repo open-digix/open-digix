@@ -31,6 +31,7 @@ vi.mock("next/navigation", () => ({
 vi.mock("../../lib/app-config/actions", () => ({
   patchDraftFeaturesAction: vi.fn(),
   validateDraftAction: vi.fn(),
+  getDraftV25Action: vi.fn(),
 }));
 
 describe("AppSummaryView Component (v2.5 draft summary)", () => {
@@ -181,12 +182,17 @@ describe("AppSummaryView Component (v2.5 draft summary)", () => {
     expect(screen.queryByRole("heading", { name: "Chỉnh sửa chức năng ứng dụng" })).not.toBeInTheDocument();
   });
 
-  it("handles 409 VERSION_CONFLICT when saving features", async () => {
+  it("handles 409 VERSION_CONFLICT when saving features and reloads fresh draft", async () => {
     vi.mocked(actions.patchDraftFeaturesAction).mockResolvedValueOnce({
       ok: false,
       status: 409,
       code: "VERSION_CONFLICT",
       error: "Bản nháp đã thay đổi, vui lòng tải lại.",
+    });
+    vi.mocked(actions.getDraftV25Action).mockResolvedValueOnce({
+      ok: true,
+      draft: { ...sampleDraft, name: "ERP Đã được cập nhật" },
+      lockVersion: 5,
     });
 
     render(
@@ -212,7 +218,60 @@ describe("AppSummaryView Component (v2.5 draft summary)", () => {
     const reloadBtn = screen.getByRole("button", { name: "Tải lại trang ngay" });
     expect(reloadBtn).toBeInTheDocument();
     fireEvent.click(reloadBtn);
-    expect(mockRefresh).toHaveBeenCalledTimes(1);
+
+    await waitFor(() => {
+      expect(actions.getDraftV25Action).toHaveBeenCalledWith("app-123");
+      expect(screen.getByText("Khóa: v5")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "ERP Đã được cập nhật" })).toBeInTheDocument();
+    });
+  });
+
+  it("hides 'Sửa chức năng' button when canEdit is false", () => {
+    render(
+      <AppSummaryView
+        initialDraft={sampleDraft}
+        initialLockVersion={1}
+        catalogFeatures={MOCK_CATALOG_FEATURES}
+        canEdit={false}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Sửa chức năng" })).not.toBeInTheDocument();
+  });
+
+  it("shows warning banner when canhBao is 'chua-luu-chuc-nang' and closes on click", () => {
+    render(
+      <AppSummaryView
+        initialDraft={sampleDraft}
+        initialLockVersion={1}
+        catalogFeatures={MOCK_CATALOG_FEATURES}
+        canhBao="chua-luu-chuc-nang"
+      />,
+    );
+
+    expect(
+      screen.getByText(/Đã tạo bản nháp nhưng chưa lưu được chức năng đã chọn/i),
+    ).toBeInTheDocument();
+
+    const closeBtn = screen.getByRole("button", { name: "Đóng thông báo cảnh báo" });
+    fireEvent.click(closeBtn);
+
+    expect(
+      screen.queryByText(/Đã tạo bản nháp nhưng chưa lưu được chức năng đã chọn/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("formats feature actions grouped by resource", () => {
+    render(
+      <AppSummaryView
+        initialDraft={sampleDraft}
+        initialLockVersion={1}
+        catalogFeatures={MOCK_CATALOG_FEATURES}
+      />,
+    );
+
+    // erp.inventory has actions for receipts and stock
+    expect(screen.getByText(/Phiếu nhập: nhận, xem · Tồn kho: xem/i)).toBeInTheDocument();
   });
 
   it("handles unknown custom 409 status code when saving features", async () => {

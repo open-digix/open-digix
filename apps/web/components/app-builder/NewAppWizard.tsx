@@ -30,6 +30,7 @@ import {
   getFeatureLabel,
   getFeatureDescription,
   getDomainLabel,
+  formatFeatureActionsByResource,
 } from "../../lib/app-config/feature-labels";
 import {
   getMissingDependencies,
@@ -273,12 +274,11 @@ export default function NewAppWizard({
         return;
       }
 
-      if (res.patchFailed && res.message) {
-        setPatchWarning(res.message);
+      if (res.patchFailed) {
+        router.push(`/builder/${res.appId}?canh-bao=chua-luu-chuc-nang`);
+      } else {
+        router.push(`/builder/${res.appId}`);
       }
-
-      // Redirect to builder app page
-      router.push(`/builder/${res.appId}`);
     } catch {
       setIsSubmitting(false);
       setSubmitError("Đã xảy ra lỗi không mong muốn khi lưu ứng dụng.");
@@ -569,7 +569,7 @@ export default function NewAppWizard({
                                 📁 <strong>Tài nguyên:</strong> {feat.resources.join(", ")}
                               </span>
                               <span>
-                                ⚡ <strong>Hành động:</strong> {feat.actions.join(", ")}
+                                ⚡ <strong>Hành động:</strong> {formatFeatureActionsByResource(feat.actions)}
                               </span>
                               {feat.dependencies.length > 0 && (
                                 <span>

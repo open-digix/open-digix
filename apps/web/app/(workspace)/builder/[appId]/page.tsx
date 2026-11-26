@@ -38,7 +38,7 @@ import type {
 
 interface BuilderAppPageProps {
   params: Promise<{ appId: string }>;
-  searchParams: Promise<{ step?: string }>;
+  searchParams: Promise<{ step?: string; "canh-bao"?: string }>;
 }
 
 export default async function BuilderAppPage({
@@ -53,7 +53,9 @@ export default async function BuilderAppPage({
   }
 
   const { appId } = await params;
-  const { step = "source" } = await searchParams;
+  const resolvedSearchParams = await searchParams;
+  const step = resolvedSearchParams.step || "source";
+  const canhBao = resolvedSearchParams["canh-bao"];
 
   if (!isValidUUID(appId)) {
     return (
@@ -115,6 +117,8 @@ export default async function BuilderAppPage({
         initialLockVersion={v25Draft.lockVersion}
         catalogFeatures={v25CatalogFeatures}
         isMockMode={isMockMode}
+        canEdit={canEdit}
+        canhBao={canhBao}
       />
     );
   }

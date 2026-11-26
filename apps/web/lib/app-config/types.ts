@@ -32,13 +32,19 @@ export type StartingPoint = "erp" | "crm" | "blank";
 
 export type FeatureDomain = "erp" | "crm" | string;
 
+export interface FeatureAction {
+  resource: string;
+  action: string;
+  permission: string;
+}
+
 export interface CatalogFeature {
   id: FeatureId;
   version: number;
   domain: FeatureDomain;
   dependencies: FeatureId[];
   resources: string[];
-  actions: string[];
+  actions: FeatureAction[];
   permissions: string[];
   components: Array<"form" | "table" | "detail" | "metric" | "action">;
   status: string; // e.g., "supported", "beta", "deprecated"
@@ -118,6 +124,13 @@ export interface AppDraftDefinitionV25 {
   workflows?: AppDraftWorkflow[];
 }
 
+export interface AppDraftStored {
+  definition: AppDraftDefinitionV25;
+  lockVersion: number;
+  revision: number;
+  updatedAt: string;
+}
+
 export interface AppSummary {
   appId: string;
   appKey: string;
@@ -132,7 +145,7 @@ export interface AppSummary {
 }
 
 export interface CreateAppRequest {
-  schemaVersion: "2.5";
+  schemaVersion?: "2.5";
   name: string;
   appKey: string;
   startingPoint?: StartingPoint;
@@ -141,7 +154,9 @@ export interface CreateAppRequest {
 
 export interface CreateAppResponse {
   appId: string;
+  version: number;
   lockVersion: number;
+  definition: AppDraftDefinitionV25;
   draft: AppDraftDefinitionV25;
 }
 
@@ -153,6 +168,13 @@ export interface PatchDraftRequest {
   roles?: AppDraftRole[];
   pages?: AppDraftPage[];
   workflows?: AppDraftWorkflow[];
+}
+
+export interface PatchDraftResponse {
+  revision: number;
+  lockVersion: number;
+  checksum: string;
+  definition: AppDraftDefinitionV25;
 }
 
 export interface DraftResponseV25 {
@@ -171,7 +193,7 @@ export interface ValidateDraftIssue {
 
 export interface ValidateDraftResponse {
   valid: boolean;
-  snapshotChecksum?: string;
+  snapshotChecksum: string;
   issues: ValidateDraftIssue[];
 }
 
