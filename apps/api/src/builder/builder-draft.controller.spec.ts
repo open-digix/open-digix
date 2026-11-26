@@ -1,4 +1,5 @@
 import type { TenantContext } from '../identity/identity.types';
+import { REQUIRED_APP_PERMISSION } from '../identity/app-permission.decorator';
 import { REQUIRED_ROLES } from '../identity/roles.decorator';
 import { TENANT_CONTEXT_REQUIRED } from '../identity/tenant-context.decorator';
 import { BuilderDraftController } from './builder-draft.controller';
@@ -124,18 +125,18 @@ describe('BuilderDraftController', () => {
       });
     });
 
-    it('requires designer, publisher, or tenant_admin roles', () => {
+    it('uses app permission and tenant context without tenant role guard', () => {
       const handler = Object.getOwnPropertyDescriptor(
         BuilderDraftController.prototype,
         'get',
       )?.value as object;
 
-      expect(Reflect.getMetadata(REQUIRED_ROLES, handler)).toEqual([
-        'designer',
-        'publisher',
-        'tenant_admin',
-      ]);
+      expect(Reflect.getMetadata(REQUIRED_ROLES, handler)).toBeUndefined();
       expect(Reflect.getMetadata(TENANT_CONTEXT_REQUIRED, handler)).toBe(true);
+      expect(Reflect.getMetadata(REQUIRED_APP_PERMISSION, handler)).toEqual({
+        permission: 'app.draft.read',
+        appIdParam: 'appId',
+      });
     });
   });
 
@@ -164,17 +165,18 @@ describe('BuilderDraftController', () => {
       });
     });
 
-    it('requires designer or tenant_admin roles', () => {
+    it('uses app permission and tenant context without tenant role guard', () => {
       const handler = Object.getOwnPropertyDescriptor(
         BuilderDraftController.prototype,
         'normalize',
       )?.value as object;
 
-      expect(Reflect.getMetadata(REQUIRED_ROLES, handler)).toEqual([
-        'designer',
-        'tenant_admin',
-      ]);
+      expect(Reflect.getMetadata(REQUIRED_ROLES, handler)).toBeUndefined();
       expect(Reflect.getMetadata(TENANT_CONTEXT_REQUIRED, handler)).toBe(true);
+      expect(Reflect.getMetadata(REQUIRED_APP_PERMISSION, handler)).toEqual({
+        permission: 'app.draft.write',
+        appIdParam: 'appId',
+      });
     });
   });
 
@@ -209,17 +211,18 @@ describe('BuilderDraftController', () => {
       });
     });
 
-    it('requires designer or tenant_admin roles (publisher not allowed to edit)', () => {
+    it('uses app permission and tenant context without tenant role guard', () => {
       const handler = Object.getOwnPropertyDescriptor(
         BuilderDraftController.prototype,
         'patch',
       )?.value as object;
 
-      expect(Reflect.getMetadata(REQUIRED_ROLES, handler)).toEqual([
-        'designer',
-        'tenant_admin',
-      ]);
+      expect(Reflect.getMetadata(REQUIRED_ROLES, handler)).toBeUndefined();
       expect(Reflect.getMetadata(TENANT_CONTEXT_REQUIRED, handler)).toBe(true);
+      expect(Reflect.getMetadata(REQUIRED_APP_PERMISSION, handler)).toEqual({
+        permission: 'app.draft.write',
+        appIdParam: 'appId',
+      });
     });
   });
 
@@ -239,18 +242,18 @@ describe('BuilderDraftController', () => {
       });
     });
 
-    it('requires designer, publisher, or tenant_admin roles', () => {
+    it('uses app permission and tenant context without tenant role guard', () => {
       const handler = Object.getOwnPropertyDescriptor(
         BuilderDraftController.prototype,
         'validate',
       )?.value as object;
 
-      expect(Reflect.getMetadata(REQUIRED_ROLES, handler)).toEqual([
-        'designer',
-        'publisher',
-        'tenant_admin',
-      ]);
+      expect(Reflect.getMetadata(REQUIRED_ROLES, handler)).toBeUndefined();
       expect(Reflect.getMetadata(TENANT_CONTEXT_REQUIRED, handler)).toBe(true);
+      expect(Reflect.getMetadata(REQUIRED_APP_PERMISSION, handler)).toEqual({
+        permission: 'app.draft.validate',
+        appIdParam: 'appId',
+      });
     });
   });
 });

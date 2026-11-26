@@ -8,7 +8,7 @@ import {
   Post,
 } from '@nestjs/common';
 import type { TenantContext } from '../identity/identity.types';
-import { RequireRoles } from '../identity/roles.decorator';
+import { RequireAppPermission } from '../identity/app-permission.decorator';
 import { CurrentTenantContext } from '../identity/tenant-context.decorator';
 import { BuilderSourceService } from './builder-source.service';
 import type { BuilderSourceSegment } from './builder.types';
@@ -30,7 +30,7 @@ export class BuilderSourceController {
 
   @Post(':appId/descriptions')
   @HttpCode(HttpStatus.CREATED)
-  @RequireRoles('designer', 'tenant_admin')
+  @RequireAppPermission('app.source.write')
   async create(
     @Param('appId') appId: string,
     @Body() body: unknown,

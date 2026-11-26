@@ -5,6 +5,8 @@ describe('database migrations', () => {
     expect(migrations.map((migration) => migration.id)).toEqual([
       '0001_initial_schema',
       '0002_builder_drafts',
+      '0003_app_acl',
+      '0004_app_acl_backfill',
     ]);
   });
 
@@ -55,6 +57,35 @@ describe('database migrations', () => {
     );
     expect(migrations[1].sql).toContain(
       'ADD CONSTRAINT application_versions_current_revision_fk',
+    );
+  });
+
+  it.each([
+    'application_roles',
+    'application_role_permissions',
+    'app_membership_roles',
+  ])('creates the %s table for app ACL', (tableName) => {
+    expect(migrations[2].sql).toContain(`CREATE TABLE ${tableName}`);
+  });
+
+  it('keeps app ACL relationships scoped to tenant and application', () => {
+    expect(migrations[2].sql).toContain(
+      'FOREIGN KEY (tenant_id, application_id)',
+    );
+    expect(migrations[2].sql).toContain(
+      'FOREIGN KEY (tenant_id, application_id, role_id)',
+    );
+  });
+
+  it('backfills app roles, permissions and creator assignments', () => {
+    expect(migrations[3].sql).toContain('INSERT INTO application_roles');
+    expect(migrations[3].sql).toContain(
+      'INSERT INTO application_role_permissions',
+    );
+    expect(migrations[3].sql).toContain('INSERT INTO app_membership_roles');
+    expect(migrations[3].sql).toContain('created_by_membership_id');
+    expect(migrations[3].sql).toContain(
+      'ON CONFLICT (tenant_id, application_id, code) DO NOTHING',
     );
   });
 });

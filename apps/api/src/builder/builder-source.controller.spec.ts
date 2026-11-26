@@ -1,4 +1,5 @@
 import type { TenantContext } from '../identity/identity.types';
+import { REQUIRED_APP_PERMISSION } from '../identity/app-permission.decorator';
 import { REQUIRED_ROLES } from '../identity/roles.decorator';
 import { TENANT_CONTEXT_REQUIRED } from '../identity/tenant-context.decorator';
 import { BuilderSourceController } from './builder-source.controller';
@@ -63,16 +64,17 @@ describe('BuilderSourceController', () => {
     expect(createRevision).not.toHaveBeenCalled();
   });
 
-  it('requires edit role and tenant context', () => {
+  it('uses app permission and tenant context without tenant role guard', () => {
     const handler = Object.getOwnPropertyDescriptor(
       BuilderSourceController.prototype,
       'create',
     )?.value as object;
 
-    expect(Reflect.getMetadata(REQUIRED_ROLES, handler)).toEqual([
-      'designer',
-      'tenant_admin',
-    ]);
+    expect(Reflect.getMetadata(REQUIRED_ROLES, handler)).toBeUndefined();
     expect(Reflect.getMetadata(TENANT_CONTEXT_REQUIRED, handler)).toBe(true);
+    expect(Reflect.getMetadata(REQUIRED_APP_PERMISSION, handler)).toEqual({
+      permission: 'app.source.write',
+      appIdParam: 'appId',
+    });
   });
 });
