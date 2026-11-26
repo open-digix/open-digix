@@ -14,39 +14,8 @@
  * limitations under the License.
  */
 
-import { connection } from "next/server";
 import { redirect } from "next/navigation";
-import { getTenantContext } from "../../../lib/api/server";
-import DashboardOverview from "../../../components/workspace/DashboardOverview";
 
-export default async function DashboardPage() {
-  await connection();
-  const context = await getTenantContext();
-
-  if (!context) {
-    redirect("/login");
-  }
-
-  if (context.needsTenantSelection || !context.currentTenant) {
-    return (
-      <div className="page">
-        <div className="info-banner" role="alert">
-          <div>
-            <b>Vui lòng chọn doanh nghiệp</b>
-            <p style={{ margin: "4px 0 0" }}>
-              Hãy chọn một doanh nghiệp ở thanh trên cùng để xem tổng quan.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <DashboardOverview
-      user={context.me.user}
-      tenant={context.currentTenant}
-      roles={context.roles}
-    />
-  );
+export default function DashboardPage() {
+  redirect("/apps");
 }

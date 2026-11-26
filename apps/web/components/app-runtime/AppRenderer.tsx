@@ -90,8 +90,11 @@ export default function AppRenderer({
 
   return (
     <div
-      className={`app-runtime-root flex flex-col w-full ${viewport === "375" ? "max-w-[375px]" : ""}`}
+      className={`app-runtime-root ${viewport === "375" ? "max-w-[375px]" : ""}`}
       style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
         maxWidth: viewport === "375" ? "375px" : "100%",
         margin: "0 auto",
       }}
@@ -113,7 +116,7 @@ export default function AppRenderer({
               <line x1="12" y1="9" x2="12" y2="13" />
               <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
-            <strong>MẪU THỬ</strong>
+            <strong style={{ whiteSpace: "nowrap", flexShrink: 0 }}>MẪU THỬ</strong>
             <span>– Dữ liệu mô phỏng, thao tác không ghi vào cơ sở dữ liệu thật.</span>
           </div>
           {roleId && (

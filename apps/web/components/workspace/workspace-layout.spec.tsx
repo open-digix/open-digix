@@ -65,10 +65,11 @@ describe("Workspace Layout Components", () => {
       />,
     );
 
-    expect(screen.getByText("Tổng quan")).toBeInTheDocument();
+    expect(screen.getByText("HỆ THỐNG")).toBeInTheDocument();
     expect(screen.getByText("Ứng dụng")).toBeInTheDocument();
-    expect(screen.getByText("Việc của tôi")).toBeInTheDocument();
-    expect(screen.queryByText("Thiết kế quy trình")).not.toBeInTheDocument();
+    expect(screen.getByText("Trợ lý")).toBeInTheDocument();
+    expect(screen.getByText("Cài đặt")).toBeInTheDocument();
+    expect(screen.queryByText("Thiết kế ứng dụng")).not.toBeInTheDocument();
   });
 
   it("Sidebar shows Builder nav link when user has designer role", () => {
@@ -80,7 +81,7 @@ describe("Workspace Layout Components", () => {
       />,
     );
 
-    expect(screen.getByText("Thiết kế quy trình")).toBeInTheDocument();
+    expect(screen.getByText("Thiết kế ứng dụng")).toBeInTheDocument();
   });
 
   it("Sidebar S2 renders Pin button and data-tip attributes on nav links", () => {
@@ -100,8 +101,8 @@ describe("Workspace Layout Components", () => {
     expect(pinBtn).toHaveAttribute("aria-pressed", "false");
 
     const links = screen.getAllByRole("link");
-    const overviewLink = links.find((l) => l.getAttribute("data-tip") === "Tổng quan");
-    expect(overviewLink).toBeDefined();
+    const appsLink = links.find((l) => l.getAttribute("data-tip") === "Ứng dụng");
+    expect(appsLink).toBeDefined();
   });
 
   it("Sidebar S2 shows unpin label when pinned", () => {
@@ -132,7 +133,7 @@ describe("Workspace Layout Components", () => {
     );
 
     expect(screen.getByText("DD")).toBeInTheDocument();
-    expect(screen.getByText("Tổng quan")).toBeInTheDocument();
+    expect(screen.getAllByText("Không gian làm việc").length).toBeGreaterThanOrEqual(1);
     // Verify notifications button is NOT in DOM
     expect(screen.queryByLabelText("Thông báo")).not.toBeInTheDocument();
   });
