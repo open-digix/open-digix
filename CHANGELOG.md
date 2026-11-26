@@ -20,6 +20,19 @@ Mọi thay đổi đáng chú ý của dự án sẽ được ghi nhận tại �
 
 ## [Chưa phát hành] - 26/11/2026
 
+### Tinh chỉnh Logo thanh bên & Hiệu ứng xoay (WEB-UI05, #82)
+- **Tách logo thành 2 phần độc lập:**
+  - Dấu X: inline SVG dùng chung cho cả trạng thái thu gọn và mở rộng, loại bỏ ô nền navy bo góc phía sau, tăng kích thước hiển thị lên 40×40px căn giữa hoàn hảo trong thanh bên 76px.
+  - Chữ "DigiX Lab": trích xuất file mới `public/brand/digix-wordmark-dark.svg` căn chỉnh viewBox vừa khít.
+- **Trải nghiệm mở rộng mượt mà:**
+  - Khi thanh bên mở rộng (hover rê chuột `peek` hoặc bấm ghim `pinned`), dấu X giữ nguyên vị trí 40px không bị nhảy chỗ.
+  - Chữ "DigiX Lab" hiện bên phải dấu X cách 10px, hiệu ứng mờ dần và trượt nhẹ 8px từ trái sang trong 200ms.
+- **Hiệu ứng xoay 1 vòng tròn 360°:**
+  - Kích hoạt xoay 1 vòng 360° trong 600ms quanh tâm khi chuyển từ thu gọn sang mở rộng (`mini -> peek|pinned` hoặc mở drawer trên mobile).
+  - Tự động gỡ bỏ class xoay khi kết thúc chuyển động (`animationend`).
+  - Không xoay khi tải trang lúc thanh bên đã ghim sẵn hoặc khi đang mở mà rê chuột qua lại.
+  - Tôn trọng tùy chọn hệ điều hành `prefers-reduced-motion: reduce`: tắt hoàn toàn hiệu ứng xoay và trượt.
+
 ### Khung ứng dụng theo App & Điều hướng v2.5 (WEB-F07, #48)
 - **Thanh bên điều hướng theo ứng dụng (`Sidebar`):**
   - Khi truy cập `/app/[appId]/...`: nhóm trên hiển thị tên app in hoa cùng danh sách các trang trong app (`/app/${appId}/${page.id}`); nhóm dưới là `HỆ THỐNG` gồm Ứng dụng (`/apps`), Trợ lý (`/assistant`), Thiết kế ứng dụng (`/builder`), Cài đặt (`/settings`).

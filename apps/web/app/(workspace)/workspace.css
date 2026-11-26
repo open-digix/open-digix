@@ -306,15 +306,28 @@
 }
 
 .ws-root .brand {
-  height:84px;display:flex;align-items:center;padding:0 26px;border-bottom:1px solid var(--ws-c-ffffff12);gap:10px
+  height:84px;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid var(--ws-c-ffffff12);gap:10px;text-decoration:none;overflow:hidden
 }
 
-.ws-root .brand img, .ws-root .brand .full {
-  width:154px;height:auto;transition:opacity .2s
+.ws-root .brand-mark {
+  width:40px;height:40px;flex-shrink:0;display:block;transform-origin:center
 }
 
-.ws-root .brand .mini {
-  width:30px;height:30px;display:none
+@keyframes ws-brand-spin {
+  from {
+    transform:rotate(0deg);
+  }
+  to {
+    transform:rotate(360deg);
+  }
+}
+
+.ws-root .brand-mark.spin {
+  animation:ws-brand-spin 600ms var(--ws-ease) 1
+}
+
+.ws-root .brand-wordmark {
+  width:104px;height:auto;flex-shrink:0;display:block;opacity:1;transform:translateX(0);transition:opacity 200ms var(--ws-ease),transform 200ms var(--ws-ease)
 }
 
 .ws-root .workspace-tag {
@@ -1331,15 +1344,15 @@
 
   .ws-root.mini .brand,
   .ws-root:not(.pinned):not(.peek) .brand {
-    padding:0 23px
+    padding:0 18px
   }
-  .ws-root.mini .brand .full,
-  .ws-root:not(.pinned):not(.peek) .brand .full {
-    display:none
-  }
-  .ws-root.mini .brand .mini,
-  .ws-root:not(.pinned):not(.peek) .brand .mini {
-    display:block
+  .ws-root.mini .brand-wordmark,
+  .ws-root:not(.pinned):not(.peek) .brand-wordmark {
+    display:none;
+    opacity:0;
+    width:0;
+    transform:translateX(-8px);
+    pointer-events:none
   }
   .ws-root.mini .workspace-tag,
   .ws-root:not(.pinned):not(.peek) .workspace-tag {
@@ -1578,6 +1591,12 @@
 @media(prefers-reduced-motion:reduce) {
   .ws-root, .ws-root *, .ws-root *:before, .ws-root *:after {
     scroll-behavior:auto!important;transition:none!important;animation:none!important
+  }
+  .ws-root .brand-mark.spin {
+    animation:none!important
+  }
+  .ws-root .brand-wordmark {
+    transition:none!important;transform:none!important
   }
 }
 
