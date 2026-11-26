@@ -18,10 +18,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { listAppsAction } from "../../../lib/app-config/actions";
-import type { AppSummary } from "../../../lib/app-config/types";
-import { useMockToast } from "../../../components/workspace/MockToast";
-import { getAppInitials } from "../../../lib/app-runtime/initials";
+import { listAppsAction } from "@/lib/app-config/actions";
+import type { AppSummary } from "@/lib/app-config/types";
+import { useMockToast } from "@/components/workspace/MockToast";
+import { getAppInitials } from "@/lib/app-runtime/initials";
 
 export default function AppsPage() {
   const [apps, setApps] = useState<AppSummary[]>([]);

@@ -89,9 +89,9 @@ export default function Sidebar({
 
   const handleTipEnter =
     (text: string) =>
-    (e: React.MouseEvent<HTMLElement> | React.FocusEvent<HTMLElement>) => {
-      onShowTip?.(text, e.currentTarget);
-    };
+      (e: React.MouseEvent<HTMLElement> | React.FocusEvent<HTMLElement>) => {
+        onShowTip?.(text, e.currentTarget);
+      };
 
   return (
     <aside
