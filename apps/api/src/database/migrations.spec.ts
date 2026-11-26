@@ -78,18 +78,12 @@ describe('database migrations', () => {
   });
 
   it('backfills app roles, permissions and creator assignments', () => {
-    expect(migrations[3].sql).toContain(
-      'INSERT INTO application_roles',
-    );
+    expect(migrations[3].sql).toContain('INSERT INTO application_roles');
     expect(migrations[3].sql).toContain(
       'INSERT INTO application_role_permissions',
     );
-    expect(migrations[3].sql).toContain(
-      'INSERT INTO app_membership_roles',
-    );
-    expect(migrations[3].sql).toContain(
-      'created_by_membership_id',
-    );
+    expect(migrations[3].sql).toContain('INSERT INTO app_membership_roles');
+    expect(migrations[3].sql).toContain('created_by_membership_id');
     expect(migrations[3].sql).toContain(
       'ON CONFLICT (tenant_id, application_id, code) DO NOTHING',
     );
