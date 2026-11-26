@@ -1,6 +1,14 @@
 # Local-only, file-driven APISIX: no etcd or Admin API.
 apisix:
   node_listen: 9080
+# Keep gateway-side denials observable without logging Authorization, query strings,
+# Referer or user-agent (all may carry credentials or personal data).
+nginx_config:
+  # OIDC writes rejected requests (including their raw query string) at error
+  # level. Keep critical failures only; the sanitized access log records denies.
+  error_log_level: crit
+  http:
+    access_log_format: '$time_iso8601 $remote_addr "$request_method $uri" $status $request_id $upstream_status'
 deployment:
   role: data_plane
   role_data_plane:
