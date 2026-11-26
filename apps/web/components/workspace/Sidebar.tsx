@@ -111,9 +111,9 @@ export default function Sidebar({
 
   const handleTipEnter =
     (text: string) =>
-    (e: React.MouseEvent<HTMLElement> | React.FocusEvent<HTMLElement>) => {
-      onShowTip?.(text, e.currentTarget);
-    };
+      (e: React.MouseEvent<HTMLElement> | React.FocusEvent<HTMLElement>) => {
+        onShowTip?.(text, e.currentTarget);
+      };
 
   return (
     <aside
@@ -260,7 +260,7 @@ export default function Sidebar({
         {/* Thiết kế ứng dụng - chỉ cho designer, publisher, tenant_admin, admin, owner */}
         {canAccessBuilder && (
           <Link
-            href="/builder"
+            href="/apps?tab=draft"
             className={`nav-link ${isActive("/builder") ? "active" : ""}`}
             aria-current={isActive("/builder") ? "page" : undefined}
             data-tip="Thiết kế ứng dụng"

@@ -15,7 +15,7 @@
  */
 
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import TenantSelect from "./TenantSelect";
@@ -136,6 +136,32 @@ describe("Workspace Layout Components", () => {
     expect(screen.getAllByText("Không gian làm việc").length).toBeGreaterThanOrEqual(1);
     // Verify notifications button is NOT in DOM
     expect(screen.queryByLabelText("Thông báo")).not.toBeInTheDocument();
+  });
+
+  it("Topbar account menu toggles, displays 'Đổi mật khẩu', and closes on Escape", () => {
+    render(
+      <Topbar
+        user={mockUser}
+        activeMemberships={mockMemberships}
+        currentTenantId="tenant-alpha-uuid"
+        roles={["employee"]}
+        isSidebarOpen={false}
+        onToggleSidebar={vi.fn()}
+      />,
+    );
+
+    const avatarBtn = screen.getByRole("button", { name: /Tài khoản Dung Demo/i });
+    expect(avatarBtn).toBeInTheDocument();
+    expect(screen.queryByText("Đổi mật khẩu")).not.toBeInTheDocument();
+
+    // Click avatar button to open menu
+    fireEvent.click(avatarBtn);
+    expect(screen.getByText("Đổi mật khẩu")).toBeInTheDocument();
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+
+    // Press Escape to close menu
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByText("Đổi mật khẩu")).not.toBeInTheDocument();
   });
 
   it("TenantSelect renders plain text when exactly 1 tenant is available", () => {

@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
+import type { Metadata } from "next";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Thiết kế ứng dụng · DigiX",
+};
 import { getTenantContext } from "../../../../lib/api/server";
 import { isValidUUID } from "../../../../lib/builder/types";
 import { getDraftAction } from "../../../../lib/builder/actions";

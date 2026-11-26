@@ -1,10 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import BackButton from "./BackButton";
 import "../register/register.css";
 
-export const metadata = {
-  title: "Điều khoản sử dụng & Chính sách quyền riêng tư | DigiX",
-  description: "Bản nháp quy định sử dụng và chính sách bảo vệ dữ liệu trên nền tảng DigiX.",
+export const metadata: Metadata = {
+  title: "Điều khoản · DigiX",
+  description: "Bản nháp quy định sử dụng và chính sách bảo vệ dữ liệu trên nền tảng DigiX theo kiến trúc v2.5.",
 };
 
 export default function DieuKhoanPage() {
@@ -22,12 +24,13 @@ export default function DieuKhoanPage() {
         </div>
         <div className="pitch">
           <h2>
-            Minh bạch &amp;
+            Ứng dụng linh hoạt.
             <br />
-            Bảo mật thông tin.
+            Dữ liệu độc lập.
           </h2>
           <p>
-            DigiX tôn trọng quyền riêng tư của bạn và chỉ lưu trữ các thông tin thiết yếu phục vụ vận hành quy trình doanh nghiệp.
+            Doanh nghiệp ghép các ứng dụng ERP/CRM từ tính năng có sẵn, mỗi ứng
+            dụng có dữ liệu và quyền riêng.
           </p>
         </div>
         <div className="side-foot">
@@ -39,9 +42,22 @@ export default function DieuKhoanPage() {
       </aside>
 
       <main className="main" style={{ alignItems: "start", overflowY: "auto" }}>
-        <section className="card" style={{ width: "min(680px, 100%)", paddingBottom: "32px" }} aria-label="Điều khoản và quyền riêng tư">
+        <section
+          className="card"
+          style={{ width: "min(680px, 100%)", paddingBottom: "32px" }}
+          aria-label="Điều khoản và quyền riêng tư"
+        >
           <div className="pane on">
-            <p className="eyebrow" style={{ color: "#b45309", background: "#fef3c7", display: "inline-block", padding: "4px 10px", borderRadius: "6px" }}>
+            <p
+              className="eyebrow"
+              style={{
+                color: "#b45309",
+                background: "#fef3c7",
+                display: "inline-block",
+                padding: "4px 10px",
+                borderRadius: "6px",
+              }}
+            >
               Bản nháp – chờ duyệt
             </p>
             <h1 className="title" style={{ marginTop: "12px" }}>
@@ -52,42 +68,86 @@ export default function DieuKhoanPage() {
             </p>
 
             <article id="dieu-khoan" style={{ marginTop: "24px" }}>
-              <h2 style={{ fontSize: "17px", fontWeight: "600", color: "var(--ink)", marginBottom: "10px" }}>
+              <h2
+                style={{
+                  fontSize: "17px",
+                  fontWeight: "600",
+                  color: "var(--ink)",
+                  marginBottom: "10px",
+                }}
+              >
                 1. Điều khoản sử dụng
               </h2>
-              <div style={{ fontSize: "13.5px", lineHeight: "1.65", color: "var(--ink-2)", display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div
+                style={{
+                  fontSize: "13.5px",
+                  lineHeight: "1.65",
+                  color: "var(--ink-2)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                }}
+              >
                 <p>
-                  • <b>Mục đích sử dụng:</b> Nền tảng DigiX hỗ trợ thiết kế, kiểm tra, vận hành và truy vết các quy trình nghiệp vụ số cho doanh nghiệp.
+                  • <b>Ứng dụng nghiệp vụ v2.5:</b> Nền tảng DigiX hỗ trợ doanh nghiệp ghép nối các ứng dụng nghiệp vụ (ERP, CRM) từ các khối tính năng sẵn có. Mỗi ứng dụng vận hành theo luồng quy trình độc lập và phục vụ mục tiêu chuyên biệt.
                 </p>
                 <p>
-                  • <b>Quản lý tài khoản:</b> Quản trị viên doanh nghiệp chịu trách nhiệm về tài khoản của các thành viên trực thuộc doanh nghiệp mình.
+                  • <b>Dữ liệu tách theo ứng dụng:</b> Mọi dữ liệu, hồ sơ và tài liệu phát sinh trong từng ứng dụng được phân vùng độc lập, bảo đảm an toàn dữ liệu và ngăn ngừa xung đột giữa các nghiệp vụ khác nhau.
                 </p>
                 <p>
-                  • <b>Xóa tài khoản:</b> Người dùng có thể liên hệ quản trị viên hệ thống để yêu cầu xóa tài khoản khi không còn nhu cầu sử dụng.
+                  • <b>Quản lý tài khoản &amp; phân quyền:</b> Quản trị viên doanh nghiệp chịu trách nhiệm phân quyền, gán vai trò vận hành và quản lý tài khoản của các thành viên trực thuộc doanh nghiệp mình.
+                </p>
+                <p>
+                  • <b>Liên kết chia sẻ:</b> Các liên kết chia sẻ dữ liệu hoặc giao diện xem trước chỉ có hiệu lực theo đúng phạm vi phân quyền và tuân thủ các quy tắc bảo mật của hệ thống.
                 </p>
               </div>
             </article>
 
-            <hr style={{ border: "none", borderTop: "1px solid var(--line)", margin: "22px 0" }} />
+            <hr
+              style={{
+                border: "none",
+                borderTop: "1px solid var(--line)",
+                margin: "22px 0",
+              }}
+            />
 
             <article id="quyen-rieng-tu">
-              <h2 style={{ fontSize: "17px", fontWeight: "600", color: "var(--ink)", marginBottom: "10px" }}>
+              <h2
+                style={{
+                  fontSize: "17px",
+                  fontWeight: "600",
+                  color: "var(--ink)",
+                  marginBottom: "10px",
+                }}
+              >
                 2. Chính sách quyền riêng tư
               </h2>
-              <div style={{ fontSize: "13.5px", lineHeight: "1.65", color: "var(--ink-2)", display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div
+                style={{
+                  fontSize: "13.5px",
+                  lineHeight: "1.65",
+                  color: "var(--ink-2)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                }}
+              >
                 <p>
-                  • <b>Dữ liệu tài khoản:</b> Các thông tin cá nhân bao gồm họ tên, email công việc và tên đăng nhập chỉ được sử dụng cho mục đích đăng nhập và quản lý không gian làm việc của doanh nghiệp.
+                  • <b>Dữ liệu tài khoản:</b> Thông tin cá nhân (họ tên, email công việc và mã đăng nhập) chỉ được sử dụng cho mục đích xác thực và điều phối hoạt động trong không gian làm việc doanh nghiệp.
                 </p>
                 <p>
                   • <b>Quản lý mật khẩu:</b> Mật khẩu do hệ thống xác thực Keycloak quản lý độc lập và mã hóa bảo mật. Nền tảng DigiX hoàn toàn không lưu trữ mật khẩu của người dùng.
+                </p>
+                <p>
+                  • <b>Trợ lý AI &amp; nguồn tri thức:</b> Trợ lý AI chỉ đọc và truy xuất từ các nguồn dữ liệu được doanh nghiệp chỉ định và cho phép, không tự ý thu thập hay chia sẻ thông tin ngoài phạm vi cấu hình.
                 </p>
               </div>
             </article>
 
             <p className="foot" style={{ marginTop: "32px", textAlign: "left" }}>
-              <Link href="/register" className="link">
-                ← Quay lại trang đăng ký
-              </Link>
+              <BackButton fallbackHref="/" className="link">
+                ← Quay lại
+              </BackButton>
             </p>
           </div>
 
