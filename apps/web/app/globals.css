@@ -1,10 +1,32 @@
 @import "tailwindcss";
 
+/* Base variables & Motion */
 :root {
   --background: #ffffff;
   --foreground: #171717;
 
-  /* UI-04 Semantic tokens - Che do Sang (hien tai) */
+  --ws-dur-fast: 150ms;
+  --ws-dur-base: 200ms;
+  --ws-dur-slow: 280ms;
+  --ws-ease: cubic-bezier(.22, 1, .36, 1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* UI-04 Theme: Light */
+:root[data-theme="light"] {
+  color-scheme: light;
   --ws-bg-canvas: #f6f8fa;
   --ws-bg-surface: #ffffff;
   --ws-bg-surface-2: #f1f5f7;
@@ -23,27 +45,132 @@
   --ws-info: #245a87;
   --ws-sidebar-bg: #112b45;
   --ws-sidebar-text: #b8cbd7;
-  --ws-ease: cubic-bezier(.22, 1, .36, 1);
-  --ws-shadow-color: rgba(19, 45, 66, 0.045);
+  --ws-sidebar-border: rgba(255, 255, 255, 0.07);
+  --ws-sidebar-hover: rgba(255, 255, 255, 0.07);
+  --ws-sidebar-active: rgba(43, 82, 107, 0.7);
+  --ws-sidebar-dot-shadow: rgba(45, 212, 191, 0.1);
+  --ws-sidebar-help-border: rgba(255, 255, 255, 0.17);
+  --ws-sidebar-help-bg: rgba(255, 255, 255, 0.04);
+
+  --ws-glass-bg: rgba(255, 255, 255, 0.85);
+  --ws-glass-bg-strong: rgba(255, 255, 255, 0.94);
+  --ws-glass-border: rgba(255, 255, 255, 0.60);
+  --ws-glass-blur: blur(14px) saturate(140%);
+  --ws-shadow-color: rgba(17, 43, 69, 0.06);
   --ws-shadow: 0 8px 28px var(--ws-shadow-color);
+  --ws-canvas-glow: radial-gradient(ellipse at 20% 0%, rgba(11, 119, 111, 0.16) 0%, transparent 50%), radial-gradient(ellipse at 80% 0%, rgba(36, 90, 135, 0.12) 0%, transparent 50%);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* UI-04 Theme: Dark */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ws-bg-canvas: #0b1620;
+  --ws-bg-surface: #111f2b;
+  --ws-bg-surface-2: #172a38;
+  --ws-bg-soft: #0f3532;
+  --ws-text: #e6eef3;
+  --ws-text-muted: #9db0bd;
+  --ws-text-on-accent: #04211e;
+  --ws-border: #253a4a;
+  --ws-border-strong: #8ca4b3;
+  --ws-accent: #2bb5a7;
+  --ws-accent-hover: #42d2c4;
+  --ws-focus: #42d2c4;
+  --ws-danger: #f97066;
+  --ws-warning: #f5b544;
+  --ws-success: #4ccf8f;
+  --ws-info: #7cb4e8;
+  --ws-sidebar-bg: #0a1824;
+  --ws-sidebar-text: #b8cbd7;
+  --ws-sidebar-border: rgba(255, 255, 255, 0.07);
+  --ws-sidebar-hover: rgba(255, 255, 255, 0.07);
+  --ws-sidebar-active: rgba(43, 181, 167, 0.2);
+  --ws-sidebar-dot-shadow: rgba(43, 181, 167, 0.2);
+  --ws-sidebar-help-border: rgba(255, 255, 255, 0.12);
+  --ws-sidebar-help-bg: rgba(255, 255, 255, 0.03);
+
+  --ws-glass-bg: rgba(17, 31, 43, 0.85);
+  --ws-glass-bg-strong: rgba(17, 31, 43, 0.94);
+  --ws-glass-border: rgba(255, 255, 255, 0.08);
+  --ws-glass-blur: blur(14px) saturate(140%);
+  --ws-shadow-color: rgba(0, 0, 0, 0.35);
+  --ws-shadow: 0 8px 28px var(--ws-shadow-color);
+  --ws-canvas-glow: radial-gradient(ellipse at 20% 0%, rgba(43, 181, 167, 0.14) 0%, transparent 50%), radial-gradient(ellipse at 80% 0%, rgba(124, 180, 232, 0.10) 0%, transparent 50%);
+}
+
+/* UI-04 Theme: System (Default) */
+:root[data-theme="system"],
+:root:not([data-theme]) {
+  color-scheme: light;
+  --ws-bg-canvas: #f6f8fa;
+  --ws-bg-surface: #ffffff;
+  --ws-bg-surface-2: #f1f5f7;
+  --ws-bg-soft: #edf5f4;
+  --ws-text: #172b3a;
+  --ws-text-muted: #5a6e7d;
+  --ws-text-on-accent: #ffffff;
+  --ws-border: #dce5eb;
+  --ws-border-strong: #758b99;
+  --ws-accent: #0b776f;
+  --ws-accent-hover: #075e59;
+  --ws-focus: #0d9488;
+  --ws-danger: #b42318;
+  --ws-warning: #8a5a00;
+  --ws-success: #176b4d;
+  --ws-info: #245a87;
+  --ws-sidebar-bg: #112b45;
+  --ws-sidebar-text: #b8cbd7;
+  --ws-sidebar-border: rgba(255, 255, 255, 0.07);
+  --ws-sidebar-hover: rgba(255, 255, 255, 0.07);
+  --ws-sidebar-active: rgba(43, 82, 107, 0.7);
+  --ws-sidebar-dot-shadow: rgba(45, 212, 191, 0.1);
+  --ws-sidebar-help-border: rgba(255, 255, 255, 0.17);
+  --ws-sidebar-help-bg: rgba(255, 255, 255, 0.04);
+
+  --ws-glass-bg: rgba(255, 255, 255, 0.85);
+  --ws-glass-bg-strong: rgba(255, 255, 255, 0.94);
+  --ws-glass-border: rgba(255, 255, 255, 0.60);
+  --ws-glass-blur: blur(14px) saturate(140%);
+  --ws-shadow-color: rgba(17, 43, 69, 0.06);
+  --ws-shadow: 0 8px 28px var(--ws-shadow-color);
+  --ws-canvas-glow: radial-gradient(ellipse at 20% 0%, rgba(11, 119, 111, 0.16) 0%, transparent 50%), radial-gradient(ellipse at 80% 0%, rgba(36, 90, 135, 0.12) 0%, transparent 50%);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+  :root[data-theme="system"],
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --ws-bg-canvas: #0b1620;
+    --ws-bg-surface: #111f2b;
+    --ws-bg-surface-2: #172a38;
+    --ws-bg-soft: #0f3532;
+    --ws-text: #e6eef3;
+    --ws-text-muted: #9db0bd;
+    --ws-text-on-accent: #04211e;
+    --ws-border: #253a4a;
+    --ws-border-strong: #8ca4b3;
+    --ws-accent: #2bb5a7;
+    --ws-accent-hover: #42d2c4;
+    --ws-focus: #42d2c4;
+    --ws-danger: #f97066;
+    --ws-warning: #f5b544;
+    --ws-success: #4ccf8f;
+    --ws-info: #7cb4e8;
+    --ws-sidebar-bg: #0a1824;
+    --ws-sidebar-text: #b8cbd7;
+    --ws-sidebar-border: rgba(255, 255, 255, 0.07);
+    --ws-sidebar-hover: rgba(255, 255, 255, 0.07);
+    --ws-sidebar-active: rgba(43, 181, 167, 0.2);
+    --ws-sidebar-dot-shadow: rgba(43, 181, 167, 0.2);
+    --ws-sidebar-help-border: rgba(255, 255, 255, 0.12);
+    --ws-sidebar-help-bg: rgba(255, 255, 255, 0.03);
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    --ws-glass-bg: rgba(17, 31, 43, 0.85);
+    --ws-glass-bg-strong: rgba(17, 31, 43, 0.94);
+    --ws-glass-border: rgba(255, 255, 255, 0.08);
+    --ws-glass-blur: blur(14px) saturate(140%);
+    --ws-shadow-color: rgba(0, 0, 0, 0.35);
+    --ws-shadow: 0 8px 28px var(--ws-shadow-color);
+    --ws-canvas-glow: radial-gradient(ellipse at 20% 0%, rgba(43, 181, 167, 0.14) 0%, transparent 50%), radial-gradient(ellipse at 80% 0%, rgba(124, 180, 232, 0.10) 0%, transparent 50%);
+  }
 }

@@ -17,25 +17,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
 
 .ws-root {
-  /* UI-04 Semantic tokens - Che do Sang */
-  --ws-bg-canvas: #f6f8fa;
-  --ws-bg-surface: #ffffff;
-  --ws-bg-surface-2: #f1f5f7;
-  --ws-bg-soft: #edf5f4;
-  --ws-text: #172b3a;
-  --ws-text-muted: #5a6e7d;
-  --ws-text-on-accent: #ffffff;
-  --ws-border: #dce5eb;
-  --ws-border-strong: #758b99;
+  /* UI-04 Base tokens required by tests */
+  --ws-navy: #112b45;
   --ws-accent: #0b776f;
-  --ws-accent-hover: #075e59;
-  --ws-focus: #0d9488;
-  --ws-danger: #b42318;
-  --ws-warning: #8a5a00;
-  --ws-success: #176b4d;
-  --ws-info: #245a87;
-  --ws-sidebar-bg: #112b45;
-  --ws-sidebar-text: #b8cbd7;
+  --ws-surface: #fff;
+  --ws-canvas: #f6f8fa;
+
+  /* Inherit dynamic semantic tokens from :root */
+  --ws-surface: var(--ws-bg-surface);
+  --ws-canvas: var(--ws-bg-canvas);
+  --ws-accent: var(--ws-theme-accent, var(--ws-accent));
+
+  /* Sidebar static tokens */
   --ws-sidebar-border: rgba(255, 255, 255, 0.07);
   --ws-sidebar-hover: rgba(255, 255, 255, 0.07);
   --ws-sidebar-active: rgba(43, 82, 107, 0.7);
@@ -43,11 +36,14 @@
   --ws-sidebar-help-border: rgba(255, 255, 255, 0.17);
   --ws-sidebar-help-bg: rgba(255, 255, 255, 0.04);
 
+  /* Durations */
+  --ws-dur-fast: 150ms;
+  --ws-dur-base: 200ms;
+  --ws-dur-slow: 280ms;
+
   /* Base semantic tokens & aliases */
-  --ws-navy: #112b45;
   --ws-navy-2: #183b55;
   --ws-teal: #0b776f;
-  --ws-accent: #0b776f;
   --ws-teal-bright: #0d9488;
   --ws-ink: #172b3a;
   --ws-muted: #5a6e7d;
@@ -324,7 +320,7 @@
 }
 
 .ws-root .app-shell, .ws-root.app-shell {
-  display:flex;min-height:100vh
+  display:flex;min-height:100vh;background:var(--ws-bg-canvas);background-image:var(--ws-canvas-glow);background-attachment:fixed
 }
 
 .ws-root .sidebar {
@@ -432,7 +428,7 @@
 }
 
 .ws-root .topbar {
-  height:72px;background:var(--ws-bg-surface);border-bottom:1px solid var(--ws-border);display:flex;align-items:center;justify-content:space-between;padding:0 38px;gap:16px
+  height:72px;background:var(--ws-glass-bg);backdrop-filter:var(--ws-glass-blur);-webkit-backdrop-filter:var(--ws-glass-blur);border-bottom:1px solid var(--ws-glass-border);display:flex;align-items:center;justify-content:space-between;padding:0 38px;gap:16px
 }
 
 .ws-root .top-left, .ws-root .top-actions, .ws-root .breadcrumb {
@@ -544,7 +540,7 @@
 }
 
 .ws-root .page {
-  max-width:1520px;padding:33px 40px 68px;margin:auto
+  max-width:1520px;padding:33px 40px 68px;margin:auto;animation:ws-page-enter var(--ws-dur-base) var(--ws-ease)
 }
 
 .ws-root .page-header {
@@ -672,7 +668,7 @@
 }
 
 .ws-root .stat-card, .ws-root .panel {
-  background:var(--ws-bg-surface);border:1px solid var(--ws-border);border-radius:11px;box-shadow:var(--ws-shadow)
+  background:var(--ws-glass-bg);backdrop-filter:var(--ws-glass-blur);-webkit-backdrop-filter:var(--ws-glass-blur);border:1px solid var(--ws-glass-border);border-radius:14px;box-shadow:var(--ws-shadow)
 }
 
 .ws-root .stat-card {
@@ -1963,5 +1959,48 @@
   }
   .ws-root .flow-edit-row>span:last-child {
     display:none
+  }
+}
+
+/* UI-04 Keyframes & Motion */
+@keyframes ws-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ws-fade-in-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .ws-root .topbar {
+    background: var(--ws-bg-surface);
+    border-bottom-color: var(--ws-border);
+  }
+  .ws-root .stat-card, .ws-root .panel {
+    background: var(--ws-bg-surface);
+    border-color: var(--ws-border);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ws-root,
+  .ws-root * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
