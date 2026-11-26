@@ -37,6 +37,7 @@ describe('StoredFileService', () => {
   let putObject: jest.MockedFunction<StorageObjectService['putObject']>;
   let deleteObject: jest.MockedFunction<StorageObjectService['deleteObject']>;
   let createPending: jest.MockedFunction<StoredFileRepository['createPending']>;
+  let recordOwnedBy: jest.Mock;
   let service: StoredFileService;
 
   beforeEach(() => {
@@ -64,9 +65,10 @@ describe('StoredFileService', () => {
           createdAt,
         }),
     );
+    recordOwnedBy = jest.fn().mockResolvedValue(true);
     service = new StoredFileService(
       { putObject, deleteObject } as unknown as StorageObjectService,
-      { createPending } as unknown as StoredFileRepository,
+      { createPending, recordOwnedBy } as unknown as StoredFileRepository,
       config,
     );
   });
@@ -113,6 +115,44 @@ describe('StoredFileService', () => {
     expect(createPending).not.toHaveBeenCalled();
     expect(deleteObject).not.toHaveBeenCalled();
   });
+
+  it('denies attaching a file to a record outside the requester scope', async () => {
+    recordOwnedBy.mockResolvedValue(false);
+    await expect(service.uploadPending(input)).rejects.toMatchObject({
+      status: 404,
+    });
+    expect(putObject).not.toHaveBeenCalled();
+  });
+
+  it.each(['clean', 'rejected', 'failed'] as const)(
+    'persists scan status %s after pending metadata',
+    async (status) => {
+      const scan = jest.fn();
+      const setScanStatus = jest.fn().mockResolvedValue(undefined);
+      if (status === 'failed')
+        scan.mockRejectedValue(new Error('scanner offline'));
+      else scan.mockResolvedValue(status);
+      service = new StoredFileService(
+        { putObject, deleteObject } as unknown as StorageObjectService,
+        {
+          createPending,
+          recordOwnedBy,
+          setScanStatus,
+        } as unknown as StoredFileRepository,
+        config,
+        { scan },
+      );
+      await expect(service.uploadPending(input)).resolves.toMatchObject({
+        scanStatus: status,
+      });
+      expect(scan).toHaveBeenCalledWith(input.body);
+      expect(setScanStatus).toHaveBeenCalledWith(
+        tenantId,
+        expect.any(String),
+        status,
+      );
+    },
+  );
 
   it.each([
     ['an empty file', { ...input, body: new Uint8Array() }, 'EMPTY_FILE', 400],

@@ -74,6 +74,68 @@ const CREATE_PENDING_STORED_FILE_QUERY = `
 export class StoredFileRepository {
   constructor(@Inject(DATABASE_POOL) private readonly pool: Pool) {}
 
+  async setScanStatus(
+    tenantId: string,
+    id: string,
+    status: Exclude<StoredFileScanStatus, 'pending'>,
+  ): Promise<void> {
+    const result = await this.pool.query(
+      `UPDATE stored_files SET scan_status = $3
+       WHERE tenant_id = $1 AND id = $2 AND scan_status = 'pending'`,
+      [tenantId, id, status],
+    );
+    if (result.rowCount !== 1)
+      throw new Error('File scan state changed unexpectedly');
+  }
+
+  // Only a record requester may read a file attached to that record in B02.
+  // B03a will replace this narrow policy with app/record authorization.
+  async findReadable(
+    tenantId: string,
+    fileId: string,
+    membershipId: string,
+  ): Promise<StoredFileMetadata | null> {
+    const result = await this.pool.query<StoredFileRow>(
+      `SELECT f.id, f.tenant_id, f.record_id, f.storage_key,
+              f.original_name, f.content_type, f.size_bytes::text AS size_bytes,
+              f.checksum_sha256, f.scan_status, f.created_by_membership_id, f.created_at
+       FROM stored_files f
+       JOIN business_records r ON r.tenant_id = f.tenant_id AND r.id = f.record_id
+       WHERE f.tenant_id = $1 AND f.id = $2 AND r.requester_membership_id = $3
+         AND f.scan_status = 'clean'`,
+      [tenantId, fileId, membershipId],
+    );
+    const row = result.rows[0];
+    return row
+      ? {
+          id: row.id,
+          tenantId: row.tenant_id,
+          recordId: row.record_id,
+          storageKey: row.storage_key,
+          originalName: row.original_name,
+          contentType: row.content_type,
+          sizeBytes: Number(row.size_bytes),
+          checksumSha256: row.checksum_sha256,
+          scanStatus: row.scan_status,
+          createdByMembershipId: row.created_by_membership_id,
+          createdAt: row.created_at,
+        }
+      : null;
+  }
+
+  async recordOwnedBy(
+    tenantId: string,
+    recordId: string,
+    membershipId: string,
+  ): Promise<boolean> {
+    const result = await this.pool.query(
+      `SELECT 1 FROM business_records
+       WHERE tenant_id = $1 AND id = $2 AND requester_membership_id = $3`,
+      [tenantId, recordId, membershipId],
+    );
+    return result.rowCount === 1;
+  }
+
   async createPending(
     input: CreatePendingStoredFileInput,
   ): Promise<StoredFileMetadata> {
