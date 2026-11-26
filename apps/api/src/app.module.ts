@@ -3,6 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { BuilderModule } from './builder/builder.module';
+import { CatalogModule } from './catalog/catalog.module';
 import { DatabaseModule } from './database/database.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -23,6 +24,7 @@ import { WorkflowModule } from './workflow/workflow.module';
     IdentityModule,
     OnboardingModule,
     BuilderModule,
+    CatalogModule,
     StorageModule,
     WorkflowModule,
   ],
