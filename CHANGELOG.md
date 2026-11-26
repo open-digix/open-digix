@@ -42,6 +42,25 @@ Mọi thay đổi đáng chú ý của dự án sẽ được ghi nhận tại �
   - `FormComponent`: thay thế tiêu đề kỹ thuật bằng nhãn tiếng Việt theo hành động (`ACTION_TITLES`), bỏ badge nội bộ `{resource}:{action}`, chuyển đổi lưới layout sang CSS cục bộ.
   - `TableComponent`: đổi cột `ID` thành `Mã`, loại bỏ badge `Tài nguyên: {resource}`, Việt hóa toàn bộ tiêu đề cột (`COLUMN_LABELS`), định dạng an toàn các ô dữ liệu dạng object.
   - `AppRenderer`: bảo đảm huy hiệu "MẪU THỬ" không bị ngắt dòng trên viewport 375px.
+### Giao diện Trợ lý AI (WEB-F09a, #72)
+- **Lớp API Trợ lý (`lib/assistant/client.ts`):**
+  - Hàm `ask(appId, question)` trả về phản hồi chuẩn hợp đồng v2.5: `{ status: 'answered', answer, citations }`, `{ status: 'no_evidence' }`, hoặc `{ status: 'unavailable' }`.
+  - Hàm `listSources(appId)` liệt kê nguồn tài liệu với đầy đủ thông tin loại, phiên bản, ngày cập nhật và trạng thái quét.
+  - Sẵn sàng chuyển đổi giữa chế độ `mock` và `api` thật qua cờ cấu hình `NEXT_PUBLIC_ASSISTANT_API_MODE`.
+- **Bố cục 3 cột (≥1100px) & Thích ứng đa thiết bị:**
+  - Cột trái (240–260px): Lịch sử hội thoại nhóm theo ngày ("HÔM NAY", "7 NGÀY TRƯỚC"), nút "+ Cuộc trò chuyện mới" cao 44px; thu gọn thành ngăn trượt (drawer) trên màn hình hẹp (<768px).
+  - Cột giữa: Tiêu đề, bộ chọn ứng dụng "Hỏi trong ứng dụng", vùng tin nhắn bong bóng chuẩn giao diện DigiX, danh sách đánh số kèm nút số nguồn nhỏ, hàng chip nguồn liên kết trực tiếp, các nút đánh giá "Sao chép", "Hữu ích", "Chưa đúng".
+  - Cột phải (260–300px): "Nguồn đang dùng", thẻ nguồn tương tác mở đoạn trích dẫn, thẻ nguồn đang quét viền đứt, liên kết "Quản lý nguồn của ứng dụng" bảo vệ theo quyền `ai.sources.manage`; thu gọn thành ngăn trượt trên màn hình <1100px.
+- **Trọn bộ 5 trạng thái giao diện:**
+  - Màn bắt đầu (chưa có tin nhắn): Lời chào cá nhân hóa, 3 câu gợi ý dạng nút gửi trực tiếp.
+  - Đang trò chuyện: Hiển thị trạng thái đang tìm trong nguồn kèm nút "Dừng".
+  - Chưa tìm thấy (`no_evidence`): Thẻ cảnh báo không trả lời khi chưa có căn cứ tin cậy.
+  - Tạm ngừng (`unavailable`): Khóa ô nhập, thông báo trạng thái với nút "Thử lại" và "Về việc của tôi".
+  - Ứng dụng chưa có nguồn: Màn hình hướng dẫn riêng biệt cho quản trị viên và người dùng.
+- **An toàn & Trợ năng:**
+  - Câu trả lời render dạng văn bản an toàn chống XSS.
+  - Cơ chế xác nhận đổi ứng dụng bằng `ConfirmDialog` tránh mất dữ liệu dở dang.
+  - Bàn phím điều hướng toàn diện (Enter gửi, Shift+Enter xuống dòng, Esc đóng drawer/dialog), các vùng thông báo động gắn `aria-live="polite"`.
 
 ### Sửa lỗi rà soát 26/11 trang ngoài, Keycloak, cài đặt, cỡ chữ (WEB-UX01, #71)
 - **Chuẩn hóa câu chữ & thông điệp DigiX v2.5:** Thay thế toàn bộ nội dung giả tưởng (Alpha/Beta, 51s, BE-08, Thiết kế -> Kiểm tra) tại landing, đăng ký doanh nghiệp, điều khoản và trang lỗi bằng câu chữ DigiX thực tế.
