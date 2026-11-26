@@ -99,11 +99,7 @@ else
 endif
 
 seed: ## Seed demo auth data; set DEMO_USER_PASSWORD in .env first
-ifeq ($(ENV),dev)
-	$(DC) exec -T api npm run auth:demo:seed
-else
-	$(DC) exec -T api npm run auth:demo:seed:prod
-endif
+	$(DC) --profile demo run --rm auth-demo-seed
 
 lint: lint-api lint-web ## Lint both apps without auto-fixing files
 
