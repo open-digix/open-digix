@@ -368,3 +368,23 @@ Xem ERD, mô tả bảng và quy tắc tenant isolation tại
 Các kết quả trên chứng minh foundation phía API, không chứng minh luồng nghiệp vụ
 hoặc MVP đầu-cuối đã hoàn thành. M1 chỉ được đánh dấu đạt sau khi smoke thêm
 SSO/Gateway trên máy chung và có người thứ hai setup độc lập từ bản clone sạch.
+# File scanning and downloads (B02)
+
+The API keeps uploaded objects private. Configure `CLAMAV_HOST`, `CLAMAV_PORT`,
+`CLAMAV_TIMEOUT_MS` and a random `FILE_URL_SIGNING_KEY` (at least 32 characters)
+in the API environment; Compose starts an internal ClamAV container. No S3
+credentials or object keys are returned to callers.
+
+`POST /v1/files?recordId=<record UUID>` accepts multipart `file`. The record
+must belong to the authenticated tenant and its requester must be the current
+membership. Metadata is first stored as `pending`; ClamAV `INSTREAM` marks it
+`clean`, `rejected` (malware), or `failed` (scan error). A scanner outage never
+marks the file clean. Unattached uploads are permitted but cannot be downloaded.
+
+For a clean, attached file, `GET /v1/files/:id/download-url` returns a relative
+URL valid for 60 seconds. The authenticated `GET` on that URL verifies the
+signature, tenant, membership, record requester and current `clean` status
+again before streaming. This is the **B02 requester-only policy**, not a general
+app authorization mechanism; B03a must integrate `AppAuthorizer` before files
+can be shared with other app members. The URL is not a public S3 presign and
+requires the same bearer token and tenant context.
