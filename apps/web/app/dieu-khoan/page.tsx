@@ -41,7 +41,7 @@ export default function DieuKhoanPage() {
       <main className="main" style={{ alignItems: "start", overflowY: "auto" }}>
         <section className="card" style={{ width: "min(680px, 100%)", paddingBottom: "32px" }} aria-label="Điều khoản và quyền riêng tư">
           <div className="pane on">
-            <p className="eyebrow" style={{ color: "#b45309", background: "#fef3c7", display: "inline-block", padding: "4px 10px", borderRadius: "6px" }}>
+            <p className="eyebrow" style={{ color: "var(--ws-warning)", background: "var(--ws-c-fff8e7, #fef3c7)", display: "inline-block", padding: "4px 10px", borderRadius: "6px" }}>
               Bản nháp – chờ duyệt
             </p>
             <h1 className="title" style={{ marginTop: "12px" }}>
