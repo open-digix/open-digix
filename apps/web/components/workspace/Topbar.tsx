@@ -134,19 +134,19 @@ export default function Topbar({
                 position: "absolute",
                 right: 0,
                 top: 42,
-                background: "var(--ws-surface)",
-                border: "1px solid var(--ws-line)",
+                background: "var(--ws-bg-surface)",
+                border: "1px solid var(--ws-border)",
                 borderRadius: 8,
                 boxShadow: "var(--ws-shadow)",
                 padding: "12px 16px",
                 minWidth: 200,
                 zIndex: 80,
-                color: "var(--ws-ink)",
+                color: "var(--ws-text)",
               }}
             >
               <div style={{ fontWeight: 700, fontSize: 12 }}>{displayName}</div>
               {user.email && (
-                <div style={{ fontSize: 10, color: "var(--ws-muted)" }}>
+                <div style={{ fontSize: 10, color: "var(--ws-text-muted)" }}>
                   {user.email}
                 </div>
               )}
@@ -172,7 +172,7 @@ export default function Topbar({
               )}
               <div
                 style={{
-                  borderTop: "1px solid var(--ws-line)",
+                  borderTop: "1px solid var(--ws-border)",
                   marginTop: 8,
                   paddingTop: 8,
                 }}

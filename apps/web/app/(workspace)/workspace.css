@@ -432,7 +432,7 @@
 }
 
 .ws-root .topbar {
-  height:72px;background:var(--ws-surface);border-bottom:1px solid var(--ws-line);display:flex;align-items:center;justify-content:space-between;padding:0 38px;gap:16px
+  height:72px;background:var(--ws-bg-surface);border-bottom:1px solid var(--ws-border);display:flex;align-items:center;justify-content:space-between;padding:0 38px;gap:16px
 }
 
 .ws-root .top-left, .ws-root .top-actions, .ws-root .breadcrumb {
@@ -444,15 +444,15 @@
 }
 
 .ws-root .breadcrumb {
-  gap:9px;color:var(--ws-c-7c8f9a);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+  gap:9px;color:var(--ws-text-muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
 }
 
 .ws-root .breadcrumb strong {
-  color:var(--ws-c-263d4c);font-weight:700
+  color:var(--ws-text);font-weight:700
 }
 
 .ws-root .breadcrumb .sep {
-  color:var(--ws-c-a9bbc5)
+  color:var(--ws-border)
 }
 
 .ws-root .top-actions {
@@ -460,7 +460,7 @@
 }
 
 .ws-root .demo-pill {
-  white-space:nowrap;font-size:9px;font-weight:800;letter-spacing:.1em;color:var(--ws-c-7b6020);background:var(--ws-c-fff8e7);border:1px solid var(--ws-c-f0dfb8);padding:7px 10px;border-radius:6px
+  white-space:nowrap;font-size:9px;font-weight:800;letter-spacing:.1em;color:var(--ws-warning);background:var(--ws-c-fff8e7);border:1px solid var(--ws-c-f0dfb8);padding:7px 10px;border-radius:6px
 }
 
 .ws-root .demo-pill span {
@@ -468,7 +468,7 @@
 }
 
 .ws-root .tenant-select {
-  display:flex;align-items:center;gap:9px;color:var(--ws-c-718592);font-size:11px;white-space:nowrap
+  display:flex;align-items:center;gap:9px;color:var(--ws-text-muted);font-size:11px;white-space:nowrap
 }
 
 .ws-root .tenant-name {
@@ -481,15 +481,15 @@
 
 .ws-root .tenant-select select,
 .ws-root .tenant-select-dropdown {
-  border:0;background:transparent;color:var(--ws-c-233d4b);font-weight:700;max-width:180px;padding:4px 17px 4px 2px;cursor:pointer
+  border:0;background:transparent;color:var(--ws-text);font-weight:700;max-width:180px;padding:4px 17px 4px 2px;cursor:pointer
 }
 
 .ws-root .icon-button {
-  border:0;background:transparent;color:var(--ws-c-5e7180);width:34px;height:34px;display:grid;place-items:center;position:relative;border-radius:8px
+  border:0;background:transparent;color:var(--ws-text-muted);width:34px;height:34px;display:grid;place-items:center;position:relative;border-radius:8px
 }
 
 .ws-root .icon-button:hover {
-  background:var(--ws-c-eff4f6)
+  background:var(--ws-bg-surface-2)
 }
 
 .ws-root .icon-button svg {
@@ -501,7 +501,7 @@
 }
 
 .ws-root .avatar-button {
-  width:34px;height:34px;border:0;border-radius:50%;background:var(--ws-c-dcece9);color:var(--ws-c-136d67);font-weight:800;font-size:11px
+  width:34px;height:34px;border:0;border-radius:50%;background:var(--ws-bg-soft);color:var(--ws-accent);font-weight:800;font-size:11px
 }
 
 .ws-root .mobile-menu {
@@ -519,7 +519,7 @@
   display:block;
   width:18px;
   height:2px;
-  background:var(--ws-navy);
+  background:var(--ws-text);
   position:relative;
   border-radius:1px;
 }
@@ -531,7 +531,7 @@
   left:0;
   width:18px;
   height:2px;
-  background:var(--ws-navy);
+  background:var(--ws-text);
   border-radius:1px;
 }
 
