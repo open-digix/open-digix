@@ -17,6 +17,7 @@ const REQUIRED_TABLES = [
   'builder_source_revisions',
   'business_records',
   'identity_users',
+  'idempotency_keys',
   'membership_roles',
   'schema_migrations',
   'stored_files',

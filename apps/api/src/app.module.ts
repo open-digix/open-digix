@@ -10,12 +10,15 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
+import { IdempotencyModule } from './idempotency/idempotency.module';
 import { IdentityModule } from './identity/identity.module';
 import { AppPermissionGuard } from './identity/app-permission.guard';
 import { RolesGuard } from './identity/roles.guard';
 import { TenantContextGuard } from './identity/tenant-context.guard';
 import { OnboardingModule } from './onboarding/onboarding.module';
 import { StorageModule } from './storage/storage.module';
+import { OptimisticVersionModule } from './versioning/optimistic-version.module';
+import { FeatureModuleModule } from './feature-modules/feature-module.module';
 import { WorkflowModule } from './workflow/workflow.module';
 
 @Module({
@@ -24,10 +27,13 @@ import { WorkflowModule } from './workflow/workflow.module';
     AuditModule,
     AuthModule,
     IdentityModule,
+    IdempotencyModule,
     OnboardingModule,
     BuilderModule,
     CatalogModule,
     StorageModule,
+    OptimisticVersionModule,
+    FeatureModuleModule,
     WorkflowModule,
   ],
   controllers: [AppController, HealthController],

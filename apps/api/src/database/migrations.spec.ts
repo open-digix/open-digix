@@ -7,6 +7,7 @@ describe('database migrations', () => {
       '0002_builder_drafts',
       '0003_app_acl',
       '0004_app_acl_backfill',
+      '0005_shared_foundation',
     ]);
   });
 
@@ -86,6 +87,19 @@ describe('database migrations', () => {
     expect(migrations[3].sql).toContain('created_by_membership_id');
     expect(migrations[3].sql).toContain(
       'ON CONFLICT (tenant_id, application_id, code) DO NOTHING',
+    );
+  });
+
+  it('creates the shared idempotency ledger with tenant and app scope', () => {
+    expect(migrations[4].sql).toContain('CREATE TABLE idempotency_keys');
+    expect(migrations[4].sql).toContain(
+      'FOREIGN KEY (tenant_id, application_id)',
+    );
+    expect(migrations[4].sql).toContain(
+      'FOREIGN KEY (tenant_id, actor_membership_id)',
+    );
+    expect(migrations[4].sql).toContain(
+      'UNIQUE (\n          tenant_id,\n          application_id,\n          actor_membership_id,\n          action,\n          idempotency_key\n        )',
     );
   });
 });
