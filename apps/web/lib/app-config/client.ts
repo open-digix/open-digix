@@ -38,6 +38,8 @@ import {
   patchMockDraft,
   validateMockDraft,
 } from "./mock-store";
+import { getRuntimeSync } from "../app-runtime/fixtures";
+import type { PublishedAppV25 } from "../app-runtime/types";
 
 export function getAppConfigApiMode(): "mock" | "api" {
   const mode = process.env.APP_CONFIG_API_MODE?.trim().toLowerCase();
@@ -47,6 +49,9 @@ export function getAppConfigApiMode(): "mock" | "api" {
 async function getRequiredTenantId(): Promise<string> {
   const ctx = await getTenantContext();
   if (!ctx?.currentTenant?.id) {
+    if (getAppConfigApiMode() === "mock") {
+      return "mock-tenant-default";
+    }
     throw new Error("Vui lòng chọn doanh nghiệp trước khi thao tác.");
   }
   return ctx.currentTenant.id;
@@ -91,6 +96,85 @@ export async function listApps(): Promise<AppSummary[]> {
   }
 
   return listMockApps(tenantId);
+}
+
+/**
+ * GET /v1/apps/:appId/runtime
+ */
+export async function getRuntime(
+  appId: string,
+  options?: { userRoles?: string[] }
+): Promise<PublishedAppV25 | null> {
+  await getRequiredTenantId();
+
+  if (getAppConfigApiMode() === "api") {
+    try {
+      return await apiCall<PublishedAppV25>(
+        `/v1/apps/${encodeURIComponent(appId)}/runtime`
+      );
+    } catch {
+      return null;
+    }
+  }
+
+  // Mock implementation with role filtering
+  const roles = options?.userRoles;
+
+  // ERP A
+  if (
+    appId === "11111111-1111-4111-8111-111111111111" ||
+    appId === "erp-a" ||
+    appId === "erp"
+  ) {
+    if (
+      roles &&
+      roles.length > 0 &&
+      !roles.some((r) =>
+        [
+          "buyer",
+          "approver",
+          "warehouse",
+          "admin",
+          "owner",
+          "tenant_admin",
+          "manager",
+          "employee",
+        ].includes(r)
+      )
+    ) {
+      return null;
+    }
+    return getRuntimeSync("erp-a");
+  }
+
+  // CRM A
+  if (
+    appId === "22222222-2222-4222-8222-222222222222" ||
+    appId === "crm-a" ||
+    appId === "crm"
+  ) {
+    if (
+      roles &&
+      roles.length > 0 &&
+      !roles.some((r) =>
+        [
+          "sales",
+          "sales_rep",
+          "admin",
+          "owner",
+          "tenant_admin",
+          "designer",
+          "employee",
+          "manager",
+        ].includes(r)
+      )
+    ) {
+      return null;
+    }
+    return getRuntimeSync("crm-a");
+  }
+
+  return getRuntimeSync(appId);
 }
 
 /**

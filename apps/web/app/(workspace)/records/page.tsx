@@ -1,10 +1,5 @@
-import type { Metadata } from "next";
-import RecordsView from "./RecordsView";
-
-export const metadata: Metadata = {
-  title: "Hồ sơ của tôi · DigiX",
-};
+import { redirect } from "next/navigation";
 
 export default function RecordsPage() {
-  return <RecordsView />;
+  redirect("/apps");
 }

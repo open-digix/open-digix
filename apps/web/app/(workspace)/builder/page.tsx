@@ -17,11 +17,6 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import { getTenantContext } from "../../../lib/api/server";
-import { listApps, getAppConfigApiMode } from "../../../lib/app-config/client";
-import BuilderAppList from "../../../components/builder/BuilderAppList";
-import type { AppSummary } from "../../../lib/app-config/types";
 
 export const metadata: Metadata = {
   title: "Thiết kế ứng dụng · DigiX",
@@ -29,57 +24,5 @@ export const metadata: Metadata = {
 
 export default async function BuilderPage() {
   await connection();
-  const context = await getTenantContext();
-
-  if (!context) {
-    redirect("/login");
-  }
-
-  const { roles, currentTenant } = context;
-
-  const canAccess = roles.some((r) =>
-    ["designer", "publisher", "tenant_admin"].includes(r),
-  );
-
-  if (!canAccess) {
-    return (
-      <div className="page">
-        <div className="panel" style={{ padding: 48, textAlign: "center" }}>
-          <div className="empty">
-            <strong style={{ fontSize: 18, color: "var(--ws-danger)" }}>
-              403 - Không có quyền truy cập
-            </strong>
-            <p style={{ marginTop: 8 }}>
-              Tính năng Thiết kế quy trình chỉ dành cho các vai trò Thiết kế (designer),
-              Xuất bản (publisher) hoặc Quản trị doanh nghiệp (tenant_admin).
-            </p>
-            <div style={{ marginTop: 20 }}>
-              <Link href="/dashboard" className="button secondary">
-                ← Về trang tổng quan
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const canEdit = roles.some((r) => ["designer", "tenant_admin"].includes(r));
-  const isMockMode = getAppConfigApiMode() === "mock";
-  let apps: AppSummary[] = [];
-
-  try {
-    apps = await listApps();
-  } catch {
-    apps = [];
-  }
-
-  return (
-    <BuilderAppList
-      tenantId={currentTenant?.id ?? "default"}
-      canEdit={canEdit}
-      apps={apps}
-      isMockMode={isMockMode}
-    />
-  );
+  redirect("/apps?tab=draft");
 }

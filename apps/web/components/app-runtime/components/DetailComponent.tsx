@@ -25,6 +25,33 @@ export interface DetailComponentProps {
   onActionCompleted?: () => void;
 }
 
+function formatDetailValue(val: unknown): string {
+  if (val === null || val === undefined || val === "") return "—";
+  if (typeof val === "object") {
+    if (Array.isArray(val)) {
+      if (val.length === 0) return "—";
+      return val
+        .map((v) =>
+          typeof v === "object" && v !== null
+            ? (v as Record<string, unknown>).name ||
+              (v as Record<string, unknown>).label ||
+              (v as Record<string, unknown>).title ||
+              (v as Record<string, unknown>).id ||
+              "—"
+            : String(v)
+        )
+        .join(", ");
+    }
+    const obj = val as Record<string, unknown>;
+    const label = obj.label ?? obj.name ?? obj.title ?? obj.id;
+    if (label !== undefined && label !== null && label !== "") {
+      return String(label);
+    }
+    return "—";
+  }
+  return String(val);
+}
+
 export default function DetailComponent({
   component,
   dataSource,
@@ -78,7 +105,7 @@ export default function DetailComponent({
           Không có bản ghi nào.
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="detail-grid">
           {Object.entries(record).map(([key, val]) => (
             <div
               key={key}
@@ -94,7 +121,7 @@ export default function DetailComponent({
                 {key}
               </span>
               <strong style={{ fontSize: 13, wordBreak: "break-word" }}>
-                {typeof val === "object" ? JSON.stringify(val) : String(val ?? "-")}
+                {formatDetailValue(val)}
               </strong>
             </div>
           ))}

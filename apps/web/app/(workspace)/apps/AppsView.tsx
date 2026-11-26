@@ -1,114 +1,175 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { SAMPLE_APPS } from "../../../lib/mock/catalogs";
-import { useMockToast } from "../../../components/workspace/MockToast";
+import { listAppsAction } from "@/lib/app-config/actions";
+import type { AppSummary } from "@/lib/app-config/types";
+import { useMockToast } from "@/components/workspace/MockToast";
+import { getAppInitials } from "@/lib/app-runtime/initials";
 
 export default function AppsView() {
-  const [tab, setTab] = useState<"all" | "published" | "draft">("all");
+  const [apps, setApps] = useState<AppSummary[]>([]);
+  const [tab, setTab] = useState<"all" | "published" | "draft">(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const t = params.get("tab");
+        if (t === "draft" || t === "published") return t;
+      } catch {
+        // ignore
+      }
+    }
+    return "all";
+  });
   const [search, setSearch] = useState("");
-  const { showToast, ToastContainer } = useMockToast();
+  const [loading, setLoading] = useState(true);
+  const { ToastContainer } = useMockToast();
 
-  const filtered = SAMPLE_APPS.filter((app) => {
+  useEffect(() => {
+    const handlePopState = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const t = params.get("tab");
+        if (t === "draft" || t === "published" || t === "all") {
+          setTab(t);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    listAppsAction()
+      .then((data) => {
+        if (!isMounted) return;
+        setApps(data);
+      })
+      .catch((err) => {
+        console.error("Lỗi tải ứng dụng:", err);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const setTabAndUrl = (newTab: "all" | "published" | "draft") => {
+    setTab(newTab);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (newTab === "all") {
+        url.searchParams.delete("tab");
+      } else {
+        url.searchParams.set("tab", newTab);
+      }
+      window.history.pushState({}, "", url.toString());
+    }
+  };
+
+  const filteredApps = apps.filter((app) => {
     if (tab === "published" && app.status !== "published") return false;
     if (tab === "draft" && app.status !== "draft") return false;
-    if (search && !app.name.toLowerCase().includes(search.toLowerCase())) {
-      return false;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      return (
+        app.name.toLowerCase().includes(q) ||
+        app.appKey.toLowerCase().includes(q)
+      );
     }
     return true;
   });
 
   return (
-    <div className="page">
+    <div className="page apps-page">
       <header className="page-header">
         <div>
-          <div className="eyebrow">DANH MỤC ỨNG DỤNG</div>
-          <h1>Ứng dụng quy trình</h1>
-          <p>Khởi tạo hồ sơ và theo dõi các ứng dụng đã được phát hành</p>
-        </div>
-        <div className="page-header-actions">
-          <Link href="/records" className="button primary">
-            Tạo hồ sơ mới
-          </Link>
+          <div className="eyebrow">KHÔNG GIAN LÀM VIỆC</div>
+          <h2>Ứng dụng doanh nghiệp</h2>
+          <p>
+            Chọn ứng dụng để làm việc hoặc theo dõi tiến trình thực hiện.
+          </p>
         </div>
       </header>
 
-      <div className="filterbar">
-        <div className="search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.35-4.35" />
-          </svg>
-          <input
-            id="search-apps"
-            name="search"
-            type="search"
-            placeholder="Tìm theo tên ứng dụng..."
-            aria-label="Tìm kiếm ứng dụng"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      <div className="app-filter-tabs">
+        <button
+          type="button"
+          className={`app-filter-tab ${tab === "all" ? "active" : ""}`}
+          onClick={() => setTabAndUrl("all")}
+        >
+          Tất cả ({apps.length})
+        </button>
+        <button
+          type="button"
+          className={`app-filter-tab ${tab === "published" ? "active" : ""}`}
+          onClick={() => setTabAndUrl("published")}
+        >
+          Đang dùng ({apps.filter((a) => a.status === "published").length})
+        </button>
+        <button
+          type="button"
+          className={`app-filter-tab ${tab === "draft" ? "active" : ""}`}
+          onClick={() => setTabAndUrl("draft")}
+        >
+          Bản nháp ({apps.filter((a) => a.status === "draft").length})
+        </button>
+      </div>
+
+      <div className="app-search-bar">
+        <input
+          type="text"
+          placeholder="Tìm theo tên hoặc mã ứng dụng..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="input search-input"
+        />
+      </div>
+
+      {loading ? (
+        <div className="panel empty-state">
+          <p>Đang tải danh sách ứng dụng...</p>
         </div>
-      </div>
-
-      <div className="tabs">
-        <button
-          type="button"
-          className={`tab ${tab === "all" ? "active" : ""}`}
-          onClick={() => setTab("all")}
-        >
-          Tất cả ({SAMPLE_APPS.length})
-        </button>
-        <button
-          type="button"
-          className={`tab ${tab === "published" ? "active" : ""}`}
-          onClick={() => setTab("published")}
-        >
-          Đã phát hành
-        </button>
-        <button
-          type="button"
-          className={`tab ${tab === "draft" ? "active" : ""}`}
-          onClick={() => setTab("draft")}
-        >
-          Bản nháp
-        </button>
-      </div>
-
-      <div className="card-grid">
-        {filtered.map((app) => (
-          <div key={app.id} className="app-card">
-            <div className="app-card-top">
-              <div
-                className={`app-icon ${app.tone === "blue" ? "blue" : app.tone === "gold" ? "gold" : ""}`}
-              >
-                {app.icon}
+      ) : filteredApps.length === 0 ? (
+        <div className="panel empty-state">
+          <p>Không tìm thấy ứng dụng nào phù hợp với bộ lọc.</p>
+        </div>
+      ) : (
+        <div className="app-grid">
+          {filteredApps.map((app) => (
+            <div key={app.appId} className="panel app-card">
+              <div className="app-card-head">
+                <span className="app-icon">{getAppInitials(app.name)}</span>
+                <span
+                  className={`app-badge ${app.status === "published" ? "published" : "draft"}`}
+                >
+                  {app.status === "published" ? "Đang dùng" : "Bản nháp"}
+                </span>
               </div>
-              <span
-                className={`status ${app.status === "published" ? "" : "warning"}`}
-              >
-                {app.status === "published" ? "Đã phát hành" : "Bản nháp"}
-              </span>
+              <h3>{app.name}</h3>
+              <p>{`Ứng dụng quy trình ${app.name}`}</p>
+              <div className="app-card-foot">
+                <span>v{app.version}</span>
+                {app.status === "published" ? (
+                  <Link href={`/app/${app.appId}`} className="button secondary">
+                    Mở ứng dụng →
+                  </Link>
+                ) : (
+                  <Link href={`/builder/${app.appId}`} className="button secondary">
+                    Chỉnh sửa →
+                  </Link>
+                )}
+              </div>
             </div>
-            <h3>{app.name}</h3>
-            <p>{app.desc}</p>
-            <div className="app-card-foot">
-              <span>{app.version}</span>
-              <button
-                type="button"
-                onClick={() =>
-                  showToast(
-                    `Mở ${app.name} (mẫu — không gửi tới hệ thống)`,
-                  )
-                }
-              >
-                Mở ứng dụng →
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       <ToastContainer />
     </div>

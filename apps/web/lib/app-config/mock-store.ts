@@ -56,6 +56,37 @@ function initTenantStore(tenantId: string): TenantAppData {
     data = {
       apps: [
         {
+          appId: "11111111-1111-4111-8111-111111111111",
+          appKey: "erp_materials",
+          name: "Vật tư và mua hàng",
+          schemaVersion: "2.5",
+          startingPoint: "erp",
+          version: 1,
+          status: "published",
+          updatedAt: new Date(Date.now() - 1800000).toISOString(),
+          featureCount: 3,
+          features: [
+            { id: "erp.materials", version: 1 },
+            { id: "erp.purchase_requests", version: 1 },
+            { id: "erp.inventory", version: 1 },
+          ],
+        },
+        {
+          appId: "22222222-2222-4222-8222-222222222222",
+          appKey: "crm_customers",
+          name: "Khách hàng của đội kinh doanh",
+          schemaVersion: "2.5",
+          startingPoint: "crm",
+          version: 1,
+          status: "published",
+          updatedAt: new Date(Date.now() - 3600000).toISOString(),
+          featureCount: 2,
+          features: [
+            { id: "crm.customers", version: 1 },
+            { id: "crm.opportunities", version: 1 },
+          ],
+        },
+        {
           appId: "a1000000-0000-4000-8000-000000000001",
           appKey: "erp_materials_sample",
           name: "ERP Quản lý vật tư mẫu",
