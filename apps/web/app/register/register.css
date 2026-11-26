@@ -1,21 +1,23 @@
 /* CSS cho trang Yêu cầu cấp tài khoản (R3) */
 .register-page {
-  --navy: #112b45;
+  --navy: var(--ws-sidebar-bg, #112b45);
   --navy-deep: #071b2c;
-  --teal: #0d9488;
-  --teal-strong: #0b776f;
-  --teal-hover: #0a665f;
+  --teal: var(--ws-focus, #0d9488);
+  --teal-strong: var(--ws-accent, #0b776f);
+  --teal-hover: var(--ws-accent-hover, #0a665f);
   --teal-light: #2dd4bf;
-  --ink: #112b45;
-  --ink-2: #526878;
-  --line: #d8e1e8;
-  --surface: #ffffff;
-  --canvas: #f6f8fa;
-  --soft: #edf3f5;
-  --danger: #b42318;
+  --ink: var(--ws-sidebar-bg, #112b45);
+  --ink-2: var(--ws-text-muted, #526878);
+  --line: var(--ws-border, #d8e1e8);
+  --surface: var(--ws-bg-surface, #ffffff);
+  --canvas: var(--ws-bg-canvas, #f6f8fa);
+  --soft: var(--ws-bg-soft, #edf3f5);
+  --danger: var(--ws-danger, #b42318);
   --danger-soft: #fef3f2;
-  --success: #176b4d;
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --success: var(--ws-success, #176b4d);
+  --ease: var(--ws-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  --register-hero-gradient: linear-gradient(160deg, #112b45 0%, #0e3a4a 60%, #0b5a58 100%);
+  --register-hero-mobile-gradient: var(--register-hero-mobile-gradient);
 
   font-family: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
   color: var(--ink);
@@ -44,8 +46,8 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 44px 48px;
-  color: #edf3f5;
-  background: linear-gradient(160deg, #112b45 0%, #0e3a4a 60%, #0b5a58 100%);
+  color: var(--soft);
+  background: var(--register-hero-gradient);
 }
 
 .register-page .side::after {
@@ -192,7 +194,7 @@
   gap: 10px;
   align-items: flex-start;
   background: var(--soft);
-  border: 1px solid #d6e6ea;
+  border: 1px solid var(--line);
   border-radius: 10px;
   padding: 12px 14px;
   font-size: 13px;
@@ -264,7 +266,7 @@
   padding: 0 14px;
   font-size: 15px;
   color: var(--ink);
-  background: #fff;
+  background: var(--surface);
   appearance: none;
   background-image: linear-gradient(45deg, transparent 50%, var(--ink-2) 50%), linear-gradient(135deg, var(--ink-2) 50%, transparent 50%);
   background-position: calc(100% - 20px) 21px, calc(100% - 15px) 21px;
@@ -326,7 +328,7 @@
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
-  color: #fff;
+  color: var(--ws-text-on-accent);
   background: var(--teal-strong);
   box-shadow: 0 4px 14px rgba(11, 119, 111, 0.28);
   transition: background 0.2s, transform 0.15s;
@@ -358,7 +360,7 @@
   width: 18px;
   height: 18px;
   border: 2px solid rgba(255, 255, 255, 0.35);
-  border-top-color: #ffffff;
+  border-top-color: var(--ws-text-on-accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -496,7 +498,7 @@
 
 .register-page .stepper .st.on b {
   background: var(--teal-strong);
-  color: #fff;
+  color: var(--ws-text-on-accent);
 }
 
 .register-page .stepper .st.done {
@@ -504,7 +506,7 @@
 }
 
 .register-page .stepper .st.done b {
-  background: #e6f7f5;
+  background: var(--ws-bg-soft);
   color: var(--teal-strong);
 }
 
@@ -587,24 +589,24 @@
   flex: 1;
   height: 4px;
   border-radius: 2px;
-  background: #e2e8f0;
+  background: var(--line);
   transition: background 0.25s;
 }
 
 .register-page .meter[data-level="1"] i:nth-child(1) {
-  background: #ef4444;
+  background: var(--danger);
 }
 
 .register-page .meter[data-level="2"] i:nth-child(-n+2) {
-  background: #f59e0b;
+  background: var(--ws-warning);
 }
 
 .register-page .meter[data-level="3"] i:nth-child(-n+3) {
-  background: #0d9488;
+  background: var(--teal);
 }
 
 .register-page .meter[data-level="4"] i:nth-child(-n+4) {
-  background: #059669;
+  background: var(--success);
 }
 
 .register-page .meter-label {
@@ -642,7 +644,7 @@
 .register-page .rules li::before {
   content: "•";
   font-size: 14px;
-  color: #94a3b8;
+  color: var(--ink-2);
 }
 
 .register-page .rules li.ok {
@@ -705,7 +707,7 @@
   align-items: flex-start;
   gap: 10px;
   background: var(--danger-soft);
-  border: 1px solid #fecaca;
+  border: 1px solid var(--danger-soft);
   border-radius: 10px;
   padding: 12px 14px;
   font-size: 13px;
@@ -788,7 +790,7 @@
     background:
       radial-gradient(ellipse 80% 45% at 90% 5%, rgba(45, 212, 191, 0.40) 0%, transparent 60%),
       radial-gradient(ellipse 70% 50% at 0% 95%, rgba(13, 148, 136, 0.35) 0%, transparent 60%),
-      linear-gradient(165deg, #0b2236 0%, #112b45 50%, #0f4c55 100%);
+      var(--register-hero-mobile-gradient);
   }
 
   .register-page .side {

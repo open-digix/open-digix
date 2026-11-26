@@ -337,6 +337,36 @@
 .landing-auth-dialog.landing-auth-error-card {
   margin: auto;
   text-align: left;
+  background: var(--ws-bg-surface);
+  border-color: var(--ws-border);
+  color: var(--ws-text);
+}
+
+.landing-auth-error-card .landing-auth-label {
+  color: var(--ws-accent);
+}
+
+.landing-auth-error-card > p:not(.landing-auth-label) {
+  color: var(--ws-text-muted);
+}
+
+.landing-auth-error-card .landing-auth-primary {
+  background: var(--ws-accent);
+  color: var(--ws-text-on-accent);
+}
+
+.landing-auth-error-card .landing-auth-primary:hover {
+  background: var(--ws-accent-hover);
+}
+
+.landing-auth-error-card .landing-auth-secondary {
+  border-color: var(--ws-border);
+  color: var(--ws-text);
+}
+
+.landing-auth-error-card .landing-auth-secondary:hover {
+  background: var(--ws-bg-surface-2);
+  border-color: var(--ws-border-strong);
 }
 
 .landing-auth-secondary {

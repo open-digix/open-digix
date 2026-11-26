@@ -20,6 +20,18 @@ Mọi thay đổi đáng chú ý của dự án sẽ được ghi nhận tại �
 
 ## [Chưa phát hành] - 26/11/2026
 
+### Nền tảng semantic token giao diện theo vai trò (WEB-UI04 PR 1, #84)
+- **Hệ thống semantic token UI-04 (`globals.css`, `workspace.css`):**
+  - Bổ sung bộ token ngữ nghĩa `:root` cho chế độ Sáng hiện tại: `--ws-bg-canvas`, `--ws-bg-surface`, `--ws-bg-surface-2`, `--ws-bg-soft`, `--ws-text`, `--ws-text-muted`, `--ws-text-on-accent`, `--ws-border`, `--ws-border-strong`, `--ws-accent`, `--ws-accent-hover`, `--ws-focus`, `--ws-danger`, `--ws-warning`, `--ws-success`, `--ws-info`, `--ws-sidebar-bg`, `--ws-sidebar-text`.
+  - Giữ nguyên toàn bộ giá trị hiển thị thực tế của hệ thống; thiết lập các alias tương thích ngược 100%.
+- **Chuyển đổi theo 5 nhóm có cấu trúc:**
+  - **Sidebar:** Chuyển nền đặc `--ws-sidebar-bg`, màu chữ `--ws-sidebar-text`, active / hover / viền sang biến semantic.
+  - **Topbar:** Chuyển bề mặt `--ws-bg-surface`, viền `--ws-border`, breadcrumb `--ws-text` và `--ws-text-muted`.
+  - **Nội dung Workspace:** Chuyển canvas, card, panel, button, badge sang các biến `--ws-*`.
+  - **Đăng ký & Điều khoản:** Chuyển toàn bộ 13 biến form trong `register.css` và `dieu-khoan` sang liên kết trực tiếp token semantic toàn cục.
+  - **Thẻ lỗi đăng nhập:** Chuyển `.landing-auth-error-card` trong `landing.css` sang đọc semantic token.
+- **Tài liệu kiểm kê màu (`docs/product/design/ui04-kiem-ke-mau.md`):** Thống kê và theo dõi chi tiết toàn bộ mã màu trước và sau chuyển đổi.
+
 ### Tinh chỉnh Logo thanh bên & Hiệu ứng xoay (WEB-UI05, #82)
 - **Tách logo thành 2 phần độc lập:**
   - Dấu X: inline SVG dùng chung cho cả trạng thái thu gọn và mở rộng, loại bỏ ô nền navy bo góc phía sau, tăng kích thước hiển thị lên 40×40px căn giữa hoàn hảo trong thanh bên 76px.

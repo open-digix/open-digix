@@ -51,8 +51,8 @@ export default function DieuKhoanPage() {
             <p
               className="eyebrow"
               style={{
-                color: "#b45309",
-                background: "#fef3c7",
+                color: "var(--ws-warning)",
+                background: "var(--ws-bg-warning-soft, #fef3c7)",
                 display: "inline-block",
                 padding: "4px 10px",
                 borderRadius: "6px",
