@@ -401,7 +401,16 @@ describe('AppController (e2e)', () => {
 
     const body = response.body as {
       catalogVersion: string;
-      features: readonly { id: string }[];
+      features: readonly {
+        id: string;
+        dependencies: readonly string[];
+        actions: readonly {
+          resource: string;
+          action: string;
+          permission: string;
+        }[];
+        permissions: readonly string[];
+      }[];
     };
 
     expect(body.catalogVersion).toBe('2026-11-demo-1');
@@ -413,6 +422,35 @@ describe('AppController (e2e)', () => {
       'crm.customers',
       'crm.opportunities',
     ]);
+
+    const inventory = body.features.find(({ id }) => id === 'erp.inventory');
+    expect(inventory).toBeDefined();
+    expect(inventory?.dependencies).toEqual(['erp.materials']);
+    expect(inventory?.actions).toEqual([
+      {
+        resource: 'receipts',
+        action: 'receive',
+        permission: 'erp.inventory.receipts.receive',
+      },
+      {
+        resource: 'receipts',
+        action: 'read',
+        permission: 'erp.inventory.receipts.read',
+      },
+      {
+        resource: 'stock',
+        action: 'read',
+        permission: 'erp.inventory.stock.read',
+      },
+    ]);
+    expect(inventory?.permissions).toEqual([
+      'erp.inventory.receipts.receive',
+      'erp.inventory.receipts.read',
+      'erp.inventory.stock.read',
+    ]);
+    expect(new Set(inventory?.permissions).size).toBe(
+      inventory?.permissions.length,
+    );
   });
 
   it('/v1/catalog/presets returns ERP, CRM and blank presets', async () => {
