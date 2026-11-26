@@ -9,6 +9,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
+import { IdempotencyModule } from './idempotency/idempotency.module';
 import { IdentityModule } from './identity/identity.module';
 import { AppPermissionGuard } from './identity/app-permission.guard';
 import { RolesGuard } from './identity/roles.guard';
@@ -22,6 +23,7 @@ import { WorkflowModule } from './workflow/workflow.module';
     DatabaseModule,
     AuthModule,
     IdentityModule,
+    IdempotencyModule,
     OnboardingModule,
     BuilderModule,
     CatalogModule,
