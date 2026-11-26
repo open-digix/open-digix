@@ -1,5 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Pool, QueryResultRow } from 'pg';
+import { AuditService } from '../audit/audit.service';
+import {
+  AuditAction,
+  AuditResult,
+} from '../audit/constants/audit-policy.constants';
 import { DATABASE_POOL } from '../database/database.module';
 import type {
   BuilderApplicationDefinitionV1,
@@ -257,7 +262,10 @@ const UPDATE_APPLICATION_QUERY = `
 
 @Injectable()
 export class BuilderDraftRepository {
-  constructor(@Inject(DATABASE_POOL) private readonly pool: Pool) {}
+  constructor(
+    @Inject(DATABASE_POOL) private readonly pool: Pool,
+    private readonly audit: AuditService,
+  ) {}
 
   async findApplicationVersion(
     tenantId: string,
@@ -429,6 +437,23 @@ export class BuilderDraftRepository {
         input.applicationId,
       ]);
 
+      await this.audit.record(
+        {
+          tenantId: input.tenantId,
+          actorMembershipId: input.createdByMembershipId,
+          action: AuditAction.CONFIG_UPDATED,
+          resourceType: 'application',
+          resourceId: input.applicationId,
+          result: AuditResult.SUCCESS,
+          metadata: {
+            appId: input.applicationId,
+            configId: createdRevision.id,
+            version: input.version,
+          },
+        },
+        client,
+      );
+
       await client.query('COMMIT');
 
       return {
@@ -519,6 +544,23 @@ export class BuilderDraftRepository {
         input.tenantId,
         input.applicationId,
       ]);
+
+      await this.audit.record(
+        {
+          tenantId: input.tenantId,
+          actorMembershipId: input.createdByMembershipId,
+          action: AuditAction.CONFIG_UPDATED,
+          resourceType: 'application',
+          resourceId: input.applicationId,
+          result: AuditResult.SUCCESS,
+          metadata: {
+            appId: input.applicationId,
+            configId: createdRevision.id,
+            version: input.version,
+          },
+        },
+        client,
+      );
 
       await client.query('COMMIT');
 
