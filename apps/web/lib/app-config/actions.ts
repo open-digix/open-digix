@@ -24,9 +24,13 @@ import {
   getPresets,
   patchDraft,
   validateDraft,
+  listApps,
+  getRuntime,
 } from "./client";
+import type { PublishedAppV25 } from "../app-runtime/types";
 import type {
   AppDraftDefinitionV25,
+  AppSummary,
   CatalogFeature,
   CatalogPreset,
   FeatureId,
@@ -248,4 +252,15 @@ export async function fetchCatalogAction(): Promise<{
     features: featuresRes.features,
     presets: presetsRes.presets,
   };
+}
+
+export async function listAppsAction(): Promise<AppSummary[]> {
+  return listApps();
+}
+
+export async function getRuntimeAction(
+  appId: string,
+  options?: { userRoles?: string[] }
+): Promise<PublishedAppV25 | null> {
+  return getRuntime(appId, options);
 }

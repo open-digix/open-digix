@@ -35,7 +35,16 @@ export default function FormComponent({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
-  const displayTitle = label || `Nhập liệu: ${resource} (${action})`;
+  const ACTION_TITLES: Record<string, string> = {
+    "requests:create": "Tạo yêu cầu mua",
+    "requests:submit": "Gửi yêu cầu mua",
+    "materials:create": "Thêm vật tư mới",
+    "customers:create": "Thêm khách hàng",
+    "opportunities:create": "Tạo cơ hội bán hàng",
+    "receipts:receive": "Nhập kho vật tư",
+  };
+  const actionKey = `${resource}:${action}`;
+  const displayTitle = label || ACTION_TITLES[actionKey] || `Nhập liệu: ${resource}`;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -74,9 +83,6 @@ export default function FormComponent({
         <h4 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
           {displayTitle}
         </h4>
-        <span className="badge" style={{ fontSize: 11, background: "var(--ws-soft)", color: "var(--ws-teal)" }}>
-          {resource}:{action}
-        </span>
       </div>
 
       {feedback && (
@@ -89,7 +95,7 @@ export default function FormComponent({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {resource === "requests" && (
           <>
             <div>
@@ -107,7 +113,7 @@ export default function FormComponent({
                 className="input"
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
               <div>
                 <label htmlFor="req-requester" style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ws-muted)", marginBottom: 4 }}>
                   Người đề xuất
@@ -143,7 +149,7 @@ export default function FormComponent({
 
         {resource === "customers" && (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
               <div>
                 <label htmlFor="cust-code" style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ws-muted)", marginBottom: 4 }}>
                   Mã khách hàng
@@ -209,7 +215,7 @@ export default function FormComponent({
                 className="input"
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
               <div>
                 <label htmlFor="opp-cust" style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--ws-muted)", marginBottom: 4 }}>
                   Tên khách hàng

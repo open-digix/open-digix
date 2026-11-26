@@ -37,6 +37,24 @@ export default function TableComponent({
 
   const displayTitle = label || `Danh sách: ${resource}`;
 
+  const COLUMN_LABELS: Record<string, string> = {
+    title: "Tiêu đề",
+    requester: "Người đề xuất",
+    totalEstimated: "Dự toán (VNĐ)",
+    code: "Mã",
+    name: "Tên",
+    unit: "Đơn vị",
+    stock: "Tồn kho",
+    unitPrice: "Đơn giá (VNĐ)",
+    category: "Phân loại",
+    industry: "Ngành nghề",
+    customerName: "Khách hàng",
+    value: "Giá trị (VNĐ)",
+    status: "Trạng thái",
+    stage: "Giai đoạn",
+    description: "Mô tả",
+  };
+
   useEffect(() => {
     let isMounted = true;
     dataSource
@@ -102,17 +120,14 @@ export default function TableComponent({
       style={{ padding: 20 }}
       data-testid={`table-${component.id}`}
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
         <div>
-          <h4 style={{ margin: "0 0 2px", fontSize: 16, fontWeight: 600 }}>
+          <h4 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
             {displayTitle}
           </h4>
-          <span style={{ fontSize: 12, color: "var(--ws-muted)" }}>
-            Tài nguyên: <code>{resource}</code>
-          </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <input
             type="text"
             value={searchTerm}
@@ -139,10 +154,10 @@ export default function TableComponent({
         <table className="data-table">
           <thead>
             <tr>
-              <th style={{ width: 80 }}>ID</th>
+              <th style={{ width: 80 }}>Mã</th>
               {columns.map((col) => (
-                <th key={col} style={{ textTransform: "capitalize" }}>
-                  {col}
+                <th key={col}>
+                  {COLUMN_LABELS[col] || col}
                 </th>
               ))}
             </tr>
@@ -162,9 +177,9 @@ export default function TableComponent({
                   </td>
                   {columns.map((col) => (
                     <td key={col}>
-                      {typeof row[col] === "object"
-                        ? JSON.stringify(row[col])
-                        : String(row[col] ?? "-")}
+                      {typeof row[col] === "object" && row[col] !== null
+                        ? String((row[col] as Record<string, unknown>).name || (row[col] as Record<string, unknown>).title || "—")
+                        : String(row[col] ?? "—")}
                     </td>
                   ))}
                 </tr>
