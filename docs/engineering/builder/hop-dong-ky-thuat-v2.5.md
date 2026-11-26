@@ -34,7 +34,7 @@ Mọi route nghiệp vụ `/v1/*` đi qua Gateway, dùng token OIDC và tenant c
 
 | Phương thức/đường mục tiêu | Request/response tối thiểu | Quyền và quy tắc |
 | --- | --- | --- |
-| `GET /v1/catalog/features` | `catalogVersion`, danh sách `{id, version, domain, resources, actions, permissions, dependencies, components, status}` | Đọc theo tenant; client chỉ hiển thị, không tự định nghĩa action/quyền. ID/version không đổi nghĩa sau publish. |
+| `GET /v1/catalog/features` | `catalogVersion`, danh sách `{id, version, domain, resources, actions, permissions, dependencies, components, status}`; mỗi phần tử `actions` là `{resource, action, permission}` | Đọc theo tenant; client chỉ hiển thị, không tự định nghĩa action/quyền. `permissions` là danh sách không trùng lặp suy ra từ `actions[].permission`, không phải nguồn cấu hình độc lập. ID/version không đổi nghĩa sau publish. |
 | `GET /v1/catalog/presets` | `{id: erp\|crm\|blank, version, suggestedFeatures[]}` | Snapshot gợi ý lúc tạo; từ trống rỗng. Không tự cấp quyền/bật chức năng sau khi user chỉnh. |
 | `POST /v1/apps` *(mở rộng route đã có)* | `{schemaVersion:"2.5", name, appKey, startingPoint?, presetVersion?}` → `appId`, draft v2.5, `lockVersion`; features được xác nhận/lưu trong draft | `designer`/`tenant_admin`; request không có `schemaVersion` giữ hành vi v1.0. Validator và persistence định tuyến theo schema, không chuyển draft v1 ngầm. |
 | `GET /v1/apps` | Danh sách app/nháp/version phù hợp membership | Không đọc từ `localStorage`; app không có quyền không lộ. |
@@ -46,7 +46,7 @@ Mọi route nghiệp vụ `/v1/*` đi qua Gateway, dùng token OIDC và tenant c
 
 **Mẫu phản hồi lỗi thống nhất:** `400` đầu vào sai; `401` thiếu token; `403` thiếu quyền; `404` app/bản ghi ngoài phạm vi theo chính sách; `409` draft đã đổi hoặc version xung đột; `422` cấu hình không thể publish (issues có `path`). Web không tự suy ra publish thành công từ preview.
 
-**Ví dụ catalog rút gọn** (chỉ thể hiện trường cốt lõi, OpenAPI sẽ bổ sung kiểu và lỗi):
+**Ví dụ catalog rút gọn** (chỉ thể hiện trường cốt lõi, OpenAPI sẽ bổ sung kiểu và lỗi). Permission nghiệp vụ theo `<featureId>.<resource>.<action>`; mỗi `(resource, action)` thuộc feature có đúng một permission. Web tra catalog bằng binding `(featureId, resource, action)` để kiểm nháp/hiển thị; API kiểm quyền lại trên cùng bộ ba. Quyền hệ thống theo app như `share.manage`, `ai.sources.manage` công bố riêng, không xuất hiện trong `actions` của feature:
 
 ```json
 {
@@ -58,9 +58,28 @@ Mọi route nghiệp vụ `/v1/*` đi qua Gateway, dùng token OIDC và tenant c
       "domain": "crm",
       "dependencies": ["crm.customers"],
       "resources": ["opportunities"],
-      "actions": ["read", "create", "advance"],
-      "permissions": ["opportunities.read", "opportunities.create", "opportunities.advance"],
+      "actions": [
+        { "resource": "opportunities", "action": "read", "permission": "crm.opportunities.opportunities.read" },
+        { "resource": "opportunities", "action": "create", "permission": "crm.opportunities.opportunities.create" },
+        { "resource": "opportunities", "action": "advance", "permission": "crm.opportunities.opportunities.advance" }
+      ],
+      "permissions": ["crm.opportunities.opportunities.read", "crm.opportunities.opportunities.create", "crm.opportunities.opportunities.advance"],
       "components": ["form", "table", "detail", "action"],
+      "status": "supported"
+    },
+    {
+      "id": "erp.inventory",
+      "version": 1,
+      "domain": "erp",
+      "dependencies": ["erp.materials"],
+      "resources": ["receipts", "stock"],
+      "actions": [
+        { "resource": "receipts", "action": "receive", "permission": "erp.inventory.receipts.receive" },
+        { "resource": "receipts", "action": "read", "permission": "erp.inventory.receipts.read" },
+        { "resource": "stock", "action": "read", "permission": "erp.inventory.stock.read" }
+      ],
+      "permissions": ["erp.inventory.receipts.receive", "erp.inventory.receipts.read", "erp.inventory.stock.read"],
+      "components": ["form", "table"],
       "status": "supported"
     }
   ]
@@ -71,7 +90,7 @@ Mọi route nghiệp vụ `/v1/*` đi qua Gateway, dùng token OIDC và tenant c
 
 **Bản ghi chính sách tối thiểu:** `{id, tenantId, sourceAppId, targetAppId, resourceType, allowedActions: ["read"|"write"], writeActions, recordScope, targetRoles, status, revision, createdBy, approvedBy, revokedAt}`. `recordScope` bản demo dùng `{type:"ids", ids:[recordId]}` với ID bản ghi nguồn được chọn rõ ràng (không nhập SQL/filter tùy ý); `allowedActions` map sang action cụ thể của feature nguồn trước khi ghi. App nguồn/đích phải khác nhau nhưng cùng tenant, feature nguồn còn hỗ trợ; policy không tự mở tệp/task/dashboard/index AI. `writeActions` chỉ chứa action ghi đã đăng ký ở catalog; **bản demo giới hạn một action ghi trên một loại dữ liệu** cho mỗi liên kết, không mặc định cho mọi bản ghi/role.
 
-Hành động ghi demo đã chọn: `erp.materials:update_note` trên đúng bản ghi vật tư được chỉ định; service nguồn chỉ cho sửa trường ghi chú, có kiểm phiên bản và audit. Catalog phải công bố action này trước khi chia sẻ; không coi hành động minh họa là đã chạy trong API.
+Hành động ghi demo đã chọn: `materials:update_note` thuộc feature `erp.materials` (permission `erp.materials.materials.update_note`) trên đúng bản ghi vật tư được chỉ định; service nguồn chỉ cho sửa trường ghi chú, có kiểm phiên bản và audit. Catalog phải công bố action này trước khi chia sẻ; không coi hành động minh họa là đã chạy trong API.
 
 **Ví dụ request cấp liên kết** (ID minh họa; OpenAPI quy định UUID và định dạng lỗi):
 
