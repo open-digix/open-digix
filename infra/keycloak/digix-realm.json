@@ -11,6 +11,9 @@
   "resetPasswordAllowed": true,
   "editUsernameAllowed": false,
   "bruteForceProtected": true,
+  "eventsEnabled": true,
+  "eventsExpiration": 604800,
+  "eventsListeners": ["jboss-logging"],
   "loginTheme": "digix",
   "internationalizationEnabled": true,
   "supportedLocales": [

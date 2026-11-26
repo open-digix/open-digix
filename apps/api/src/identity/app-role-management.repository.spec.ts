@@ -1,5 +1,5 @@
 import type { Pool } from 'pg';
-import { AuditLogRepository } from './audit-log.repository';
+import { AuditService } from '../audit/audit.service';
 import {
   AppRoleAssignmentConflictError,
   AppRoleManagementRepository,
@@ -17,19 +17,19 @@ describe('AppRoleManagementRepository', () => {
 
   let query: jest.Mock;
   let release: jest.Mock;
-  let auditLogs: { createInTransaction: jest.Mock };
+  let audit: { record: jest.Mock };
   let repository: AppRoleManagementRepository;
 
   beforeEach(() => {
     query = jest.fn();
     release = jest.fn();
-    auditLogs = { createInTransaction: jest.fn().mockResolvedValue(undefined) };
+    audit = { record: jest.fn().mockResolvedValue(undefined) };
     const pool = {
       connect: jest.fn().mockResolvedValue({ query, release }),
     };
     repository = new AppRoleManagementRepository(
       pool as unknown as Pool,
-      auditLogs as unknown as AuditLogRepository,
+      audit as unknown as AuditService,
     );
   });
 
@@ -53,15 +53,21 @@ describe('AppRoleManagementRepository', () => {
         input.assignedByMembershipId,
       ],
     );
-    expect(auditLogs.createInTransaction).toHaveBeenCalledWith(
-      expect.anything(),
+    expect(audit.record).toHaveBeenCalledTimes(1);
+    expect(audit.record).toHaveBeenCalledWith(
       expect.objectContaining({
         tenantId: input.tenantId,
         actorMembershipId: input.assignedByMembershipId,
-        action: 'app_role.assign',
+        action: 'rbac.role.assigned',
         resourceId: input.membershipId,
         result: 'success',
+        metadata: {
+          targetMembershipId: input.membershipId,
+          roleCode: input.roleCode,
+          scope: input.applicationId,
+        },
       }),
+      expect.objectContaining({ query }),
     );
     expect(query).toHaveBeenLastCalledWith('COMMIT');
     expect(release).toHaveBeenCalledTimes(1);
@@ -77,7 +83,7 @@ describe('AppRoleManagementRepository', () => {
       AppRoleAssignmentConflictError,
     );
     expect(query).toHaveBeenLastCalledWith('ROLLBACK');
-    expect(auditLogs.createInTransaction).not.toHaveBeenCalled();
+    expect(audit.record).not.toHaveBeenCalled();
     expect(release).toHaveBeenCalledTimes(1);
   });
 
@@ -94,9 +100,10 @@ describe('AppRoleManagementRepository', () => {
       expect.stringContaining('WHERE tenant_id = $1'),
       [input.tenantId, input.applicationId, input.membershipId, input.roleId],
     );
-    expect(auditLogs.createInTransaction).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({ action: 'app_role.revoke' }),
+    expect(audit.record).toHaveBeenCalledTimes(1);
+    expect(audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'rbac.role.revoked' }),
+      expect.objectContaining({ query }),
     );
     expect(query).toHaveBeenLastCalledWith('COMMIT');
   });
@@ -106,15 +113,13 @@ describe('AppRoleManagementRepository', () => {
 
     await expect(repository.revokeRole(input)).resolves.toBe(false);
 
-    expect(auditLogs.createInTransaction).not.toHaveBeenCalled();
+    expect(audit.record).not.toHaveBeenCalled();
     expect(query).toHaveBeenLastCalledWith('COMMIT');
   });
 
   it('rolls back the role change when audit writing fails', async () => {
     query.mockResolvedValueOnce({}).mockResolvedValueOnce({});
-    auditLogs.createInTransaction.mockRejectedValueOnce(
-      new Error('audit down'),
-    );
+    audit.record.mockRejectedValueOnce(new Error('audit down'));
 
     await expect(repository.assignRole(input)).rejects.toThrow('audit down');
 

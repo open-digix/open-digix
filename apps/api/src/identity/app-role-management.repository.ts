@@ -1,10 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Pool, QueryResultRow } from 'pg';
-import { DATABASE_POOL } from '../database/database.module';
+import { AuditService, type RecordAuditInput } from '../audit/audit.service';
 import {
-  AuditLogRepository,
-  type CreateAuditLogInput,
-} from './audit-log.repository';
+  AuditAction,
+  AuditResult,
+} from '../audit/constants/audit-policy.constants';
+import { DATABASE_POOL } from '../database/database.module';
 
 export class AppRoleAssignmentConflictError extends Error {
   constructor() {
@@ -53,7 +54,7 @@ const REVOKE_ROLE_QUERY = `
 export class AppRoleManagementRepository {
   constructor(
     @Inject(DATABASE_POOL) private readonly pool: Pool,
-    private readonly auditLogs: AuditLogRepository,
+    private readonly audit: AuditService,
   ) {}
 
   async hasActiveMembership(
@@ -100,9 +101,9 @@ export class AppRoleManagementRepository {
         input.assignedByMembershipId,
       ]);
 
-      await this.auditLogs.createInTransaction(
+      await this.audit.record(
+        createRoleAuditInput(input, AuditAction.ROLE_ASSIGNED),
         client,
-        createRoleAuditInput(input, 'app_role.assign'),
       );
       await client.query('COMMIT');
     } catch (error) {
@@ -137,9 +138,9 @@ export class AppRoleManagementRepository {
       const revoked = result.rowCount === 1;
 
       if (revoked) {
-        await this.auditLogs.createInTransaction(
+        await this.audit.record(
+          createRoleAuditInput(input, AuditAction.ROLE_REVOKED),
           client,
-          createRoleAuditInput(input, 'app_role.revoke'),
         );
       }
 
@@ -163,20 +164,19 @@ function createRoleAuditInput(
     roleId?: string;
     assignedByMembershipId: string;
   },
-  action: 'app_role.assign' | 'app_role.revoke',
-): CreateAuditLogInput {
+  action: typeof AuditAction.ROLE_ASSIGNED | typeof AuditAction.ROLE_REVOKED,
+): RecordAuditInput {
   return {
     tenantId: input.tenantId,
     actorMembershipId: input.assignedByMembershipId,
     action,
     resourceType: 'app_membership_role',
     resourceId: input.membershipId,
-    result: 'success',
+    result: AuditResult.SUCCESS,
     metadata: {
-      applicationId: input.applicationId,
-      membershipId: input.membershipId,
-      roleId: input.roleId ?? null,
-      roleCode: input.roleCode ?? null,
+      targetMembershipId: input.membershipId,
+      roleCode: input.roleCode,
+      scope: input.applicationId,
     },
   };
 }

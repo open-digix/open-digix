@@ -1,4 +1,5 @@
 import type { Pool } from 'pg';
+import type { AuditService } from '../audit/audit.service';
 import {
   BuilderDraftRepository,
   BuilderVersionConflictError,
@@ -36,12 +37,14 @@ describe('BuilderDraftRepository', () => {
   let poolQuery: jest.Mock;
   let clientQuery: jest.Mock;
   let clientRelease: jest.Mock;
+  let auditRecord: jest.Mock;
   let repository: BuilderDraftRepository;
 
   beforeEach(() => {
     poolQuery = jest.fn();
     clientQuery = jest.fn();
     clientRelease = jest.fn();
+    auditRecord = jest.fn().mockResolvedValue(undefined);
 
     const pool = {
       query: poolQuery,
@@ -51,7 +54,12 @@ describe('BuilderDraftRepository', () => {
       }),
     };
 
-    repository = new BuilderDraftRepository(pool as unknown as Pool);
+    repository = new BuilderDraftRepository(
+      pool as unknown as Pool,
+      {
+        record: auditRecord,
+      } as unknown as AuditService,
+    );
   });
 
   describe('findApplicationVersion', () => {
@@ -260,6 +268,21 @@ describe('BuilderDraftRepository', () => {
         createdAt,
       });
       expect(clientRelease).toHaveBeenCalled();
+      expect(auditRecord).toHaveBeenCalledTimes(1);
+      expect(auditRecord).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tenantId,
+          actorMembershipId: createdByMembershipId,
+          action: 'builder.config.updated',
+          resourceId: applicationId,
+          metadata: {
+            appId: applicationId,
+            configId: draftRevisionId,
+            version: 1,
+          },
+        }),
+        expect.objectContaining({ query: clientQuery }),
+      );
     });
 
     it('rolls back transaction on error', async () => {
@@ -283,6 +306,7 @@ describe('BuilderDraftRepository', () => {
       ).rejects.toThrow('Lock error');
 
       expect(clientQuery).toHaveBeenCalledWith('ROLLBACK');
+      expect(auditRecord).not.toHaveBeenCalled();
       expect(clientRelease).toHaveBeenCalled();
     });
   });
@@ -327,6 +351,50 @@ describe('BuilderDraftRepository', () => {
         createdAt,
       });
       expect(clientRelease).toHaveBeenCalled();
+      expect(auditRecord).toHaveBeenCalledTimes(1);
+      expect(auditRecord).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'builder.config.updated',
+          metadata: {
+            appId: applicationId,
+            configId: draftRevisionId,
+            version: 1,
+          },
+        }),
+        expect.objectContaining({ query: clientQuery }),
+      );
+    });
+
+    it('rolls back the draft update when its audit insert fails', async () => {
+      clientQuery
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce({ rows: [{ lock_version: 2 }] })
+        .mockResolvedValueOnce({ rows: [{ next_rev: 3 }] })
+        .mockResolvedValueOnce({
+          rows: [
+            { id: draftRevisionId, revision_no: 3, created_at: createdAt },
+          ],
+        })
+        .mockResolvedValueOnce({ rows: [{ lock_version: 3 }] })
+        .mockResolvedValueOnce({ rows: [] });
+      auditRecord.mockRejectedValueOnce(new Error('audit unavailable'));
+
+      await expect(
+        repository.updateDraftRevision({
+          tenantId,
+          applicationId,
+          applicationVersionId: versionId,
+          version: 1,
+          lockVersion: 2,
+          definition: dummyDefinition,
+          sourceMappings: [],
+          openIssues: [],
+          snapshotChecksum: 'c'.repeat(64),
+          createdByMembershipId,
+        }),
+      ).rejects.toThrow('audit unavailable');
+      expect(clientQuery).toHaveBeenLastCalledWith('ROLLBACK');
+      expect(clientQuery).not.toHaveBeenCalledWith('COMMIT');
     });
 
     it('throws BuilderVersionConflictError when lockVersion does not match', async () => {
@@ -350,6 +418,7 @@ describe('BuilderDraftRepository', () => {
       ).rejects.toBeInstanceOf(BuilderVersionConflictError);
 
       expect(clientQuery).toHaveBeenCalledWith('ROLLBACK');
+      expect(auditRecord).not.toHaveBeenCalled();
       expect(clientRelease).toHaveBeenCalled();
     });
   });
