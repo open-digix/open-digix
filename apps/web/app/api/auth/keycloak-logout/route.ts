@@ -15,11 +15,11 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { headers, cookies } from "next/headers";
+import { cookies } from "next/headers";
 import { getToken } from "next-auth/jwt";
 import { signOut } from "@/auth";
 
-export async function POST(req?: NextRequest) {
+export async function POST(request: NextRequest) {
   const issuer = process.env.AUTH_KEYCLOAK_ISSUER?.replace(/\/+$/, "");
   const clientId = process.env.AUTH_KEYCLOAK_ID;
   const appUrl = process.env.AUTH_URL;
@@ -34,9 +34,8 @@ export async function POST(req?: NextRequest) {
   // 1. Đọc idToken từ JWT phía server (không ghi token ra log)
   let idToken: string | undefined;
   try {
-    const requestHeaders = await headers();
     const token = await getToken({
-      req: req ?? { headers: requestHeaders },
+      req: request,
       secret: process.env.AUTH_SECRET,
     });
     if (typeof token?.idToken === "string" && token.idToken) {

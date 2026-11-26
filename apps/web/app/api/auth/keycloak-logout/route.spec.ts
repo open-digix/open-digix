@@ -42,6 +42,13 @@ vi.mock("next-auth/jwt", () => ({
 }));
 
 import { GET, POST } from "./route";
+import type { NextRequest } from "next/server";
+
+function createMockRequest(): NextRequest {
+  return new Request("http://localhost:3000/api/auth/keycloak-logout", {
+    method: "POST",
+  }) as unknown as NextRequest;
+}
 
 const originalEnv = {
   issuer: process.env.AUTH_KEYCLOAK_ISSUER,
@@ -70,7 +77,7 @@ describe("Keycloak logout route", () => {
   it("POST có id_token: URL có đủ 3 tham số mã hóa và chuyển hướng 303", async () => {
     mockTokenResult = { idToken: "header.payload.signature" };
 
-    const response = await POST();
+    const response = await POST(createMockRequest());
     expect(response.status).toBe(303);
 
     const location = response.headers.get("location");
@@ -87,7 +94,7 @@ describe("Keycloak logout route", () => {
   it("POST không có id_token: chuyển hướng 303 và không có id_token_hint", async () => {
     mockTokenResult = null;
 
-    const response = await POST();
+    const response = await POST(createMockRequest());
     expect(response.status).toBe(303);
 
     const location = response.headers.get("location");
@@ -108,7 +115,7 @@ describe("Keycloak logout route", () => {
   it("Xóa phiên Auth.js và cookie phiên khi POST đăng xuất", async () => {
     mockTokenResult = { idToken: "token-abc" };
 
-    const response = await POST();
+    const response = await POST(createMockRequest());
     expect(response.status).toBe(303);
     expect(mockSignOut).toHaveBeenCalledWith({ redirect: false });
     expect(mockDeleteCookie).toHaveBeenCalledWith("authjs.session-token");
@@ -118,7 +125,7 @@ describe("Keycloak logout route", () => {
   it("Thiếu cấu hình: trả về mã lỗi 500 như cũ", async () => {
     delete process.env.AUTH_KEYCLOAK_ISSUER;
 
-    const response = await POST();
+    const response = await POST(createMockRequest());
     expect(response.status).toBe(500);
 
     const data = await response.json();
