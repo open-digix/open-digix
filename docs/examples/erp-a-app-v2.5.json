@@ -11,10 +11,10 @@
     { "id": "erp.inventory", "version": 1 }
   ],
   "roles": [
-    { "id": "buyer", "permissions": ["erp.materials.read", "erp.purchase_requests.create", "erp.purchase_requests.read", "erp.purchase_requests.submit"] },
-    { "id": "approver", "permissions": ["erp.materials.read", "erp.purchase_requests.read", "erp.purchase_requests.approve", "erp.purchase_requests.reject"] },
-    { "id": "warehouse", "permissions": ["erp.materials.read", "erp.inventory.receive", "erp.inventory.read"] },
-    { "id": "publisher", "permissions": ["share.manage", "erp.materials.read", "erp.materials.update_note"] }
+    { "id": "buyer", "permissions": ["erp.materials.materials.read", "erp.purchase_requests.requests.create", "erp.purchase_requests.requests.read", "erp.purchase_requests.requests.submit"] },
+    { "id": "approver", "permissions": ["erp.materials.materials.read", "erp.purchase_requests.requests.read", "erp.purchase_requests.requests.approve", "erp.purchase_requests.requests.reject"] },
+    { "id": "warehouse", "permissions": ["erp.materials.materials.read", "erp.inventory.receipts.receive", "erp.inventory.stock.read"] },
+    { "id": "publisher", "permissions": ["share.manage", "erp.materials.materials.read", "erp.materials.materials.update_note"] }
   ],
   "pages": [
     {
