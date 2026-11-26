@@ -16,24 +16,25 @@
 
 "use client";
 
-import { signOut } from "next-auth/react";
-
 interface LogoutButtonProps {
   className?: string;
 }
 
 export default function LogoutButton({ className }: LogoutButtonProps) {
   return (
-    <button
-      type="button"
-      onClick={() => {
-        void signOut({ callbackUrl: "/login" });
-      }}
-      className={
-        className ?? "font-medium text-blue-700 underline hover:text-blue-900"
-      }
+    <form
+      method="post"
+      action="/api/auth/keycloak-logout"
+      style={{ display: "inline", margin: 0, padding: 0 }}
     >
-      Đăng xuất
-    </button>
+      <button
+        type="submit"
+        className={
+          className ?? "font-medium text-blue-700 underline hover:text-blue-900"
+        }
+      >
+        Đăng xuất
+      </button>
+    </form>
   );
 }
