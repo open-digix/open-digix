@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "2.5",
+  "startingPoint": "blank",
+  "tenantId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "appId": "22222222-2222-4222-8222-222222222222",
+  "version": 1,
+  "name": "Khách hàng của đội kinh doanh",
+  "features": [
+    { "id": "crm.customers", "version": 1 },
+    { "id": "crm.opportunities", "version": 1 }
+  ],
+  "roles": [
+    { "id": "sales", "permissions": ["crm.customers.create", "crm.customers.read", "crm.opportunities.create", "crm.opportunities.read", "crm.opportunities.advance"] }
+  ],
+  "pages": [
+    {
+      "id": "accounts", "label": "Khách hàng", "path": "accounts", "layout": "two_columns", "menuOrder": 0,
+      "components": [
+        { "id": "account_table", "type": "table", "featureId": "crm.customers", "resource": "customers", "zone": "main" },
+        { "id": "account_form", "type": "form", "featureId": "crm.customers", "resource": "customers", "action": "create", "zone": "side" }
+      ]
+    },
+    {
+      "id": "deals", "label": "Cơ hội", "path": "deals", "layout": "single", "menuOrder": 1,
+      "components": [
+        { "id": "deal_form", "type": "form", "featureId": "crm.opportunities", "resource": "opportunities", "action": "create", "zone": "main" },
+        { "id": "deal_table", "type": "table", "featureId": "crm.opportunities", "resource": "opportunities", "zone": "main" }
+      ]
+    }
+  ]
+}

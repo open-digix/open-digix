@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "2.5",
+  "startingPoint": "erp",
+  "tenantId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "appId": "11111111-1111-4111-8111-111111111111",
+  "version": 1,
+  "name": "Vật tư và mua hàng",
+  "features": [
+    { "id": "erp.materials", "version": 1 },
+    { "id": "erp.purchase_requests", "version": 1 },
+    { "id": "erp.inventory", "version": 1 }
+  ],
+  "roles": [
+    { "id": "buyer", "permissions": ["erp.materials.read", "erp.purchase_requests.create", "erp.purchase_requests.read", "erp.purchase_requests.submit"] },
+    { "id": "approver", "permissions": ["erp.materials.read", "erp.purchase_requests.read", "erp.purchase_requests.approve", "erp.purchase_requests.reject"] },
+    { "id": "warehouse", "permissions": ["erp.materials.read", "erp.inventory.receive", "erp.inventory.read"] },
+    { "id": "publisher", "permissions": ["share.manage", "erp.materials.read", "erp.materials.update_note"] }
+  ],
+  "pages": [
+    {
+      "id": "purchase", "label": "Yêu cầu mua", "path": "purchase", "layout": "two_columns", "menuOrder": 0,
+      "components": [
+        { "id": "purchase_form", "type": "form", "featureId": "erp.purchase_requests", "resource": "requests", "action": "create", "zone": "main" },
+        { "id": "purchase_tasks", "type": "table", "featureId": "erp.purchase_requests", "resource": "requests", "zone": "main" },
+        { "id": "approve_request", "type": "action", "featureId": "erp.purchase_requests", "resource": "requests", "action": "approve", "zone": "side" },
+        { "id": "materials_list", "type": "table", "featureId": "erp.materials", "resource": "materials", "zone": "side" }
+      ]
+    },
+    {
+      "id": "stock", "label": "Tồn kho", "path": "stock", "layout": "single", "menuOrder": 1,
+      "components": [
+        { "id": "stock_table", "type": "table", "featureId": "erp.inventory", "resource": "stock", "zone": "main" },
+        { "id": "receipt_form", "type": "form", "featureId": "erp.inventory", "resource": "receipts", "action": "receive", "zone": "main" }
+      ]
+    }
+  ],
+  "workflows": [
+    { "id": "purchase_approval", "featureId": "erp.purchase_requests", "trigger": "submit" }
+  ]
+}

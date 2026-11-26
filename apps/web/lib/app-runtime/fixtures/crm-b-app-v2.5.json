@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "2.5",
+  "startingPoint": "crm",
+  "tenantId": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+  "appId": "33333333-3333-4333-8333-333333333333",
+  "version": 1,
+  "name": "Khách hàng và cơ hội",
+  "features": [
+    { "id": "crm.customers", "version": 1 },
+    { "id": "crm.opportunities", "version": 1 }
+  ],
+  "roles": [
+    { "id": "sales", "permissions": ["crm.customers.create", "crm.customers.read", "crm.customers.create_contact", "crm.opportunities.create", "crm.opportunities.read", "crm.opportunities.advance"] }
+  ],
+  "pages": [
+    {
+      "id": "pipeline", "label": "Cơ hội", "path": "pipeline", "layout": "two_columns", "menuOrder": 0,
+      "components": [
+        { "id": "opportunity_table", "type": "table", "featureId": "crm.opportunities", "resource": "opportunities", "zone": "main" },
+        { "id": "opportunity_form", "type": "form", "featureId": "crm.opportunities", "resource": "opportunities", "action": "create", "zone": "main" },
+        { "id": "advance_stage", "type": "action", "featureId": "crm.opportunities", "resource": "opportunities", "action": "advance", "zone": "side" }
+      ]
+    },
+    {
+      "id": "customers", "label": "Khách hàng", "path": "customers", "layout": "single", "menuOrder": 1,
+      "components": [
+        { "id": "customer_form", "type": "form", "featureId": "crm.customers", "resource": "customers", "action": "create", "zone": "main" },
+        { "id": "contact_form", "type": "form", "featureId": "crm.customers", "resource": "contacts", "action": "create_contact", "zone": "main" }
+      ]
+    }
+  ]
+}
