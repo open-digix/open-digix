@@ -8,6 +8,7 @@ describe('database migrations', () => {
       '0003_app_acl',
       '0004_app_acl_backfill',
       '0005_shared_foundation',
+      '0006_erp_materials',
     ]);
   });
 
@@ -100,6 +101,19 @@ describe('database migrations', () => {
     );
     expect(migrations[4].sql).toContain(
       'UNIQUE (\n          tenant_id,\n          application_id,\n          actor_membership_id,\n          action,\n          idempotency_key\n        )',
+    );
+  });
+
+  it('creates the ERP materials table with app and version scope', () => {
+    expect(migrations[5].sql).toContain('CREATE TABLE materials');
+    expect(migrations[5].sql).toContain(
+      'FOREIGN KEY (tenant_id, application_id)',
+    );
+    expect(migrations[5].sql).toContain(
+      'FOREIGN KEY (tenant_id, application_id, application_version_id)',
+    );
+    expect(migrations[5].sql).toContain(
+      'UNIQUE (tenant_id, application_id, sku)',
     );
   });
 });

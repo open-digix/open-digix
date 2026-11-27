@@ -19,6 +19,7 @@ const REQUIRED_TABLES = [
   'identity_users',
   'idempotency_keys',
   'membership_roles',
+  'materials',
   'schema_migrations',
   'stored_files',
   'tenant_memberships',
