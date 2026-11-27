@@ -12,6 +12,7 @@ describe('database migrations', () => {
       '0007_erp_purchase_requests',
       '0008_erp_inventory_receipts',
       '0009_erp_purchase_request_constraints',
+      '0010_crm_foundation',
     ]);
   });
 
@@ -153,5 +154,23 @@ describe('database migrations', () => {
       'DROP CONSTRAINT purchase_requests_rejection_reason_valid',
     );
     expect(migrations[8].sql).toContain('rejection_reason IS NOT NULL');
+  });
+
+  it('creates CRM tables scoped by tenant, app and pinned version', () => {
+    const sql = migrations[9].sql;
+    for (const table of [
+      'customers',
+      'contacts',
+      'opportunities',
+      'opportunity_stage_events',
+    ]) {
+      expect(sql).toContain(`CREATE TABLE ${table}`);
+    }
+    expect(sql).toContain('UNIQUE (tenant_id, application_id, customer_code)');
+    expect(sql).toContain('CONSTRAINT contacts_customer_fk');
+    expect(sql).toContain('CONSTRAINT opportunities_customer_fk');
+    expect(sql).toContain('CONSTRAINT opportunity_stage_events_opportunity_fk');
+    expect(sql).toContain('CONSTRAINT opportunity_stage_events_version_unique');
+    expect(sql).toContain('CONSTRAINT opportunities_stage_valid');
   });
 });
