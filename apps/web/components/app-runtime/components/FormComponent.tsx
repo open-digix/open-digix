@@ -44,7 +44,7 @@ export default function FormComponent({
     "receipts:receive": "Nhập kho vật tư",
   };
   const actionKey = `${resource}:${action}`;
-  const displayTitle = label || ACTION_TITLES[actionKey] || `Nhập liệu: ${resource}`;
+  const displayTitle = label || ACTION_TITLES[actionKey] || "Biểu mẫu";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

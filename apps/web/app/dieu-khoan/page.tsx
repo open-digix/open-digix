@@ -52,7 +52,7 @@ export default function DieuKhoanPage() {
               className="eyebrow"
               style={{
                 color: "var(--ws-warning)",
-                background: "var(--ws-bg-warning-soft, #fef3c7)",
+                background: "var(--ws-bg-warning-soft)",
                 display: "inline-block",
                 padding: "4px 10px",
                 borderRadius: "6px",

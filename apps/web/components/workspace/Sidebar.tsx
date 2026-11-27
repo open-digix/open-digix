@@ -19,7 +19,7 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { getRuntimeSync } from "../../lib/app-runtime/fixtures";
 import { getRuntimeAction } from "../../lib/app-config/actions";
 import type { PublishedAppV25 } from "../../lib/app-runtime/types";
@@ -54,6 +54,12 @@ export default function Sidebar({
   onHideTip,
 }: SidebarProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams?.() ?? null;
+  const tabParam = searchParams?.get?.("tab") ?? null;
+  const isDraftTab = pathname === "/apps" && tabParam === "draft";
+  const isAppsActive =
+    (pathname === "/apps" || pathname.startsWith("/apps/")) && !isDraftTab;
+  const isBuilderActive = isDraftTab || pathname.startsWith("/builder");
 
   const canAccessBuilder = roles.some((r) =>
     ["designer", "publisher", "tenant_admin", "admin", "owner"].includes(r),
@@ -166,7 +172,32 @@ export default function Sidebar({
             <div className="nav-group-label" style={{ textTransform: "uppercase" }}>
               {currentApp.name}
             </div>
-            {currentApp.pages.map((page, index) => {
+            {currentApp.pages
+              .filter((page) => {
+                if (page.hidden) return false;
+                if (Array.isArray(page.visibleToRoles) && page.visibleToRoles.length > 0) {
+                  const hasAllowedRole =
+                    roles.some((r) => ["admin", "owner", "tenant_admin", "designer"].includes(r)) ||
+                    page.visibleToRoles.some((r) => roles.includes(r));
+                  if (!hasAllowedRole) return false;
+                }
+                const perms = (page as { permissions?: string[] }).permissions;
+                if (Array.isArray(perms) && perms.length > 0) {
+                  const matchingRoles = (currentApp.roles || []).filter((r) =>
+                    roles.includes(r.id) ||
+                    (roles.includes("employee") && (r.id === "buyer" || r.id === "sales")) ||
+                    (roles.includes("manager") && (r.id === "approver" || r.id === "manager")) ||
+                    roles.some((userRole) => ["admin", "owner", "tenant_admin", "designer"].includes(userRole))
+                  );
+                  const userPerms = matchingRoles.flatMap((r) => r.permissions);
+                  const isPermitted =
+                    roles.some((r) => ["admin", "owner", "tenant_admin", "designer"].includes(r)) ||
+                    perms.some((p) => userPerms.includes(p));
+                  if (!isPermitted) return false;
+                }
+                return true;
+              })
+              .map((page, index) => {
               const pageHref = `/app/${currentAppId}/${page.id}`;
               const pageTitle = page.label || page.id;
               const isPageActive =
@@ -210,8 +241,8 @@ export default function Sidebar({
         <div className="nav-group-label">HỆ THỐNG</div>
         <Link
           href="/apps"
-          className={`nav-link ${isActive("/apps") ? "active" : ""}`}
-          aria-current={isActive("/apps") ? "page" : undefined}
+          className={`nav-link ${isAppsActive ? "active" : ""}`}
+          aria-current={isAppsActive ? "page" : undefined}
           data-tip="Ứng dụng"
           onClick={onClose}
           onMouseEnter={handleTipEnter("Ứng dụng")}
@@ -261,8 +292,8 @@ export default function Sidebar({
         {canAccessBuilder && (
           <Link
             href="/apps?tab=draft"
-            className={`nav-link ${isActive("/builder") ? "active" : ""}`}
-            aria-current={isActive("/builder") ? "page" : undefined}
+            className={`nav-link ${isBuilderActive ? "active" : ""}`}
+            aria-current={isBuilderActive ? "page" : undefined}
             data-tip="Thiết kế ứng dụng"
             onClick={onClose}
             onMouseEnter={handleTipEnter("Thiết kế ứng dụng")}

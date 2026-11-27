@@ -28,6 +28,7 @@ vi.mock("next/navigation", () => ({
     refresh: vi.fn(),
   }),
   usePathname: () => "/apps",
+  useSearchParams: () => new URLSearchParams(),
   redirect: vi.fn(),
 }));
 

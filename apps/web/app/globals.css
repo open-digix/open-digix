@@ -72,6 +72,14 @@ body {
   --ws-toast-shadow: rgba(9, 39, 53, 0.23);
   --ws-tooltip-bg: #0b1e30;
   --ws-modal-backdrop: rgba(11, 36, 52, 0.68);
+  --ws-focus-ring: 0 0 0 2px var(--ws-focus);
+  --ws-modal-shadow: 0 20px 40px rgba(17, 43, 69, 0.2);
+  --ws-sidebar-scrim: rgba(11, 30, 48, 0.5);
+  --ws-sidebar-shadow: rgba(17, 43, 69, 0.12);
+  --ws-sidebar-open-shadow: rgba(17, 43, 69, 0.25);
+  --ws-intro-bg: var(--ws-bg-soft);
+  --ws-intro-pill-border: var(--ws-border);
+  --ws-theme-accent: var(--ws-accent);
 
   --ws-glass-bg: rgba(255, 255, 255, 0.85);
   --ws-glass-bg-strong: rgba(255, 255, 255, 0.94);
@@ -130,6 +138,14 @@ body {
   --ws-toast-shadow: rgba(0, 0, 0, 0.4);
   --ws-tooltip-bg: #07111a;
   --ws-modal-backdrop: rgba(0, 0, 0, 0.7);
+  --ws-focus-ring: 0 0 0 2px var(--ws-focus);
+  --ws-modal-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  --ws-sidebar-scrim: rgba(11, 30, 48, 0.7);
+  --ws-sidebar-shadow: rgba(17, 43, 69, 0.45);
+  --ws-sidebar-open-shadow: rgba(17, 43, 69, 0.6);
+  --ws-intro-bg: var(--ws-bg-soft);
+  --ws-intro-pill-border: var(--ws-border);
+  --ws-theme-accent: var(--ws-accent);
 
   --ws-glass-bg: rgba(17, 31, 43, 0.85);
   --ws-glass-bg-strong: rgba(17, 31, 43, 0.94);
@@ -189,6 +205,14 @@ body {
   --ws-toast-shadow: rgba(9, 39, 53, 0.23);
   --ws-tooltip-bg: #0b1e30;
   --ws-modal-backdrop: rgba(11, 36, 52, 0.68);
+  --ws-focus-ring: 0 0 0 2px var(--ws-focus);
+  --ws-modal-shadow: 0 20px 40px rgba(17, 43, 69, 0.2);
+  --ws-sidebar-scrim: rgba(11, 30, 48, 0.5);
+  --ws-sidebar-shadow: rgba(17, 43, 69, 0.12);
+  --ws-sidebar-open-shadow: rgba(17, 43, 69, 0.25);
+  --ws-intro-bg: var(--ws-bg-soft);
+  --ws-intro-pill-border: var(--ws-border);
+  --ws-theme-accent: var(--ws-accent);
 
   --ws-glass-bg: rgba(255, 255, 255, 0.85);
   --ws-glass-bg-strong: rgba(255, 255, 255, 0.94);
@@ -248,6 +272,14 @@ body {
   --ws-toast-shadow: rgba(0, 0, 0, 0.4);
   --ws-tooltip-bg: #07111a;
   --ws-modal-backdrop: rgba(0, 0, 0, 0.7);
+  --ws-focus-ring: 0 0 0 2px var(--ws-focus);
+  --ws-modal-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  --ws-sidebar-scrim: rgba(11, 30, 48, 0.7);
+  --ws-sidebar-shadow: rgba(17, 43, 69, 0.45);
+  --ws-sidebar-open-shadow: rgba(17, 43, 69, 0.6);
+  --ws-intro-bg: var(--ws-bg-soft);
+  --ws-intro-pill-border: var(--ws-border);
+  --ws-theme-accent: var(--ws-accent);
 
     --ws-glass-bg: rgba(17, 31, 43, 0.85);
     --ws-glass-bg-strong: rgba(17, 31, 43, 0.94);

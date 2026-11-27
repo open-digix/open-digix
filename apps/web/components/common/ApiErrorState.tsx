@@ -79,7 +79,7 @@ export default function ApiErrorState({
       >
         <div
           className="info-banner"
-          style={{ borderColor: "var(--ws-warn)", marginBottom: 16 }}
+          style={{ borderColor: "var(--ws-warning)", marginBottom: 16 }}
         >
           <b>{customTitle ?? "Không tìm thấy nội dung"}</b>
         </div>
@@ -117,7 +117,7 @@ export default function ApiErrorState({
       >
         <div
           className="info-banner"
-          style={{ borderColor: "var(--ws-warn)", marginBottom: 16 }}
+          style={{ borderColor: "var(--ws-warning)", marginBottom: 16 }}
         >
           <b>{customTitle ?? "Xung đột dữ liệu"}</b>
         </div>
@@ -297,7 +297,7 @@ export default function ApiErrorState({
       >
         <div
           className="info-banner"
-          style={{ borderColor: "var(--ws-warn)", marginBottom: 16 }}
+          style={{ borderColor: "var(--ws-warning)", marginBottom: 16 }}
         >
           <b>{customTitle ?? "Hệ thống đang bận"}</b>
         </div>

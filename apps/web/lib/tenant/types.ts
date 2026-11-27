@@ -57,6 +57,11 @@ export const ROLE_LABELS: Record<string, string> = {
   designer: "Thiết kế",
   publisher: "Xuất bản",
   tenant_admin: "Quản trị doanh nghiệp",
+  admin: "Quản trị viên",
+  owner: "Chủ sở hữu",
+  buyer: "Người mua hàng",
+  approver: "Người duyệt",
+  sales: "Nhân viên bán hàng",
 };
 
 export function getRoleLabel(role: string): string {

@@ -25,6 +25,7 @@ import type { MeMembership, MeUser } from "../../lib/tenant/types";
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   usePathname: () => "/dashboard",
+  useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
 }));
 

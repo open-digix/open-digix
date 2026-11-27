@@ -291,9 +291,7 @@ export default function Topbar({
                   <span>Đổi mật khẩu</span>
                   <span aria-hidden="true" style={{ fontSize: 11, opacity: 0.7 }}>↗</span>
                 </a>
-                <div role="menuitem">
-                  <LogoutButton className="text-link" />
-                </div>
+                <LogoutButton className="text-link" />
               </div>
             </div>
           )}

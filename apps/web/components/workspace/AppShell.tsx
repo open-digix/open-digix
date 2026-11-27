@@ -16,7 +16,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import type { MeMembership, MeUser } from "../../lib/tenant/types";
@@ -130,20 +130,22 @@ export default function AppShell({
 
   return (
     <div className={`ws-root app-shell ${modeClass}`}>
-      <Sidebar
-        roles={roles}
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        isPinned={isPinned}
-        isPeek={isPeek}
-        onTogglePin={handleTogglePin}
-        onMouseEnter={handleSidebarMouseEnter}
-        onMouseLeave={handleSidebarMouseLeave}
-        onFocusIn={handleSidebarFocusIn}
-        onFocusOut={handleSidebarFocusOut}
-        onShowTip={handleShowTip}
-        onHideTip={handleHideTip}
-      />
+      <Suspense fallback={null}>
+        <Sidebar
+          roles={roles}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+          isPinned={isPinned}
+          isPeek={isPeek}
+          onTogglePin={handleTogglePin}
+          onMouseEnter={handleSidebarMouseEnter}
+          onMouseLeave={handleSidebarMouseLeave}
+          onFocusIn={handleSidebarFocusIn}
+          onFocusOut={handleSidebarFocusOut}
+          onShowTip={handleShowTip}
+          onHideTip={handleHideTip}
+        />
+      </Suspense>
 
       <div
         className="sidebar-scrim"

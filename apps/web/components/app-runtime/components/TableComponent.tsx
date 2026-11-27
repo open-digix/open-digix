@@ -35,24 +35,116 @@ export default function TableComponent({
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const displayTitle = label || `Danh sách: ${resource}`;
+  const RESOURCE_TITLES: Record<string, string> = {
+    materials: "Danh sách vật tư",
+    requests: "Danh sách yêu cầu mua",
+    receipts: "Danh sách phiếu nhập kho",
+    stock: "Tồn kho vật tư",
+    customers: "Danh sách khách hàng",
+    opportunities: "Danh sách cơ hội bán hàng",
+  };
+  const displayTitle = label || RESOURCE_TITLES[resource] || `Danh sách ${resource}`;
 
   const COLUMN_LABELS: Record<string, string> = {
+    id: "Mã",
+    code: "Mã",
     title: "Tiêu đề",
     requester: "Người đề xuất",
+    date: "Ngày",
     totalEstimated: "Dự toán (VNĐ)",
-    code: "Mã",
     name: "Tên",
     unit: "Đơn vị",
     stock: "Tồn kho",
     unitPrice: "Đơn giá (VNĐ)",
     category: "Phân loại",
     industry: "Ngành nghề",
+    contactPerson: "Người liên hệ",
+    phone: "Số điện thoại",
     customerName: "Khách hàng",
     value: "Giá trị (VNĐ)",
     status: "Trạng thái",
     stage: "Giai đoạn",
+    probability: "Xác suất (%)",
     description: "Mô tả",
+    warehouse: "Kho",
+    quantity: "Số lượng",
+    reserved: "Đã giữ chỗ",
+    createdAt: "Ngày tạo",
+    updatedAt: "Ngày cập nhật",
+  };
+
+  const renderStatusPill = (val: unknown) => {
+    const s = String(val).toLowerCase();
+    if (s === "pending") {
+      return <span className="app-badge draft">Chờ duyệt</span>;
+    }
+    if (s === "approved") {
+      return <span className="app-badge published">Đã duyệt</span>;
+    }
+    if (s === "rejected") {
+      return (
+        <span
+          className="app-badge"
+          style={{
+            background: "var(--ws-bg-danger-soft)",
+            color: "var(--ws-danger)",
+            border: "1px solid var(--ws-border-danger-soft)",
+          }}
+        >
+          Từ chối
+        </span>
+      );
+    }
+    if (s === "active") {
+      return <span className="app-badge published">Hoạt động</span>;
+    }
+    if (s === "lead") {
+      return <span className="app-badge draft">Tiềm năng</span>;
+    }
+    if (s === "closed_won") {
+      return <span className="app-badge published">Thành công</span>;
+    }
+    if (s === "negotiation") {
+      return <span className="app-badge draft">Đàm phán</span>;
+    }
+    if (s === "proposal") {
+      return <span className="app-badge draft">Đề xuất</span>;
+    }
+    if (s === "qualification") {
+      return <span className="app-badge draft">Đánh giá</span>;
+    }
+    return String(val);
+  };
+
+  const formatDate = (val: unknown): string => {
+    if (typeof val === "string") {
+      const match = val.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (match) {
+        return `${match[3]}/${match[2]}/${match[1]}`;
+      }
+    }
+    return String(val ?? "—");
+  };
+
+  const renderCellContent = (col: string, val: unknown) => {
+    if (val === null || val === undefined) return "—";
+    if (col === "status" || col === "stage") {
+      return renderStatusPill(val);
+    }
+    if (col === "date" || col === "createdAt" || col === "updatedAt") {
+      return formatDate(val);
+    }
+    if (col === "totalEstimated" || col === "unitPrice" || col === "value") {
+      return typeof val === "number" ? val.toLocaleString("vi-VN") : String(val);
+    }
+    if (col === "code" || col === "id") {
+      return <strong style={{ color: "var(--ws-accent)" }}>{String(val)}</strong>;
+    }
+    if (typeof val === "object") {
+      const obj = val as Record<string, unknown>;
+      return String(obj.name || obj.title || "—");
+    }
+    return String(val);
   };
 
   useEffect(() => {
@@ -109,10 +201,16 @@ export default function TableComponent({
     return str.includes(searchTerm.toLowerCase());
   });
 
-  // Tự động nhận diện các cột hiển thị từ bản ghi đầu tiên
-  const columns = items.length > 0
-    ? Object.keys(items[0]).filter((k) => k !== "id" && k !== "createdAt").slice(0, 4)
-    : ["Tên / Mã", "Trạng thái"];
+  // Xác định các cột hiển thị: loại bỏ id nếu đã có code để tránh trùng cột Mã
+  const hasCode = items.some((item) => "code" in item);
+  const rawKeys = items.length > 0 ? Object.keys(items[0]) : [];
+  const columns = rawKeys
+    .filter((k) => {
+      if (k === "createdAt" || k === "updatedAt") return false;
+      if (hasCode && k === "id") return false;
+      return true;
+    })
+    .slice(0, 5);
 
   return (
     <div
@@ -154,7 +252,6 @@ export default function TableComponent({
         <table className="data-table">
           <thead>
             <tr>
-              <th style={{ width: 80 }}>Mã</th>
               {columns.map((col) => (
                 <th key={col}>
                   {COLUMN_LABELS[col] || col}
@@ -165,21 +262,16 @@ export default function TableComponent({
           <tbody>
             {filteredItems.length === 0 ? (
               <tr>
-                <td colSpan={columns.length + 1} style={{ textAlign: "center", padding: "32px 16px", color: "var(--ws-muted)" }}>
+                <td colSpan={columns.length} style={{ textAlign: "center", padding: "32px 16px", color: "var(--ws-muted)" }}>
                   {loading ? "Đang tải dữ liệu..." : "Chưa có bản ghi nào."}
                 </td>
               </tr>
             ) : (
-              filteredItems.map((row) => (
-                <tr key={String(row.id)}>
-                  <td style={{ fontWeight: 600, color: "var(--ws-teal)" }}>
-                    {String(row.id)}
-                  </td>
+              filteredItems.map((row, idx) => (
+                <tr key={String(row.id || idx)}>
                   {columns.map((col) => (
                     <td key={col}>
-                      {typeof row[col] === "object" && row[col] !== null
-                        ? String((row[col] as Record<string, unknown>).name || (row[col] as Record<string, unknown>).title || "—")
-                        : String(row[col] ?? "—")}
+                      {renderCellContent(col, row[col])}
                     </td>
                   ))}
                 </tr>

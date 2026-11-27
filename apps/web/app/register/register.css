@@ -46,7 +46,7 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 44px 48px;
-  color: var(--soft);
+  color: #ffffff;
   background: var(--register-hero-gradient);
 }
 
@@ -75,12 +75,13 @@
   line-height: 1.15;
   letter-spacing: -0.03em;
   font-weight: 600;
+  color: #ffffff;
 }
 
 .register-page .side p {
   margin: 0;
   max-width: 430px;
-  color: rgba(237, 243, 245, 0.78);
+  color: rgba(237, 243, 245, 0.88);
   font-size: 15px;
   line-height: 1.65;
 }

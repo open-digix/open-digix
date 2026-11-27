@@ -73,66 +73,49 @@ export default function SourceEditor({
 
   const storageKey = `ws_source_${tenantId}_${appId}`;
 
-  const [sections, setSections] = useState<Record<string, string>>(() => {
+  const [sections, setSections] = useState<Record<string, string>>({
+    goal: "",
+    inputs: "",
+    roles: "",
+    steps: "",
+    branches: "",
+    outputs: "",
+    exceptions: "",
+  });
+
+  const [revisionNo, setRevisionNo] = useState<number>(0);
+
+  useEffect(() => {
     let initialGoal = "";
-    if (typeof window !== "undefined") {
-      try {
-        const apps = getStoredBuilderApps(tenantId);
-        const found = apps.find((a) => a.appId === appId);
-        if (found?.goal) initialGoal = found.goal;
-      } catch {
-        // Ignore
-      }
+    try {
+      const apps = getStoredBuilderApps(tenantId);
+      const found = apps.find((a) => a.appId === appId);
+      if (found?.goal) initialGoal = found.goal;
+    } catch {
+      // Ignore
     }
-    if (typeof window === "undefined") {
-      return {
-        goal: initialGoal,
-        inputs: "",
-        roles: "",
-        steps: "",
-        branches: "",
-        outputs: "",
-        exceptions: "",
-      };
-    }
+
     try {
       const raw = sessionStorage.getItem(`ws_source_${tenantId}_${appId}`);
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed.sections) {
-          return {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setSections({
             ...parsed.sections,
             goal: initialGoal || parsed.sections.goal || "",
-          };
+          });
         }
+        if (typeof parsed.revisionNo === "number") {
+          setRevisionNo(parsed.revisionNo);
+        }
+      } else if (initialGoal) {
+        setSections((prev) => ({ ...prev, goal: initialGoal }));
       }
     } catch {
       // Ignore
     }
-    return {
-      goal: initialGoal,
-      inputs: "",
-      roles: "",
-      steps: "",
-      branches: "",
-      outputs: "",
-      exceptions: "",
-    };
-  });
-
-  const [revisionNo, setRevisionNo] = useState<number>(() => {
-    if (typeof window === "undefined") return 0;
-    try {
-      const raw = sessionStorage.getItem(`ws_source_${tenantId}_${appId}`);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (typeof parsed.revisionNo === "number") return parsed.revisionNo;
-      }
-    } catch {
-      // Ignore
-    }
-    return 0;
-  });
+  }, [tenantId, appId]);
 
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);

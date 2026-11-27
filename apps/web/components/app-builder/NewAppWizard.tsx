@@ -31,6 +31,7 @@ import {
   getFeatureDescription,
   getDomainLabel,
   formatFeatureActionsByResource,
+  formatResourceLabel,
 } from "../../lib/app-config/feature-labels";
 import {
   getMissingDependencies,
@@ -108,7 +109,7 @@ export default function NewAppWizard({
   // Guard against accidental tenant switch or page navigation when wizard has selections
   const hasUnsavedSelections =
     !isSubmitting &&
-    (selectedFeatures.length > 0 || appName.trim().length > 0 || isDirty);
+    (appName.trim().length > 0 || isDirty);
   useUnsavedChangesGuard({
     isDirty: hasUnsavedSelections,
     message:
@@ -303,7 +304,15 @@ export default function NewAppWizard({
           onClick={() => setCurrentStep(1)}
           style={{ cursor: "pointer" }}
         >
-          <span className="flow-stage-num">{currentStep > 1 ? "✓" : "01"}</span>
+          <span className="flow-stage-num">
+            {currentStep > 1 ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              "01"
+            )}
+          </span>
           <b className="flow-stage-label">Lối vào</b>
         </div>
         <div
@@ -311,7 +320,15 @@ export default function NewAppWizard({
           onClick={() => setCurrentStep(2)}
           style={{ cursor: "pointer" }}
         >
-          <span className="flow-stage-num">{currentStep > 2 ? "✓" : "02"}</span>
+          <span className="flow-stage-num">
+            {currentStep > 2 ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              "02"
+            )}
+          </span>
           <b className="flow-stage-label">Chọn chức năng</b>
         </div>
         <div
@@ -434,7 +451,7 @@ export default function NewAppWizard({
               </ul>
               <div style={{ marginTop: 20 }}>
                 <span className="button secondary full-width" style={{ textAlign: "center" }}>
-                  {startingPoint === "erp" ? "Đang chọn ✓" : "Chọn ERP"}
+                  {startingPoint === "erp" ? "Đang chọn" : "Chọn ERP"}
                 </span>
               </div>
             </div>
@@ -503,7 +520,7 @@ export default function NewAppWizard({
               </ul>
               <div style={{ marginTop: 20 }}>
                 <span className="button secondary full-width" style={{ textAlign: "center" }}>
-                  {startingPoint === "crm" ? "Đang chọn ✓" : "Chọn CRM"}
+                  {startingPoint === "crm" ? "Đang chọn" : "Chọn CRM"}
                 </span>
               </div>
             </div>
@@ -570,7 +587,7 @@ export default function NewAppWizard({
               </ul>
               <div style={{ marginTop: 20 }}>
                 <span className="button secondary full-width" style={{ textAlign: "center" }}>
-                  {startingPoint === "blank" ? "Đang chọn ✓" : "Chọn Từ trống"}
+                  {startingPoint === "blank" ? "Đang chọn" : "Chọn Từ trống"}
                 </span>
               </div>
             </div>
@@ -670,15 +687,25 @@ export default function NewAppWizard({
                             </p>
 
                             <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 12, color: "var(--ws-muted)" }}>
-                              <span>
-                                📁 <strong>Tài nguyên:</strong> {feat.resources.join(", ")}
+                              <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+                                </svg>
+                                <strong>Tài nguyên:</strong> {feat.resources.map((r) => formatResourceLabel(r)).join(", ")}
                               </span>
-                              <span>
-                                ⚡ <strong>Hành động:</strong> {formatFeatureActionsByResource(feat.actions)}
+                              <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                                </svg>
+                                <strong>Hành động:</strong> {formatFeatureActionsByResource(feat.actions)}
                               </span>
                               {feat.dependencies.length > 0 && (
-                                <span>
-                                  🔗 <strong>Phụ thuộc:</strong>{" "}
+                                <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                                  </svg>
+                                  <strong>Phụ thuộc:</strong>{" "}
                                   <span style={{ color: "var(--ws-teal)" }}>
                                     {feat.dependencies.map((d) => getFeatureLabel(d)).join(", ")}
                                   </span>
@@ -751,9 +778,12 @@ export default function NewAppWizard({
                   <span
                     key={id}
                     className="badge"
-                    style={{ background: "var(--ws-soft)", color: "var(--ws-ink)", fontSize: 12, padding: "4px 8px" }}
+                    style={{ background: "var(--ws-soft)", color: "var(--ws-ink)", fontSize: 12, padding: "4px 8px", display: "inline-flex", alignItems: "center", gap: 4 }}
                   >
-                    ✓ {getFeatureLabel(id)}
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span>{getFeatureLabel(id)}</span>
                   </span>
                 ))}
               </div>
@@ -828,8 +858,13 @@ export default function NewAppWizard({
               />
 
               {appKeyConflict ? (
-                <span style={{ color: "var(--ws-danger)", fontSize: 13, marginTop: 4, display: "block" }}>
-                  ⚠️ Mã ứng dụng &quot;{appKey}&quot; đã tồn tại trong doanh nghiệp. Vui lòng chọn mã khác.
+                <span style={{ color: "var(--ws-danger)", fontSize: 13, marginTop: 4, display: "flex", alignItems: "center", gap: 6 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                  <span>Mã ứng dụng &quot;{appKey}&quot; đã tồn tại trong doanh nghiệp. Vui lòng chọn mã khác.</span>
                 </span>
               ) : appKey && !isValidAppKey ? (
                 <span style={{ color: "var(--ws-danger)", fontSize: 13, marginTop: 4, display: "block" }}>
@@ -941,7 +976,7 @@ export default function NewAppWizard({
       {/* MODAL 3: CẢNH BÁO BỎ CHỨC NĂNG ĐANG LÀ PHỤ THUỘC */}
       <ConfirmDialog
         isOpen={Boolean(removalWarning)}
-        title="⚠️ Cảnh báo phụ thuộc"
+        title="Cảnh báo phụ thuộc"
         onClose={() => setRemovalWarning(null)}
         style={{ borderColor: "var(--ws-warning)" }}
       >

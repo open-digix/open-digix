@@ -217,7 +217,7 @@ export default function AppSummaryView({
           className="info-banner"
           role="alert"
           style={{
-            borderColor: "var(--ws-warning, #f59e0b)",
+            borderColor: "var(--ws-warning)",
             background: "rgba(245, 158, 11, 0.08)",
             marginBottom: 20,
             display: "flex",
@@ -225,9 +225,27 @@ export default function AppSummaryView({
             alignItems: "center",
           }}
         >
-          <div>
-            ⚠️ <strong>Đã tạo bản nháp nhưng chưa lưu được chức năng đã chọn.</strong>{" "}
-            Bấm &quot;Sửa chức năng&quot; bên dưới để chọn lại.
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--ws-warning)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              style={{ flexShrink: 0 }}
+            >
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <span>
+              <strong>Đã tạo bản nháp nhưng chưa lưu được chức năng đã chọn.</strong>{" "}
+              Bấm &quot;Sửa chức năng&quot; bên dưới để chọn lại.
+            </span>
           </div>
           <button
             type="button"
@@ -235,14 +253,28 @@ export default function AppSummaryView({
             style={{
               background: "transparent",
               border: "none",
-              fontSize: 16,
               cursor: "pointer",
               color: "var(--ws-muted)",
               padding: "4px 8px",
+              display: "flex",
+              alignItems: "center",
             }}
             aria-label="Đóng thông báo cảnh báo"
           >
-            ✕
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
       )}
@@ -279,8 +311,26 @@ export default function AppSummaryView({
       {/* Cảnh báo nháp rỗng */}
       {selectedIds.length === 0 && (
         <div className="info-banner" role="alert" style={{ borderColor: "var(--ws-warning)", marginBottom: 24 }}>
-          <div>
-            ⚠️ <strong>Chưa thể xuất bản:</strong> Cần chọn ít nhất một chức năng nghiệp vụ để có thể xuất bản ứng dụng.
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--ws-warning)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              style={{ flexShrink: 0 }}
+            >
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <span>
+              <strong>Chưa thể xuất bản:</strong> Cần chọn ít nhất một chức năng nghiệp vụ để có thể xuất bản ứng dụng.
+            </span>
           </div>
         </div>
       )}
@@ -294,11 +344,22 @@ export default function AppSummaryView({
             marginBottom: 24,
             borderRadius: 8,
             border: validationResults.valid ? "1px solid var(--ws-teal)" : "1px solid var(--ws-danger)",
-            background: validationResults.valid ? "var(--ws-soft, #f0fdf4)" : "rgba(220, 38, 38, 0.08)",
+            background: validationResults.valid ? "var(--ws-bg-soft)" : "rgba(220, 38, 38, 0.08)",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-            <span style={{ fontSize: 20 }}>{validationResults.valid ? "✅" : "❌"}</span>
+            {validationResults.valid ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ws-success)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ws-danger)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg>
+            )}
             <h3 style={{ margin: 0, fontSize: 16 }}>
               {validationResults.valid
                 ? "Chức năng hợp lệ. Cần thiết kế trang giao diện trước khi xuất bản."
@@ -367,10 +428,26 @@ export default function AppSummaryView({
                   </p>
                   {feat && (
                     <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12, color: "var(--ws-muted)" }}>
-                      <span>📁 <strong>Tài nguyên:</strong> {feat.resources.join(", ")}</span>
-                      <span>⚡ <strong>Hành động:</strong> {formatFeatureActionsByResource(feat.actions)}</span>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+                        </svg>
+                        <span><strong>Tài nguyên:</strong> {feat.resources.join(", ")}</span>
+                      </span>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                        </svg>
+                        <span><strong>Hành động:</strong> {formatFeatureActionsByResource(feat.actions)}</span>
+                      </span>
                       {feat.dependencies.length > 0 && (
-                        <span>🔗 <strong>Phụ thuộc:</strong> {feat.dependencies.map((d) => getFeatureLabel(d)).join(", ")}</span>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                          </svg>
+                          <span><strong>Phụ thuộc:</strong> {feat.dependencies.join(", ")}</span>
+                        </span>
                       )}
                     </div>
                   )}
@@ -381,10 +458,12 @@ export default function AppSummaryView({
         )}
       </section>
 
-      {/* Thông tin kỹ thuật */}
-      <section className="panel" style={{ padding: 20, borderRadius: 8, background: "var(--ws-surface)" }}>
-        <h3 style={{ margin: "0 0 10px", fontSize: 14, color: "var(--ws-muted)" }}>THÔNG TIN KỸ THUẬT BẢN NHÁP</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12, fontSize: 13 }}>
+      {/* Thông tin kỹ thuật (được thu gọn để ưu tiên thông tin nghiệp vụ) */}
+      <details className="panel" style={{ padding: 16, borderRadius: 8, background: "var(--ws-surface)" }}>
+        <summary style={{ fontSize: 13, fontWeight: 600, color: "var(--ws-muted)", cursor: "pointer" }}>
+          Thông tin kỹ thuật (Mã ID, Schema, Khóa)
+        </summary>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12, fontSize: 13, marginTop: 12 }}>
           <div>
             <span style={{ color: "var(--ws-muted)" }}>Mã ứng dụng (ID): </span>
             <code>{draft.appId}</code>
@@ -398,7 +477,7 @@ export default function AppSummaryView({
             <code>v{lockVersion}</code>
           </div>
         </div>
-      </section>
+      </details>
 
       {/* MODAL SỬA CHỨC NĂNG */}
       <ConfirmDialog
@@ -447,7 +526,7 @@ export default function AppSummaryView({
                     padding: 12,
                     border: "1px solid var(--ws-line)",
                     borderRadius: 6,
-                    background: isSelected ? "var(--ws-soft, #f0fdfa)" : "var(--ws-surface)",
+                    background: isSelected ? "var(--ws-soft)" : "var(--ws-surface)",
                     cursor: isSupported ? "pointer" : "not-allowed",
                     opacity: isSupported ? 1 : 0.6,
                   }}

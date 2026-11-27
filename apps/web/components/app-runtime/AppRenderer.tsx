@@ -17,12 +17,14 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import Link from "next/link";
 import type {
   PublishedAppV25,
   DataSource,
 } from "@/lib/app-runtime/types";
 import { normalizeApp } from "@/lib/app-runtime/normalize";
 import { isPageVisible, resolveVisibleComponents } from "@/lib/app-runtime/visibility";
+import { getRoleLabel } from "@/lib/tenant/types";
 import SingleLayout from "./layouts/SingleLayout";
 import TwoColumnsLayout from "./layouts/TwoColumnsLayout";
 
@@ -121,7 +123,7 @@ export default function AppRenderer({
           </div>
           {roleId && (
             <span className="badge" style={{ fontSize: 11, background: "var(--ws-soft)", color: "var(--ws-teal)" }}>
-              Vai trò: {roleId}
+              Vai trò: {getRoleLabel(roleId)}
             </span>
           )}
         </div>
@@ -143,16 +145,24 @@ export default function AppRenderer({
           <nav aria-label="Menu các trang trong ứng dụng" className="tabs" style={{ borderBottom: "none", margin: 0 }}>
             {visiblePages.map((page) => {
               const isActive = activePage?.id === page.id;
+              const tabHref = viewport
+                ? `#${page.id}`
+                : `/app/${normalizedApp.appId || app.appId}/${page.id}`;
               return (
-                <button
+                <Link
                   key={page.id}
-                  type="button"
-                  onClick={() => handleSelectPage(page.id)}
+                  href={tabHref}
+                  onClick={(e) => {
+                    if (viewport || onPageChange) {
+                      e.preventDefault();
+                    }
+                    handleSelectPage(page.id);
+                  }}
                   className={`tab ${isActive ? "active" : ""}`}
                   aria-current={isActive ? "page" : undefined}
                 >
                   {page.label}
-                </button>
+                </Link>
               );
             })}
           </nav>
@@ -160,7 +170,7 @@ export default function AppRenderer({
       </div>
 
       {/* Vùng nội dung trang */}
-      <main className="flex-1 w-full">
+      <main className="app-runtime-main" style={{ flex: 1, width: "100%" }}>
         {!activePage ? (
           <div className="panel" style={{ padding: 48, textAlign: "center" }}>
             <p style={{ margin: 0, color: "var(--ws-muted)", fontSize: 14 }}>

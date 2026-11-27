@@ -12,13 +12,6 @@ const navigation = [
   { label: "Liên hệ", href: "#contact" },
 ];
 
-const products = [
-  ["CRM", "Quản lý khách hàng"],
-  ["Tài chính", "Kế toán thông minh"],
-  ["Nhân sự", "Gắn kết đội ngũ"],
-  ["Tự động hóa", "Tăng tốc quy trình"],
-];
-
 type AuthMode = "login" | "register";
 
 export default function LandingExperience({ initialAuth }: { initialAuth?: AuthMode }) {

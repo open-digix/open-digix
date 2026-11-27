@@ -60,19 +60,19 @@ const THEME_OPTIONS: ThemeOption[] = [
 ];
 
 export default function ThemeSelector() {
-  const [currentTheme, setCurrentTheme] = useState<DigiXTheme>(() => {
-    if (typeof document !== "undefined") {
-      const activeAttr = document.documentElement.getAttribute("data-theme");
-      return parseTheme(activeAttr);
-    }
-    return "system";
-  });
+  const [currentTheme, setCurrentTheme] = useState<DigiXTheme>("system");
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   useEffect(() => {
-    const observer = new MutationObserver(() => {
-      const activeAttr = document.documentElement.getAttribute("data-theme");
+    const activeAttr = document.documentElement.getAttribute("data-theme");
+    if (activeAttr) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentTheme(parseTheme(activeAttr));
+    }
+
+    const observer = new MutationObserver(() => {
+      const currentAttr = document.documentElement.getAttribute("data-theme");
+      setCurrentTheme(parseTheme(currentAttr));
     });
     observer.observe(document.documentElement, {
       attributes: true,
@@ -159,8 +159,8 @@ export default function ThemeSelector() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: "5px",
-                padding: "6px 8px",
+                gap: "4px",
+                padding: "6px 4px",
                 border: "0",
                 borderRadius: "6px",
                 fontSize: "11px",
@@ -169,6 +169,7 @@ export default function ThemeSelector() {
                 color: isSelected ? "var(--ws-accent)" : "var(--ws-text-muted)",
                 boxShadow: isSelected ? "0 1px 3px rgba(0, 0, 0, 0.08)" : "none",
                 cursor: "pointer",
+                whiteSpace: "nowrap",
                 transition: "all var(--ws-dur-fast) var(--ws-ease)",
               }}
             >

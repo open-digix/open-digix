@@ -78,10 +78,10 @@ export default function XemMauPage() {
 
       {/* Panel bộ chọn: Mẫu thử, Vai trò, Khổ màn hình, Làm mới dữ liệu */}
       <section className="panel" style={{ padding: "16px 20px", marginBottom: 24 }}>
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-4 text-xs">
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 16, fontSize: 12 }}>
             {/* Chọn Fixture */}
-            <div className="flex items-center gap-2">
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <label htmlFor="fixture-select" style={{ fontWeight: 600, color: "var(--ws-muted)" }}>
                 Mẫu thử:
               </label>
@@ -105,7 +105,7 @@ export default function XemMauPage() {
             </div>
 
             {/* Chọn Vai trò */}
-            <div className="flex items-center gap-2">
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <label htmlFor="role-select" style={{ fontWeight: 600, color: "var(--ws-muted)" }}>
                 Vai trò:
               </label>
@@ -126,13 +126,14 @@ export default function XemMauPage() {
             </div>
 
             {/* Chọn Khổ màn hình */}
-            <div className="flex items-center gap-2">
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontWeight: 600, color: "var(--ws-muted)" }}>Khổ hiển thị:</span>
               <div
                 role="group"
                 aria-label="Chọn kích thước màn hình"
-                className="flex items-center"
                 style={{
+                  display: "flex",
+                  alignItems: "center",
                   border: "1px solid var(--ws-line)",
                   borderRadius: 6,
                   overflow: "hidden",
@@ -193,16 +194,17 @@ export default function XemMauPage() {
       </section>
 
       {/* Khu vực hiển thị App Renderer */}
-      <div className="flex justify-center items-start w-full">
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "flex-start", width: "100%" }}>
         <div
-          className="w-full transition-all duration-300"
           style={{
+            width: "100%",
             maxWidth: viewport === "375" ? "375px" : "100%",
             margin: viewport === "375" ? "0 auto" : "0",
             borderRadius: viewport === "375" ? 16 : 8,
             boxShadow: viewport === "375" ? "0 10px 30px rgba(0,0,0,0.12)" : "none",
             border: viewport === "375" ? "2px solid var(--ws-line)" : "none",
             overflow: "hidden",
+            transition: "max-width 300ms ease",
           }}
         >
           <AppRenderer

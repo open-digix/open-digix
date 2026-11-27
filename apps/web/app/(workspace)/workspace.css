@@ -27,6 +27,8 @@
   --ws-surface: var(--ws-bg-surface);
   --ws-canvas: var(--ws-bg-canvas);
   --ws-accent: var(--ws-theme-accent, var(--ws-accent));
+  --ws-bg-soft: var(--ws-bg-soft, #edf5f4);
+  --ws-success: var(--ws-success, #176b4d);
 
   /* Sidebar static tokens */
   --ws-sidebar-border: rgba(255, 255, 255, 0.07);
@@ -55,6 +57,14 @@
   --ws-toast-shadow: rgba(9, 39, 53, 0.23);
   --ws-tooltip-bg: #0b1e30;
   --ws-modal-backdrop: rgba(11, 36, 52, 0.68);
+  --ws-focus-ring: 0 0 0 2px var(--ws-focus, #0d9488);
+  --ws-modal-shadow: var(--ws-modal-shadow, 0 20px 40px rgba(17, 43, 69, 0.2));
+  --ws-sidebar-scrim: var(--ws-sidebar-scrim, rgba(11, 30, 48, 0.5));
+  --ws-sidebar-shadow: var(--ws-sidebar-shadow, rgba(17, 43, 69, 0.12));
+  --ws-sidebar-open-shadow: var(--ws-sidebar-open-shadow, rgba(17, 43, 69, 0.25));
+  --ws-intro-bg: var(--ws-bg-soft, #edf5f4);
+  --ws-intro-pill-border: var(--ws-border, #dce5eb);
+  --ws-theme-accent: var(--ws-accent, #0b776f);
 
   /* Durations */
   --ws-dur-fast: 150ms;
@@ -353,7 +363,7 @@
 }
 
 .ws-root .brand {
-  height:84px;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid var(--ws-c-ffffff12);gap:10px;text-decoration:none;overflow:hidden
+  height:84px;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid var(--ws-sidebar-border);gap:10px;text-decoration:none;overflow:hidden
 }
 
 .ws-root .brand-mark {
@@ -503,7 +513,7 @@
 
 .ws-root .tenant-select,
 .ws-root .app-select {
-  display:flex;align-items:center;gap:9px;color:var(--ws-c-718592);font-size:12px;white-space:nowrap
+  display:flex;align-items:center;gap:9px;color:var(--ws-text-muted);font-size:12px;white-space:nowrap
 }
 
 .ws-root .tenant-name,
@@ -519,7 +529,7 @@
 .ws-root .tenant-select-dropdown,
 .ws-root .app-select select,
 .ws-root .app-select-dropdown {
-  border:0;background:transparent;color:var(--ws-c-233d4b);font-weight:700;max-width:180px;padding:4px 17px 4px 2px;cursor:pointer
+  border:0;background:transparent;color:var(--ws-text);font-weight:700;max-width:180px;padding:4px 17px 4px 2px;cursor:pointer
 }
 
 .ws-root .icon-button {
@@ -1014,7 +1024,7 @@
 }
 
 .ws-root .field input, .ws-root .field textarea, .ws-root .field select, .ws-root .input {
-  width:100%;border:1px solid var(--ws-c-d8e3e9);border-radius:7px;background:var(--ws-surface);color:var(--ws-c-183747);padding:10px 11px;font-size:12px;min-height:37px
+  width:100%;border:1px solid var(--ws-border);border-radius:7px;background:var(--ws-surface);color:var(--ws-text);padding:10px 11px;font-size:12px;min-height:37px
 }
 
 .ws-root .field textarea {
@@ -2339,7 +2349,7 @@
 }
 
 .ws-root .assistant-avatar.yellow {
-  background: var(--ws-c-fff8e7);
+  background: var(--ws-bg-warning-soft);
   color: var(--ws-warning);
 }
 
@@ -2355,7 +2365,7 @@
 }
 
 .ws-root .assistant-card-response.warning {
-  border-color: var(--ws-c-f0dfb8);
+  border-color: var(--ws-border-warning-soft);
 }
 
 .ws-root .assistant-response-title-warning {
@@ -2374,7 +2384,7 @@
 
 .ws-root .assistant-cite-btn {
   border: 0;
-  background: var(--ws-c-e6f2f0);
+  background: var(--ws-bg-soft);
   color: var(--ws-accent);
   font-size: 11px;
   font-weight: 700;
@@ -2386,7 +2396,7 @@
 }
 
 .ws-root .assistant-cite-btn:hover {
-  background: var(--ws-c-d5ebe8);
+  background: var(--ws-bg-soft);
 }
 
 .ws-root .assistant-citations-row {
@@ -2423,7 +2433,7 @@
 
 .ws-root .assistant-citation-chip.selected {
   border-color: var(--ws-accent);
-  background: var(--ws-c-e6f2f0);
+  background: var(--ws-bg-soft);
 }
 
 .ws-root .assistant-actions-row {
@@ -2539,7 +2549,7 @@
 
 .ws-root .assistant-input-box {
   background: var(--ws-surface);
-  border: 1px solid var(--ws-c-b9cdd6, var(--ws-line));
+  border: 1px solid var(--ws-border);
   border-radius: 14px;
   padding: 10px 10px 10px 16px;
   display: flex;
@@ -2577,7 +2587,7 @@
   display: grid;
   place-items: center;
   color: var(--ws-white);
-  background: var(--ws-c-9fb5bf);
+  background: var(--ws-border-strong);
   cursor: not-allowed;
   transition: background .15s ease;
 }
@@ -2619,7 +2629,7 @@
 }
 
 .ws-root .assistant-state-icon.yellow {
-  background: var(--ws-c-fff8e7);
+  background: var(--ws-bg-warning-soft);
   color: var(--ws-warning);
 }
 
@@ -2706,7 +2716,7 @@
 }
 
 .ws-root .assistant-btn-primary:hover {
-  background: var(--ws-c-075e59);
+  background: var(--ws-accent-hover);
 }
 
 .ws-root .assistant-btn-secondary {
@@ -2897,7 +2907,7 @@
 .ws-root .assistant-drawer-scrim {
   position: fixed;
   inset: 0;
-  background: var(--ws-c-scrim);
+  background: var(--ws-sidebar-scrim);
   backdrop-filter: blur(2px);
   z-index: 110;
 }
@@ -2918,7 +2928,7 @@
     z-index: 120;
     transform: translateX(100%);
     transition: transform .28s var(--ws-ease);
-    box-shadow: -4px 0 24px var(--ws-c-drawer-shadow);
+    box-shadow: -4px 0 24px var(--ws-sidebar-shadow);
   }
 
   .ws-root .assistant-sidebar-right.drawer-open {
@@ -2945,7 +2955,7 @@
     z-index: 120;
     transform: translateX(-100%);
     transition: transform .28s var(--ws-ease);
-    box-shadow: 4px 0 24px var(--ws-c-drawer-shadow);
+    box-shadow: 4px 0 24px var(--ws-sidebar-open-shadow);
   }
 
   .ws-root .assistant-sidebar-left.drawer-open {
@@ -2978,4 +2988,405 @@
   .ws-root .assistant-bubble-user {
     max-width: 88%;
   }
+}
+
+/* App Filter Tabs & App View (WEB-UI04 & F07) */
+.ws-root .apps-page {
+  max-width: 1200px;
+}
+
+.ws-root .app-filter-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ws-bg-surface-2);
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--ws-border);
+  margin-top: 16px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.ws-root .app-filter-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  min-height: 36px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: var(--ws-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--ws-dur-fast) var(--ws-ease);
+}
+
+@media (max-width: 768px) {
+  .ws-root .app-filter-tab {
+    min-height: 44px;
+    padding: 0 14px;
+  }
+}
+
+.ws-root .app-filter-tab:hover {
+  color: var(--ws-text);
+}
+
+.ws-root .app-filter-tab:focus-visible {
+  outline: 2px solid var(--ws-focus);
+  outline-offset: 2px;
+}
+
+.ws-root .app-filter-tab.active {
+  background: var(--ws-bg-soft);
+  color: var(--ws-accent);
+  font-weight: 700;
+  box-shadow: var(--ws-shadow);
+}
+
+.ws-root .app-search-bar {
+  margin-bottom: 20px;
+  max-width: 480px;
+}
+
+.ws-root .app-search-bar .search-input,
+.ws-root .search-input {
+  width: 100%;
+  background: var(--ws-bg-surface);
+  color: var(--ws-text);
+  border: 1px solid var(--ws-border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 14px;
+  min-height: 40px;
+}
+
+.ws-root .app-search-bar .search-input:focus,
+.ws-root .search-input:focus {
+  border-color: var(--ws-focus);
+  outline: 2px solid var(--ws-focus);
+  outline-offset: -1px;
+}
+
+.ws-root .app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.ws-root .app-card {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: var(--ws-bg-surface);
+  border: 1px solid var(--ws-border);
+  border-radius: 12px;
+  transition: transform var(--ws-dur-fast) var(--ws-ease), box-shadow var(--ws-dur-fast) var(--ws-ease), border-color var(--ws-dur-fast) var(--ws-ease);
+}
+
+.ws-root .app-card:hover {
+  border-color: var(--ws-accent);
+  box-shadow: var(--ws-shadow);
+}
+
+.ws-root .app-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.ws-root .app-card h3 {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ws-text);
+  line-height: 1.4;
+}
+
+.ws-root .app-card p {
+  margin: 0 0 16px 0;
+  font-size: 13px;
+  color: var(--ws-text-muted);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.ws-root .app-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid var(--ws-border);
+  margin-top: auto;
+  font-size: 12px;
+  color: var(--ws-text-muted);
+}
+
+.ws-root .app-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 999px;
+}
+
+.ws-root .app-badge.published {
+  background: var(--ws-bg-success-soft);
+  color: var(--ws-success);
+  border: 1px solid var(--ws-border-success-soft);
+}
+
+.ws-root .app-badge.draft {
+  background: var(--ws-bg-warning-soft);
+  color: var(--ws-warning);
+  border: 1px solid var(--ws-border-warning-soft);
+}
+
+.ws-root .empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ws-text-muted);
+  background: var(--ws-bg-surface);
+  border: 1px dashed var(--ws-border);
+  border-radius: 12px;
+}
+
+/* Wizard & App Builder */
+.ws-root .new-app-page {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.ws-root .new-app-wizard {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ws-root .wizard-step-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.ws-root .starting-points-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.ws-root .card-select {
+  border-radius: 12px;
+  background: var(--ws-bg-surface);
+  border: 1px solid var(--ws-border);
+  transition: all var(--ws-dur-fast) var(--ws-ease);
+}
+
+.ws-root .card-select:hover {
+  border-color: var(--ws-accent);
+  box-shadow: var(--ws-shadow);
+}
+
+.ws-root .card-select.selected {
+  border: 2px solid var(--ws-accent);
+  background: var(--ws-bg-soft);
+}
+
+.ws-root .feature-card {
+  border-radius: 10px;
+  background: var(--ws-bg-surface);
+  border: 1px solid var(--ws-border);
+  transition: all var(--ws-dur-fast) var(--ws-ease);
+}
+
+.ws-root .feature-card:hover {
+  border-color: var(--ws-accent);
+}
+
+.ws-root .feature-card.selected {
+  border: 2px solid var(--ws-accent);
+}
+
+.ws-root .full-width {
+  width: 100%;
+}
+
+.ws-root .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 999px;
+  background: var(--ws-bg-surface-2);
+  color: var(--ws-text-muted);
+}
+
+.ws-root .flow-stage-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--ws-bg-surface-2);
+  color: var(--ws-text);
+  flex-shrink: 0;
+}
+
+.ws-root .flow-stage.active .flow-stage-num {
+  background: var(--ws-accent);
+  color: var(--ws-text-on-accent);
+}
+
+.ws-root .flow-stage.complete .flow-stage-num {
+  background: var(--ws-bg-soft);
+  color: var(--ws-accent);
+}
+
+/* App Summary & Runtime */
+.ws-root .app-summary-view {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.ws-root .validation-results-panel {
+  background: var(--ws-bg-surface);
+  border: 1px solid var(--ws-border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.ws-root .api-error-state {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  background: var(--ws-bg-surface);
+  border: 1px solid var(--ws-border);
+  border-radius: 12px;
+}
+
+.ws-root .app-runtime-root,
+.ws-root .app-runtime-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  flex: 1;
+}
+
+.ws-root .tenant-crumb {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ws-text-muted);
+}
+
+.ws-root .nav-app-group {
+  margin-bottom: 12px;
+}
+
+.ws-root .label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ws-text-muted);
+}
+
+.ws-root .brandrow,
+.brandrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.ws-root .pitch,
+.pitch {
+  margin-bottom: 32px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ws-root .xem-mau-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Responsive 375px & Mobile Overflows (Issue #94) */
+@media (max-width: 768px) {
+  .ws-root .top-actions {
+    gap: 6px;
+  }
+
+  .ws-root .tenant-select .tenant-label,
+  .ws-root .app-select .tenant-label {
+    display: none;
+  }
+
+  .ws-root .tenant-name,
+  .ws-root .app-name {
+    max-width: 90px;
+  }
+
+  .ws-root .two-columns-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+
+  .ws-root .two-columns-main,
+  .ws-root .two-columns-side {
+    grid-column: span 1 / span 1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .ws-root .top-actions {
+    gap: 4px;
+  }
+
+  .ws-root .tenant-name,
+  .ws-root .app-name {
+    max-width: 65px;
+  }
+
+  .ws-root .breadcrumb .root {
+    display: none;
+  }
+}
+
+/* Dark Mode Form & Control Refinements */
+[data-theme="dark"] .ws-root .tenant-select select option,
+[data-theme="dark"] .ws-root .app-select select option {
+  background: var(--ws-bg-surface);
+  color: var(--ws-text);
+}
+
+.ws-root .demo-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  background: var(--ws-bg-warning-soft);
+  color: var(--ws-warning);
+  border: 1px solid var(--ws-border-warning-soft);
+}
+
+.ws-root .app-runtime-main {
+  flex: 1;
+  width: 100%;
+}
+
+.ws-root .js-pin {
+  /* JS selector hook for sidebar pin toggle */
 }

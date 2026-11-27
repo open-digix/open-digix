@@ -11,18 +11,18 @@ export default function NotFound() {
         alignItems: "center",
         justifyContent: "center",
         padding: "24px",
-        background: "#f6f8fa",
+        background: "var(--ws-bg-canvas)",
         fontFamily: "'Be Vietnam Pro', system-ui, sans-serif",
-        color: "#112b45",
+        color: "var(--ws-text)",
       }}
     >
       <div
         style={{
           width: "min(480px, 100%)",
-          background: "#ffffff",
+          background: "var(--ws-bg-surface)",
           borderRadius: "16px",
-          border: "1px solid #d8e1e8",
-          boxShadow: "0 10px 30px rgba(17, 43, 69, 0.06)",
+          border: "1px solid var(--ws-border)",
+          boxShadow: "var(--ws-shadow)",
           padding: "36px 32px",
           textAlign: "center",
         }}
@@ -43,7 +43,7 @@ export default function NotFound() {
             fontWeight: 700,
             letterSpacing: "0.14em",
             textTransform: "uppercase",
-            color: "#0d9488",
+            color: "var(--ws-accent)",
             margin: "0 0 8px",
           }}
         >
@@ -55,7 +55,7 @@ export default function NotFound() {
             fontWeight: 700,
             letterSpacing: "-0.03em",
             margin: "0 0 12px",
-            color: "#112b45",
+            color: "var(--ws-text)",
           }}
         >
           Trang không tồn tại
@@ -64,7 +64,7 @@ export default function NotFound() {
           style={{
             fontSize: "14px",
             lineHeight: 1.6,
-            color: "#526878",
+            color: "var(--ws-text-muted)",
             margin: "0 0 28px",
           }}
         >
@@ -86,8 +86,8 @@ export default function NotFound() {
               justifyContent: "center",
               padding: "10px 20px",
               borderRadius: "8px",
-              background: "#0d9488",
-              color: "#ffffff",
+              background: "var(--ws-accent)",
+              color: "var(--ws-text-on-accent)",
               fontWeight: 600,
               fontSize: "13px",
               textDecoration: "none",
@@ -103,9 +103,9 @@ export default function NotFound() {
               justifyContent: "center",
               padding: "10px 20px",
               borderRadius: "8px",
-              border: "1px solid #d8e1e8",
-              background: "#ffffff",
-              color: "#112b45",
+              border: "1px solid var(--ws-border)",
+              background: "var(--ws-bg-surface)",
+              color: "var(--ws-text)",
               fontWeight: 600,
               fontSize: "13px",
               textDecoration: "none",

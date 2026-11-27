@@ -15,12 +15,30 @@
  */
 
 import Link from "next/link";
+import type { Metadata } from "next";
 import { getTenantContext } from "@/lib/api/server";
 import { getRuntime } from "@/lib/app-config/client";
 import AppPageClient from "./AppPageClient";
 
 interface PageProps {
   params: Promise<{ appId: string; page?: string[] }>;
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { appId } = await params;
+  const context = await getTenantContext();
+  const roles = context?.roles || [];
+  const app = await getRuntime(appId, { userRoles: roles });
+  if (app) {
+    return {
+      title: `${app.name} · DigiX`,
+    };
+  }
+  return {
+    title: "Ứng dụng · DigiX",
+  };
 }
 
 export default async function AppPage({ params }: PageProps) {

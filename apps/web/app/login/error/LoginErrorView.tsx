@@ -164,23 +164,35 @@ export default function LoginErrorView() {
   const retryParam = searchParams.get("retry");
   const callbackUrl = sanitizeCallbackUrl(searchParams.get("callbackUrl"));
 
-  // Determine if retry has already happened via query param or sessionStorage
-  const [alreadyRetried] = useState<boolean>(() => {
-    if (retryParam === "1") return true;
-    if (typeof window !== "undefined") {
-      try {
-        return window.sessionStorage?.getItem(AUTH_RETRY_SESSION_KEY) === "1";
-      } catch {
-        return false;
+  // Determine if retry has already happened via query param or sessionStorage (checked on client)
+  const [isClientRetried, setIsClientRetried] = useState<boolean>(false);
+
+  useEffect(() => {
+    try {
+      if (window.sessionStorage?.getItem(AUTH_RETRY_SESSION_KEY) === "1") {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setIsClientRetried(true);
       }
+    } catch {
+      // ignore
     }
-    return false;
-  });
+  }, []);
+
+  const alreadyRetried = retryParam === "1" || isClientRetried;
 
   // Auto-retry once on state/PKCE error if not already retried
   useEffect(() => {
     const kind = classifyAuthError(errorCode);
-    if (kind === "state_pkce" && !alreadyRetried) {
+    let hasRetried = retryParam === "1";
+    try {
+      if (window.sessionStorage?.getItem(AUTH_RETRY_SESSION_KEY) === "1") {
+        hasRetried = true;
+      }
+    } catch {
+      // ignore
+    }
+
+    if (kind === "state_pkce" && !hasRetried) {
       try {
         window.sessionStorage?.setItem(AUTH_RETRY_SESSION_KEY, "1");
       } catch {
@@ -188,7 +200,7 @@ export default function LoginErrorView() {
       }
       void signIn("keycloak", { callbackUrl });
     }
-  }, [errorCode, alreadyRetried, callbackUrl]);
+  }, [errorCode, retryParam, callbackUrl]);
 
   const content = getErrorContentInfo(errorCode, alreadyRetried);
 
