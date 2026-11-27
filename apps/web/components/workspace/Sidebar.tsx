@@ -23,6 +23,8 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { getRuntimeSync } from "../../lib/app-runtime/fixtures";
 import { getRuntimeAction } from "../../lib/app-config/actions";
 import type { PublishedAppV25 } from "../../lib/app-runtime/types";
+import { normalizeApp } from "../../lib/app-runtime/normalize";
+import { isPageVisible } from "../../lib/app-runtime/visibility";
 
 interface SidebarProps {
   roles: string[];
@@ -172,68 +174,55 @@ export default function Sidebar({
             <div className="nav-group-label" style={{ textTransform: "uppercase" }}>
               {currentApp.name}
             </div>
-            {currentApp.pages
-              .filter((page) => {
-                if (page.hidden) return false;
-                if (Array.isArray(page.visibleToRoles) && page.visibleToRoles.length > 0) {
-                  const hasAllowedRole =
-                    roles.some((r) => ["admin", "owner", "tenant_admin", "designer"].includes(r)) ||
-                    page.visibleToRoles.some((r) => roles.includes(r));
-                  if (!hasAllowedRole) return false;
-                }
-                const perms = (page as { permissions?: string[] }).permissions;
-                if (Array.isArray(perms) && perms.length > 0) {
-                  const matchingRoles = (currentApp.roles || []).filter((r) =>
-                    roles.includes(r.id) ||
-                    (roles.includes("employee") && (r.id === "buyer" || r.id === "sales")) ||
-                    (roles.includes("manager") && (r.id === "approver" || r.id === "manager")) ||
-                    roles.some((userRole) => ["admin", "owner", "tenant_admin", "designer"].includes(userRole))
-                  );
-                  const userPerms = matchingRoles.flatMap((r) => r.permissions);
-                  const isPermitted =
-                    roles.some((r) => ["admin", "owner", "tenant_admin", "designer"].includes(r)) ||
-                    perms.some((p) => userPerms.includes(p));
-                  if (!isPermitted) return false;
-                }
-                return true;
-              })
-              .map((page, index) => {
-              const pageHref = `/app/${currentAppId}/${page.id}`;
-              const pageTitle = page.label || page.id;
-              const isPageActive =
-                pathname === pageHref ||
-                (pathname === `/app/${currentAppId}` && index === 0);
-
-              return (
-                <Link
-                  key={page.id}
-                  href={pageHref}
-                  className={`nav-link ${isPageActive ? "active" : ""}`}
-                  aria-current={isPageActive ? "page" : undefined}
-                  data-tip={pageTitle}
-                  onClick={onClose}
-                  onMouseEnter={handleTipEnter(pageTitle)}
-                  onMouseLeave={onHideTip}
-                  onFocus={handleTipEnter(pageTitle)}
-                  onBlur={onHideTip}
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    aria-hidden="true"
-                  >
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                    <line x1="10" y1="9" x2="8" y2="9" />
-                  </svg>
-                  <span className="lbl">{pageTitle}</span>
-                </Link>
+            {(() => {
+              const normalized = normalizeApp(currentApp);
+              const matchingRole = (normalized.roles || []).find((r) =>
+                roles.includes(r.id) ||
+                (roles.includes("employee") && (r.id === "buyer" || r.id === "sales")) ||
+                (roles.includes("manager") && (r.id === "approver" || r.id === "manager")) ||
+                roles.some((userRole) => ["admin", "owner", "tenant_admin", "designer"].includes(userRole))
               );
-            })}
+              const activeRoleId = matchingRole?.id || roles[0];
+              return normalized.pages
+                .filter((page) => isPageVisible(page, normalized, activeRoleId))
+                .map((page, index) => {
+                  const pageHref = `/app/${currentAppId}/${page.id}`;
+                  const pageTitle = page.label || page.id;
+                  const isPageActive =
+                    pathname === pageHref ||
+                    (pathname === `/app/${currentAppId}` && index === 0);
+
+                  return (
+                    <Link
+                      key={page.id}
+                      href={pageHref}
+                      className={`nav-link ${isPageActive ? "active" : ""}`}
+                      aria-current={isPageActive ? "page" : undefined}
+                      data-tip={pageTitle}
+                      onClick={onClose}
+                      onMouseEnter={handleTipEnter(pageTitle)}
+                      onMouseLeave={onHideTip}
+                      onFocus={handleTipEnter(pageTitle)}
+                      onBlur={onHideTip}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        aria-hidden="true"
+                      >
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <line x1="10" y1="9" x2="8" y2="9" />
+                      </svg>
+                      <span className="lbl">{pageTitle}</span>
+                    </Link>
+                  );
+                });
+            })()}
           </div>
         )}
 

@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const webRoot = path.resolve(__dirname, "..");
 
-// 1. Gather all CSS files and collect declared CSS variables and selectors
+// 1. Gather all CSS files and collect declared CSS variables, dark variables, and selectors
 const cssFiles = [
   path.join(webRoot, "app", "globals.css"),
   path.join(webRoot, "app", "(workspace)", "workspace.css"),
@@ -14,6 +14,7 @@ const cssFiles = [
 ];
 
 const declaredVars = new Set();
+const declaredDarkVars = new Set();
 const declaredClasses = new Set();
 
 for (const f of cssFiles) {
@@ -24,6 +25,22 @@ for (const f of cssFiles) {
   const varMatches = content.matchAll(/(--ws-[\w-]+)\s*:/g);
   for (const m of varMatches) {
     declaredVars.add(m[1]);
+  }
+
+  // Collect dark variables from data-theme="dark" blocks
+  if (f.endsWith("globals.css")) {
+    const darkBlockMatch = content.match(/\[data-theme=["']dark["']\][\s\S]*?\{([\s\S]*?)\n\}/);
+    if (darkBlockMatch) {
+      for (const m of darkBlockMatch[1].matchAll(/(--ws-[\w-]+)\s*:/g)) {
+        declaredDarkVars.add(m[1]);
+      }
+    }
+  } else if (f.endsWith("workspace.css")) {
+    for (const match of content.matchAll(/\[data-theme=["']dark["']\][\s\S]*?\{([\s\S]*?)\}/g)) {
+      for (const m of match[1].matchAll(/(--ws-[\w-]+)\s*:/g)) {
+        declaredDarkVars.add(m[1]);
+      }
+    }
   }
 
   // Collect classes: e.g. .my-class
@@ -60,6 +77,8 @@ for (const file of allSourceFiles) {
     const varName = m[1];
     if (!declaredVars.has(varName)) {
       errors.push(`[Undeclared CSS Var] ${varName} in ${path.relative(webRoot, file)}`);
+    } else if (!declaredDarkVars.has(varName)) {
+      errors.push(`[Missing Dark CSS Var] ${varName} has no definition in dark theme (used in ${path.relative(webRoot, file)})`);
     }
   }
 }

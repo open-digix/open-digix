@@ -2,9 +2,19 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import AppsView from "./AppsView";
 
-export const metadata: Metadata = {
-  title: "Ứng dụng · DigiX",
-};
+interface PageProps {
+  searchParams: Promise<{ tab?: string }>;
+}
+
+export async function generateMetadata({
+  searchParams,
+}: PageProps): Promise<Metadata> {
+  const params = await searchParams;
+  const isDraft = params?.tab === "draft" || params?.tab === "drafts";
+  return {
+    title: isDraft ? "Thiết kế ứng dụng · DigiX" : "Ứng dụng · DigiX",
+  };
+}
 
 export default function AppsPage() {
   return (

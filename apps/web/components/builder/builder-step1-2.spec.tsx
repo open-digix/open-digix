@@ -67,7 +67,7 @@ describe("Builder Step 01 & 02 Components", () => {
   it("CreateAppForm auto-generates appKey and fills sample data", () => {
     render(<CreateAppForm tenantId="tenant-test" />);
 
-    const fillButton = screen.getByText("✦ Điền ví dụ (MẪU THỬ)");
+    const fillButton = screen.getByText("Điền ví dụ (MẪU THỬ)");
     fireEvent.click(fillButton);
 
     const nameInput = screen.getByLabelText(/Tên ứng dụng \*/) as HTMLInputElement;
@@ -121,7 +121,7 @@ describe("Builder Step 01 & 02 Components", () => {
     expect(goalArea.readOnly).toBe(true);
     expect(goalArea.value).toBe("Mục tiêu mua sắm ban đầu");
 
-    const fillBtn = screen.getByText("✦ Điền ví dụ (MẪU THỬ)");
+    const fillBtn = screen.getByText("Điền ví dụ (MẪU THỬ)");
     fireEvent.click(fillBtn);
 
     // Goal remains unchanged
@@ -280,7 +280,7 @@ describe("Builder Step 01 & 02 Components", () => {
       />,
     );
 
-    const fillBtn = screen.getByText("✦ Điền ví dụ (MẪU THỬ)");
+    const fillBtn = screen.getByText("Điền ví dụ (MẪU THỬ)");
     fireEvent.click(fillBtn);
 
     const saveBtn = screen.getByText("Lưu mô tả");

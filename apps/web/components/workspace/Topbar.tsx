@@ -16,8 +16,8 @@
 
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import TenantSelect from "./TenantSelect";
 import AppSelect from "./AppSelect";
 import LogoutButton from "../../app/components/LogoutButton";
@@ -55,6 +55,7 @@ export default function Topbar({
   onToggleSidebar,
 }: TopbarProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const avatarBtnRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -116,12 +117,37 @@ export default function Topbar({
 
   // Compute breadcrumb title
   let pageTitle = "Không gian làm việc";
-  for (const [route, title] of Object.entries(BREADCRUMB_MAP)) {
-    if (pathname === route || pathname.startsWith(route + "/")) {
-      pageTitle = title;
-      break;
+  const currentTab = searchParams?.get("tab");
+  if (pathname === "/apps" && (currentTab === "draft" || currentTab === "drafts")) {
+    pageTitle = "Thiết kế ứng dụng";
+  } else {
+    for (const [route, title] of Object.entries(BREADCRUMB_MAP)) {
+      if (pathname === route || pathname.startsWith(route + "/")) {
+        pageTitle = title;
+        break;
+      }
     }
   }
+
+  // User display roles (v2.5 business roles, e.g. "Người mua hàng")
+  const displayRoles = useMemo(() => {
+    if (currentApp && currentApp.roles) {
+      const appRoles = currentApp.roles.filter((r) =>
+        roles.includes(r.id) ||
+        (roles.includes("employee") && (r.id === "buyer" || r.id === "sales")) ||
+        (roles.includes("manager") && (r.id === "approver" || r.id === "manager")) ||
+        roles.some((userRole) => ["admin", "owner", "tenant_admin", "designer"].includes(userRole))
+      );
+      if (appRoles.length > 0) {
+        return appRoles.map((r) => getRoleLabel(r.id));
+      }
+    }
+    return roles.map((r) => {
+      if (r === "employee") return "Người mua hàng";
+      if (r === "manager") return "Người phê duyệt";
+      return getRoleLabel(r);
+    });
+  }, [currentApp, roles]);
 
   // Tenant name
   const currentTenant = activeMemberships.find((m) => m.tenant.id === currentTenantId)?.tenant;
@@ -242,13 +268,13 @@ export default function Topbar({
                     marginBottom: 8,
                   }}
                 >
-                  {roles.map((r) => (
+                  {displayRoles.map((roleLabel) => (
                     <span
-                      key={r}
+                      key={roleLabel}
                       className="role-tag"
                       style={{ fontSize: 11, padding: "2px 6px" }}
                     >
-                      {getRoleLabel(r)}
+                      {roleLabel}
                     </span>
                   ))}
                 </div>

@@ -13,12 +13,21 @@ export default function AppsView() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const tab: "all" | "published" | "draft" =
-    tabParam === "draft" || tabParam === "published" ? tabParam : "all";
+    tabParam === "draft" || tabParam === "drafts"
+      ? "draft"
+      : tabParam === "published"
+        ? tabParam
+        : "all";
 
   const [apps, setApps] = useState<AppSummary[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const { ToastContainer } = useMockToast();
+
+  useEffect(() => {
+    document.title =
+      tab === "draft" ? "Thiết kế ứng dụng · DigiX" : "Ứng dụng · DigiX";
+  }, [tab]);
 
   useEffect(() => {
     let isMounted = true;
@@ -67,9 +76,9 @@ export default function AppsView() {
           <div className="eyebrow">
             {tab === "draft" ? "THIẾT KẾ ỨNG DỤNG" : "KHÔNG GIAN LÀM VIỆC"}
           </div>
-          <h2>
+          <h1>
             {tab === "draft" ? "Thiết kế ứng dụng" : "Ứng dụng doanh nghiệp"}
-          </h2>
+          </h1>
           <p>
             {tab === "draft"
               ? "Tùy chỉnh và tạo cấu hình cho các ứng dụng composable trong tổ chức."

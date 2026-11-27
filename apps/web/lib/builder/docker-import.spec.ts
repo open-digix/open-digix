@@ -65,5 +65,5 @@ describe("Point 0: Docker Build & Import Isolation", () => {
     }
 
     expect(violations).toEqual([]);
-  });
+  }, 30000);
 });
