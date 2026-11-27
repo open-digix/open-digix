@@ -18,6 +18,8 @@ const REQUIRED_TABLES = [
   'business_records',
   'identity_users',
   'idempotency_keys',
+  'inventory_receipt_lines',
+  'inventory_receipts',
   'membership_roles',
   'materials',
   'purchase_request_lines',

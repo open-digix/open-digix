@@ -5,6 +5,7 @@ import { appAclBackfillMigration } from './migrations/0004-app-acl-backfill';
 import { sharedFoundationMigration } from './migrations/0005-shared-foundation';
 import { erpMaterialsMigration } from './migrations/0006-erp-materials';
 import { erpPurchaseRequestsMigration } from './migrations/0007-erp-purchase-requests';
+import { erpInventoryReceiptsMigration } from './migrations/0008-erp-inventory-receipts';
 
 export interface Migration {
   id: string;
@@ -20,4 +21,5 @@ export const migrations: readonly Migration[] = [
   sharedFoundationMigration,
   erpMaterialsMigration,
   erpPurchaseRequestsMigration,
+  erpInventoryReceiptsMigration,
 ];

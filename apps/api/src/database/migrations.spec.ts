@@ -10,6 +10,7 @@ describe('database migrations', () => {
       '0005_shared_foundation',
       '0006_erp_materials',
       '0007_erp_purchase_requests',
+      '0008_erp_inventory_receipts',
     ]);
   });
 
@@ -129,6 +130,20 @@ describe('database migrations', () => {
     );
     expect(migrations[6].sql).toContain(
       'UNIQUE (tenant_id, application_id, purchase_request_id, material_id)',
+    );
+  });
+
+  it('creates immutable receipt tables with one receipt per request', () => {
+    expect(migrations[7].sql).toContain('CREATE TABLE inventory_receipts');
+    expect(migrations[7].sql).toContain('CREATE TABLE inventory_receipt_lines');
+    expect(migrations[7].sql).toContain(
+      'CONSTRAINT inventory_receipts_request_unique',
+    );
+    expect(migrations[7].sql).toContain(
+      'CONSTRAINT inventory_receipt_lines_quantity_positive',
+    );
+    expect(migrations[7].sql).toContain(
+      'UNIQUE (tenant_id, application_id, receipt_id, material_id)',
     );
   });
 });
