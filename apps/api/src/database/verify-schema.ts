@@ -40,6 +40,7 @@ interface DatabaseError extends Error {
 export interface SchemaVerificationResult {
   requiredTableCount: number;
   rejectedCrossTenantCases: string[];
+  rejectedIntegrityCases: string[];
   rollbackConfirmed: boolean;
 }
 
@@ -81,6 +82,38 @@ async function expectForeignKeyViolation(
   await client.query(`ROLLBACK TO SAVEPOINT ${savepoint}`);
   await client.query(`RELEASE SAVEPOINT ${savepoint}`);
   throw new Error(`${caseName} unexpectedly allowed a cross-tenant reference`);
+}
+
+async function expectUniqueViolation(
+  client: PoolClient,
+  savepointNumber: number,
+  caseName: string,
+  sql: string,
+  values: unknown[],
+): Promise<void> {
+  const savepoint = `verify_unique_case_${savepointNumber}`;
+  await client.query(`SAVEPOINT ${savepoint}`);
+
+  try {
+    await client.query(sql, values);
+  } catch (error) {
+    const databaseError = asDatabaseError(error);
+    await client.query(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+    await client.query(`RELEASE SAVEPOINT ${savepoint}`);
+
+    if (databaseError.code !== '23505') {
+      throw new Error(
+        `${caseName} failed with PostgreSQL code ${databaseError.code ?? 'unknown'} instead of unique_violation`,
+        { cause: databaseError },
+      );
+    }
+
+    return;
+  }
+
+  await client.query(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+  await client.query(`RELEASE SAVEPOINT ${savepoint}`);
+  throw new Error(`${caseName} unexpectedly allowed a duplicate value`);
 }
 
 async function verifyRequiredTables(client: PoolClient): Promise<void> {
@@ -140,7 +173,13 @@ export async function verifySchema(
   const draftRevisionAlphaId = randomUUID();
   const recordAlphaId = randomUUID();
   const workflowAlphaId = randomUUID();
+  const materialAlphaId = randomUUID();
+  const purchaseRequestAlphaId = randomUUID();
+  const purchaseRequestLineAlphaId = randomUUID();
+  const receiptAlphaId = randomUUID();
+  const receiptLineAlphaId = randomUUID();
   const rejectedCrossTenantCases: string[] = [];
+  const rejectedIntegrityCases: string[] = [];
 
   try {
     await verifyRequiredTables(client);
@@ -360,6 +399,102 @@ export async function verifySchema(
         `verify-process-${workflowAlphaId}`,
       ],
     );
+    await client.query(
+      `INSERT INTO materials (
+        id,
+        tenant_id,
+        application_id,
+        application_version_id,
+        sku,
+        name,
+        unit,
+        created_by_membership_id
+      ) VALUES ($1, $2, $3, $4, 'VERIFY-SKU', 'Verification Material', 'piece', $5)`,
+      [
+        materialAlphaId,
+        tenantAlphaId,
+        applicationAlphaId,
+        applicationVersionAlphaId,
+        membershipAlphaId,
+      ],
+    );
+    await client.query(
+      `INSERT INTO purchase_requests (
+        id,
+        tenant_id,
+        application_id,
+        application_version_id,
+        business_record_id,
+        requester_membership_id,
+        approver_membership_id,
+        status
+      ) VALUES ($1, $2, $3, $4, $5, $6, $6, 'approved')`,
+      [
+        purchaseRequestAlphaId,
+        tenantAlphaId,
+        applicationAlphaId,
+        applicationVersionAlphaId,
+        recordAlphaId,
+        membershipAlphaId,
+      ],
+    );
+    await client.query(
+      `INSERT INTO purchase_request_lines (
+        id,
+        tenant_id,
+        application_id,
+        application_version_id,
+        purchase_request_id,
+        material_id,
+        quantity
+      ) VALUES ($1, $2, $3, $4, $5, $6, 3)`,
+      [
+        purchaseRequestLineAlphaId,
+        tenantAlphaId,
+        applicationAlphaId,
+        applicationVersionAlphaId,
+        purchaseRequestAlphaId,
+        materialAlphaId,
+      ],
+    );
+    await client.query(
+      `INSERT INTO inventory_receipts (
+        id,
+        tenant_id,
+        application_id,
+        application_version_id,
+        purchase_request_id,
+        approved_by_membership_id,
+        received_by_membership_id
+      ) VALUES ($1, $2, $3, $4, $5, $6, $6)`,
+      [
+        receiptAlphaId,
+        tenantAlphaId,
+        applicationAlphaId,
+        applicationVersionAlphaId,
+        purchaseRequestAlphaId,
+        membershipAlphaId,
+      ],
+    );
+    await client.query(
+      `INSERT INTO inventory_receipt_lines (
+        id,
+        tenant_id,
+        application_id,
+        application_version_id,
+        receipt_id,
+        material_id,
+        quantity
+      ) VALUES ($1, $2, $3, $4, $5, $6, 3)`,
+      [
+        receiptLineAlphaId,
+        tenantAlphaId,
+        applicationAlphaId,
+        applicationVersionAlphaId,
+        receiptAlphaId,
+        materialAlphaId,
+      ],
+    );
 
     const cases: Array<{
       name: string;
@@ -519,6 +654,65 @@ export async function verifySchema(
               ) VALUES ($1, $2, 'verify', 'schema', 'success')`,
         values: [tenantAlphaId, membershipBetaId],
       },
+      {
+        name: 'material cannot use a membership from another tenant',
+        sql: `INSERT INTO materials (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                sku,
+                name,
+                unit,
+                created_by_membership_id
+              ) VALUES ($1, $2, $3, $4, 'CROSS-TENANT-SKU', 'Cross Tenant', 'piece', $5)`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          membershipBetaId,
+        ],
+      },
+      {
+        name: 'purchase request cannot use a business record from another tenant',
+        sql: `INSERT INTO purchase_requests (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                business_record_id,
+                requester_membership_id
+              ) VALUES ($1, $2, $3, $4, $5, $6)`,
+        values: [
+          randomUUID(),
+          tenantBetaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          recordAlphaId,
+          membershipBetaId,
+        ],
+      },
+      {
+        name: 'receipt cannot use a purchase request from another tenant',
+        sql: `INSERT INTO inventory_receipts (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                purchase_request_id,
+                approved_by_membership_id,
+                received_by_membership_id
+              ) VALUES ($1, $2, $3, $4, $5, $6, $6)`,
+        values: [
+          randomUUID(),
+          tenantBetaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          purchaseRequestAlphaId,
+          membershipBetaId,
+        ],
+      },
     ];
 
     for (const [index, testCase] of cases.entries()) {
@@ -530,6 +724,60 @@ export async function verifySchema(
         testCase.values,
       );
       rejectedCrossTenantCases.push(testCase.name);
+    }
+
+    const integrityCases = [
+      {
+        name: 'duplicate material SKU is rejected within an application',
+        sql: `INSERT INTO materials (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                sku,
+                name,
+                unit,
+                created_by_membership_id
+              ) VALUES ($1, $2, $3, $4, 'VERIFY-SKU', 'Duplicate Material', 'piece', $5)`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          membershipAlphaId,
+        ],
+      },
+      {
+        name: 'duplicate receipt for a purchase request is rejected',
+        sql: `INSERT INTO inventory_receipts (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                purchase_request_id,
+                approved_by_membership_id,
+                received_by_membership_id
+              ) VALUES ($1, $2, $3, $4, $5, $6, $6)`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          purchaseRequestAlphaId,
+          membershipAlphaId,
+        ],
+      },
+    ];
+
+    for (const [index, testCase] of integrityCases.entries()) {
+      await expectUniqueViolation(
+        client,
+        index + 1,
+        testCase.name,
+        testCase.sql,
+        testCase.values,
+      );
+      rejectedIntegrityCases.push(testCase.name);
     }
 
     await client.query('ROLLBACK');
@@ -547,6 +795,7 @@ export async function verifySchema(
     return {
       requiredTableCount: REQUIRED_TABLES.length,
       rejectedCrossTenantCases,
+      rejectedIntegrityCases,
       rollbackConfirmed: true,
     };
   } catch (error) {
@@ -570,6 +819,12 @@ if (require.main === module) {
         `Cross-tenant references rejected: ${result.rejectedCrossTenantCases.length}`,
       );
       for (const caseName of result.rejectedCrossTenantCases) {
+        console.log(`- ${caseName}`);
+      }
+      console.log(
+        `ERP integrity constraints rejected: ${result.rejectedIntegrityCases.length}`,
+      );
+      for (const caseName of result.rejectedIntegrityCases) {
         console.log(`- ${caseName}`);
       }
       console.log(`Rollback cleanup confirmed: ${result.rollbackConfirmed}`);
