@@ -170,6 +170,65 @@ for (const file of tsxFiles) {
   }
 }
 
+// 4. Check for self-referencing and circular variables in CSS rule blocks
+for (const f of cssFiles) {
+  if (!fs.existsSync(f)) continue;
+  const content = fs.readFileSync(f, "utf8");
+  const relPath = path.relative(webRoot, f);
+
+  // Match all rule blocks: selector { declarations }
+  const blockRegex = /\{([^}]+)\}/g;
+  let match;
+  while ((match = blockRegex.exec(content)) !== null) {
+    const blockBody = match[1];
+    const decls = blockBody.split(";");
+    for (const d of decls) {
+      const varMatch = d.match(/^\s*(--[\w-]+)\s*:\s*(.+)$/);
+      if (varMatch) {
+        const [, varName, val] = varMatch;
+        // Check if val references varName itself: var(--varName...)
+        const isSelfRef =
+          val.includes(`var(${varName})`) ||
+          val.includes(`var(${varName},`) ||
+          val.includes(`var(${varName} `) ||
+          val.includes(`var(${varName}\t`);
+        if (isSelfRef) {
+          errors.push(`[Self-referencing CSS Var] ${varName} in ${relPath} references itself in declaration: "${d.trim()}"`);
+        }
+      }
+    }
+  }
+}
+
+// 5. Check if .ws-root re-declares variables defined in globals.css theme block
+const globalsCssPath = path.join(webRoot, "app", "globals.css");
+const workspaceCssPath = path.join(webRoot, "app", "(workspace)", "workspace.css");
+
+if (fs.existsSync(globalsCssPath) && fs.existsSync(workspaceCssPath)) {
+  const globalsContent = fs.readFileSync(globalsCssPath, "utf8");
+  const workspaceContent = fs.readFileSync(workspaceCssPath, "utf8");
+
+  // Collect theme tokens declared in globals.css (:root blocks)
+  const globalsThemeVars = new Set();
+  const themeBlockMatches = globalsContent.matchAll(/(?::root|\[data-theme=[\w"']+\])[\s\S]*?\{([\s\S]*?)\}/g);
+  for (const block of themeBlockMatches) {
+    for (const m of block[1].matchAll(/(--ws-[\w-]+)\s*:/g)) {
+      globalsThemeVars.add(m[1]);
+    }
+  }
+
+  // Find first .ws-root { ... } block in workspace.css
+  const wsRootMatch = workspaceContent.match(/\.ws-root\s*\{([\s\S]*?)\}/);
+  if (wsRootMatch) {
+    for (const m of wsRootMatch[1].matchAll(/(--ws-[\w-]+)\s*:/g)) {
+      const v = m[1];
+      if (globalsThemeVars.has(v)) {
+        errors.push(`[.ws-root Shadowing Theme Var] ${v} in workspace.css re-declares variable defined in globals.css`);
+      }
+    }
+  }
+}
+
 if (errors.length > 0) {
   console.error(errors.join("\n"));
   process.exit(1);

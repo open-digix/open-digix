@@ -24,10 +24,8 @@ describe("workspace.css isolation and tokenization", () => {
 
   it("should define .ws-root token block with base variables", () => {
     expect(content).toContain(".ws-root {");
-    expect(content).toContain("--ws-navy: #112b45;");
-    expect(content).toContain("--ws-accent: #0b776f;");
-    expect(content).toContain("--ws-surface: #fff;");
-    expect(content).toContain("--ws-canvas: #f6f8fa;");
+    expect(content).toContain("--teal: var(--ws-accent);");
+    expect(content).toContain("--white: var(--ws-bg-surface);");
   });
 
   it("should have zero hex and zero rgb() colors outside the .ws-root token block", () => {

@@ -101,9 +101,9 @@ describe("WEB-F07 App Framework & Navigation", () => {
       expect(screen.queryByText("Báo cáo")).not.toBeInTheDocument();
     });
 
-    it("renders app pages group when inside /app/erp-a", async () => {
+    it("renders app pages group when inside /app/erp-a according to role", async () => {
       currentMockPath = "/app/11111111-1111-4111-8111-111111111111/purchase";
-      render(
+      const { rerender } = render(
         <Sidebar
           roles={["buyer"]}
           isOpen={true}
@@ -113,6 +113,18 @@ describe("WEB-F07 App Framework & Navigation", () => {
 
       await waitFor(() => {
         expect(screen.getByText("Yêu cầu mua")).toBeInTheDocument();
+        expect(screen.queryByText("Tồn kho")).not.toBeInTheDocument();
+      });
+
+      rerender(
+        <Sidebar
+          roles={["warehouse"]}
+          isOpen={true}
+          onClose={vi.fn()}
+        />
+      );
+
+      await waitFor(() => {
         expect(screen.getByText("Tồn kho")).toBeInTheDocument();
       });
     });

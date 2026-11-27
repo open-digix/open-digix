@@ -41,10 +41,25 @@ export default function DieuKhoanPage() {
         </div>
       </aside>
 
-      <main className="main" style={{ alignItems: "start", overflowY: "auto" }}>
+      <main
+        className="main"
+        style={{
+          alignItems: "start",
+          overflowY: "auto",
+          background: "var(--ws-bg-canvas)",
+          color: "var(--ws-text)",
+        }}
+      >
         <section
           className="card"
-          style={{ width: "min(680px, 100%)", paddingBottom: "32px" }}
+          style={{
+            width: "min(680px, 100%)",
+            paddingBottom: "32px",
+            background: "var(--ws-bg-surface)",
+            color: "var(--ws-text)",
+            border: "1px solid var(--ws-border)",
+            borderRadius: "14px",
+          }}
           aria-label="Điều khoản và quyền riêng tư"
         >
           <div className="pane on">
@@ -60,10 +75,10 @@ export default function DieuKhoanPage() {
             >
               Bản nháp – chờ duyệt
             </p>
-            <h1 className="title" style={{ marginTop: "12px" }}>
+            <h1 className="title" style={{ marginTop: "12px", color: "var(--ws-text)" }}>
               Điều khoản &amp; Quyền riêng tư
             </h1>
-            <p className="lead">
+            <p className="lead" style={{ color: "var(--ws-text-muted)" }}>
               Thông tin minh bạch về quyền và trách nhiệm khi sử dụng nền tảng DigiX.
             </p>
 
@@ -72,7 +87,7 @@ export default function DieuKhoanPage() {
                 style={{
                   fontSize: "17px",
                   fontWeight: "600",
-                  color: "var(--ink)",
+                  color: "var(--ws-text)",
                   marginBottom: "10px",
                 }}
               >
@@ -82,7 +97,7 @@ export default function DieuKhoanPage() {
                 style={{
                   fontSize: "13.5px",
                   lineHeight: "1.65",
-                  color: "var(--ink-2)",
+                  color: "var(--ws-text-muted)",
                   display: "flex",
                   flexDirection: "column",
                   gap: "10px",
@@ -106,7 +121,7 @@ export default function DieuKhoanPage() {
             <hr
               style={{
                 border: "none",
-                borderTop: "1px solid var(--line)",
+                borderTop: "1px solid var(--ws-border)",
                 margin: "22px 0",
               }}
             />
@@ -116,7 +131,7 @@ export default function DieuKhoanPage() {
                 style={{
                   fontSize: "17px",
                   fontWeight: "600",
-                  color: "var(--ink)",
+                  color: "var(--ws-text)",
                   marginBottom: "10px",
                 }}
               >
@@ -126,7 +141,7 @@ export default function DieuKhoanPage() {
                 style={{
                   fontSize: "13.5px",
                   lineHeight: "1.65",
-                  color: "var(--ink-2)",
+                  color: "var(--ws-text-muted)",
                   display: "flex",
                   flexDirection: "column",
                   gap: "10px",

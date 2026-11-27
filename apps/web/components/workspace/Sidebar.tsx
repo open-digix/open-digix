@@ -58,7 +58,8 @@ export default function Sidebar({
   const pathname = usePathname();
   const searchParams = useSearchParams?.() ?? null;
   const tabParam = searchParams?.get?.("tab") ?? null;
-  const isDraftTab = pathname === "/apps" && tabParam === "draft";
+  const isDraftTab =
+    pathname === "/apps" && (tabParam === "draft" || tabParam === "drafts");
   const isAppsActive =
     (pathname === "/apps" || pathname.startsWith("/apps/")) && !isDraftTab;
   const isBuilderActive = isDraftTab || pathname.startsWith("/builder");
@@ -280,7 +281,7 @@ export default function Sidebar({
         {/* Thiết kế ứng dụng - chỉ cho designer, publisher, tenant_admin, admin, owner */}
         {canAccessBuilder && (
           <Link
-            href="/apps?tab=draft"
+            href="/apps?tab=drafts"
             className={`nav-link ${isBuilderActive ? "active" : ""}`}
             aria-current={isBuilderActive ? "page" : undefined}
             data-tip="Thiết kế ứng dụng"

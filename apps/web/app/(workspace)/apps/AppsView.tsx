@@ -51,6 +51,8 @@ export default function AppsView() {
   const setTabAndUrl = (newTab: "all" | "published" | "draft") => {
     if (newTab === "all") {
       router.replace("/apps");
+    } else if (newTab === "draft") {
+      router.replace("/apps?tab=drafts");
     } else {
       router.replace(`/apps?tab=${newTab}`);
     }

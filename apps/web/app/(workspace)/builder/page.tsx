@@ -24,5 +24,5 @@ export const metadata: Metadata = {
 
 export default async function BuilderPage() {
   await connection();
-  redirect("/apps?tab=draft");
+  redirect("/apps?tab=drafts");
 }

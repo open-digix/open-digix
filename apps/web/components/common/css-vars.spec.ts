@@ -20,11 +20,15 @@ import path from "node:path";
 
 describe("CSS variables validation across builder components", () => {
   const cssPath = path.resolve(__dirname, "../../app/(workspace)/workspace.css");
-  const cssContent = fs.readFileSync(cssPath, "utf-8");
+  const globalsPath = path.resolve(__dirname, "../../app/globals.css");
+  const combinedCss =
+    fs.readFileSync(cssPath, "utf-8") +
+    "\n" +
+    (fs.existsSync(globalsPath) ? fs.readFileSync(globalsPath, "utf-8") : "");
 
-  // Extract all defined --ws-* variables from workspace.css
+  // Extract all defined --ws-* variables from globals.css & workspace.css
   const declaredVars = new Set<string>();
-  const varMatches = cssContent.matchAll(/(--ws-[a-z0-9-]+)\s*:/g);
+  const varMatches = combinedCss.matchAll(/(--ws-[a-z0-9-]+)\s*:/g);
   for (const match of varMatches) {
     declaredVars.add(match[1]);
   }
