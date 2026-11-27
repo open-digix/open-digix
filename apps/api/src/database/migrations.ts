@@ -6,6 +6,7 @@ import { sharedFoundationMigration } from './migrations/0005-shared-foundation';
 import { erpMaterialsMigration } from './migrations/0006-erp-materials';
 import { erpPurchaseRequestsMigration } from './migrations/0007-erp-purchase-requests';
 import { erpInventoryReceiptsMigration } from './migrations/0008-erp-inventory-receipts';
+import { erpPurchaseRequestConstraintsMigration } from './migrations/0009-erp-purchase-request-constraints';
 
 export interface Migration {
   id: string;
@@ -22,4 +23,5 @@ export const migrations: readonly Migration[] = [
   erpMaterialsMigration,
   erpPurchaseRequestsMigration,
   erpInventoryReceiptsMigration,
+  erpPurchaseRequestConstraintsMigration,
 ];

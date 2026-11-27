@@ -11,6 +11,7 @@ describe('database migrations', () => {
       '0006_erp_materials',
       '0007_erp_purchase_requests',
       '0008_erp_inventory_receipts',
+      '0009_erp_purchase_request_constraints',
     ]);
   });
 
@@ -145,5 +146,12 @@ describe('database migrations', () => {
     expect(migrations[7].sql).toContain(
       'UNIQUE (tenant_id, application_id, receipt_id, material_id)',
     );
+  });
+
+  it('requires a non-null reason for rejected purchase requests', () => {
+    expect(migrations[8].sql).toContain(
+      'DROP CONSTRAINT purchase_requests_rejection_reason_valid',
+    );
+    expect(migrations[8].sql).toContain('rejection_reason IS NOT NULL');
   });
 });
