@@ -50,6 +50,14 @@ export interface AppV2Issue {
 interface BaseContext {
   /** Must be the server-owned catalog snapshot selected for this app. */
   readonly catalog: CatalogFeaturesResponse;
+  /** Registered workflow start events, not every action in the catalog. */
+  readonly workflowTriggers: readonly { featureId: string; trigger: string }[];
+  /** Permissions outside feature actions, issued by the app ACL registry. */
+  readonly systemPermissions: readonly string[];
+  /** Registry-owned component versions, e.g. { form: [1], table: [1] }. */
+  readonly componentVersions: Readonly<
+    Partial<Record<CatalogComponent, readonly number[]>>
+  >;
 }
 export interface AppV2DraftContext extends BaseContext {
   readonly target: 'draft';
@@ -66,14 +74,6 @@ export interface AppV2PublishedContext extends BaseContext {
   readonly pinnedCatalogVersion: string;
   /** Features with live records/workflows that cannot be disabled. Server-owned. */
   readonly inUseFeatureIds: readonly string[];
-  /** Registered workflow start events, not every action in the catalog. */
-  readonly workflowTriggers: readonly { featureId: string; trigger: string }[];
-  /** Permissions outside feature actions, issued by the app ACL registry. */
-  readonly systemPermissions: readonly string[];
-  /** Registry-owned component versions, e.g. { form: [1], table: [1] }. */
-  readonly componentVersions: Readonly<
-    Partial<Record<CatalogComponent, readonly number[]>>
-  >;
 }
 export type AppV2ValidationContext = AppV2DraftContext | AppV2PublishedContext;
 
@@ -197,23 +197,20 @@ export class AppV2Validator {
       const issues = (check.errors ?? []).map(schemaIssue);
       return { valid: false, issues };
     }
-    // A draft is allowed to contain incomplete dependencies/bindings while it
-    // is edited. Publish must validate the same persisted snapshot again.
-    if (ctx.target === 'draft') return { valid: true, issues: [] };
-
     const definition = config as unknown as AppV2Definition;
     const issues: AppV2Issue[] = [];
     if (
-      !ctx.pinnedCatalogVersion ||
-      !ctx.scope ||
-      !ctx.scope.tenantId ||
-      !ctx.scope.appId ||
-      !Number.isInteger(ctx.scope.version) ||
-      !Array.isArray(ctx.inUseFeatureIds) ||
       !Array.isArray(ctx.workflowTriggers) ||
       !Array.isArray(ctx.systemPermissions) ||
       !ctx.componentVersions ||
-      typeof ctx.componentVersions !== 'object'
+      typeof ctx.componentVersions !== 'object' ||
+      (ctx.target === 'published' &&
+        (!ctx.pinnedCatalogVersion ||
+          !ctx.scope ||
+          !ctx.scope.tenantId ||
+          !ctx.scope.appId ||
+          !Number.isInteger(ctx.scope.version) ||
+          !Array.isArray(ctx.inUseFeatureIds)))
     ) {
       return {
         valid: false,
@@ -226,7 +223,10 @@ export class AppV2Validator {
         ],
       };
     }
-    if (ctx.catalog.catalogVersion !== ctx.pinnedCatalogVersion) {
+    if (
+      ctx.target === 'published' &&
+      ctx.catalog.catalogVersion !== ctx.pinnedCatalogVersion
+    ) {
       issues.push(
         issue(
           'CATALOG_VERSION_MISMATCH',
@@ -235,15 +235,17 @@ export class AppV2Validator {
         ),
       );
     }
-    for (const field of ['tenantId', 'appId', 'version'] as const) {
-      if (definition[field] !== ctx.scope[field]) {
-        issues.push(
-          issue(
-            'SCOPE_MISMATCH',
-            `/${field}`,
-            `Definition ${field} does not match the persisted app version.`,
-          ),
-        );
+    if (ctx.target === 'published') {
+      for (const field of ['tenantId', 'appId', 'version'] as const) {
+        if (definition[field] !== ctx.scope[field]) {
+          issues.push(
+            issue(
+              'SCOPE_MISMATCH',
+              `/${field}`,
+              `Definition ${field} does not match the persisted app version.`,
+            ),
+          );
+        }
       }
     }
 
@@ -284,16 +286,18 @@ export class AppV2Validator {
         }
       }
     });
-    const inUseFeatureIds: readonly string[] = ctx.inUseFeatureIds;
-    for (const featureId of inUseFeatureIds) {
-      if (!selected.has(featureId)) {
-        issues.push(
-          issue(
-            'FEATURE_IN_USE',
-            '/features',
-            `Feature ${featureId} has active records or workflows.`,
-          ),
-        );
+    if (ctx.target === 'published') {
+      const inUseFeatureIds: readonly string[] = ctx.inUseFeatureIds;
+      for (const featureId of inUseFeatureIds) {
+        if (!selected.has(featureId)) {
+          issues.push(
+            issue(
+              'FEATURE_IN_USE',
+              '/features',
+              `Feature ${featureId} has active records or workflows.`,
+            ),
+          );
+        }
       }
     }
 
@@ -372,6 +376,7 @@ export class AppV2Validator {
           selected,
           catalog,
           ctx.componentVersions,
+          ctx.target,
           issues,
         ),
       );
@@ -434,7 +439,8 @@ export class AppV2Validator {
     roles: Map<string, AppV2Definition['roles'][number]>,
     selected: Map<string, AppV2Definition['features'][number]>,
     catalog: Map<string, CatalogFeature>,
-    componentVersions: AppV2PublishedContext['componentVersions'],
+    componentVersions: BaseContext['componentVersions'],
+    target: AppV2ValidationContext['target'],
     issues: AppV2Issue[],
   ): void {
     this.checkRoles(
@@ -549,6 +555,9 @@ export class AppV2Validator {
       );
       return;
     }
+    // Roles may not have been configured yet in a draft. Invalid explicit
+    // visibleToRoles references were already reported above.
+    if (target === 'draft' && roles.size === 0) return;
     const pageRoles = page.visibleToRoles ?? [...roles.keys()];
     const visibleRoles = component.visibleToRoles
       ? pageRoles.filter((role) => component.visibleToRoles!.includes(role))

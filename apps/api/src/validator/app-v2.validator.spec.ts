@@ -42,17 +42,8 @@ const load = (name: string): Fixture =>
   ) as Fixture;
 const validator = new AppV2Validator();
 const catalog = new CatalogService().getFeatures();
-const draft: AppV2DraftContext = { target: 'draft', catalog };
-const published: AppV2PublishedContext = {
-  target: 'published',
+const registry = {
   catalog,
-  scope: {
-    tenantId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
-    appId: '22222222-2222-4222-8222-222222222222',
-    version: 1,
-  },
-  pinnedCatalogVersion: CATALOG_VERSION,
-  inUseFeatureIds: [],
   workflowTriggers: [{ featureId: 'erp.purchase_requests', trigger: 'submit' }],
   systemPermissions: ['share.manage', 'ai.sources.manage'],
   componentVersions: {
@@ -62,6 +53,18 @@ const published: AppV2PublishedContext = {
     metric: [1],
     action: [1],
   },
+};
+const draft: AppV2DraftContext = { target: 'draft', ...registry };
+const published: AppV2PublishedContext = {
+  target: 'published',
+  ...registry,
+  scope: {
+    tenantId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+    appId: '22222222-2222-4222-8222-222222222222',
+    version: 1,
+  },
+  pinnedCatalogVersion: CATALOG_VERSION,
+  inUseFeatureIds: [],
 };
 const validate = (
   value: unknown,
@@ -385,11 +388,63 @@ describe('AppV2Validator', () => {
     expect(value).toEqual(before);
   });
 
-  it('allows editing incomplete bindings in a draft, but blocks publication', () => {
+  it('reports invalid draft bindings without requiring a complete app', () => {
     const value = load('crm-a-app-v2.5.json');
     value.pages[0].components[0].resource = 'unknown';
-    expect(validate(value, draft)).toEqual({ valid: true, issues: [] });
+    expect(validate(value, draft).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'UNKNOWN_RESOURCE',
+        path: '/pages/0/components/0/resource',
+      }),
+    );
     has(value, 'UNKNOWN_RESOURCE', '/pages/0/components/0/resource');
+  });
+
+  it('reports invalid draft dependencies, actions and permissions at their paths', () => {
+    const value = load('crm-a-app-v2.5.json');
+    value.features.splice(0, 1);
+    value.pages.splice(0, 1);
+    value.pages[0].components[0].action = 'invented';
+    value.roles[0].permissions.push('crm.opportunities.opportunities.invented');
+
+    const issues = validate(value, draft).issues;
+    expect(issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'MISSING_DEPENDENCY',
+          path: '/features/0',
+        }),
+        expect.objectContaining({
+          code: 'INVALID_BINDING',
+          path: '/pages/0/components/0/action',
+        }),
+        expect.objectContaining({
+          code: 'UNKNOWN_PERMISSION',
+          path: '/roles/0/permissions/5',
+        }),
+      ]),
+    );
+    value.pages[0].components[0].action = 'create';
+    value.pages[0].components[1].action = 'invented';
+    expect(validate(value, draft).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'READ_ONLY_COMPONENT_ACTION',
+        path: '/pages/0/components/1/action',
+      }),
+    );
+  });
+
+  it('allows incomplete draft roles without masking explicitly invalid references', () => {
+    const value = load('crm-a-app-v2.5.json');
+    value.roles = [];
+    expect(validate(value, draft)).toEqual({ valid: true, issues: [] });
+    value.pages[0].components[0].visibleToRoles = ['missing'];
+    expect(validate(value, draft).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'UNKNOWN_ROLE',
+        path: '/pages/0/components/0/visibleToRoles/0',
+      }),
+    );
   });
 
   it('rejects a role explicitly shown an action it cannot perform', () => {
