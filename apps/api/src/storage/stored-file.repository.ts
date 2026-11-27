@@ -29,6 +29,10 @@ export interface StoredFileMetadata {
   createdAt: Date;
 }
 
+export interface ReadableStoredFileMetadata extends StoredFileMetadata {
+  applicationId: string;
+}
+
 interface StoredFileRow extends QueryResultRow {
   id: string;
   tenant_id: string;
@@ -41,6 +45,7 @@ interface StoredFileRow extends QueryResultRow {
   scan_status: StoredFileScanStatus;
   created_by_membership_id: string;
   created_at: Date;
+  application_id?: string;
 }
 
 const CREATE_PENDING_STORED_FILE_QUERY = `
@@ -88,15 +93,15 @@ export class StoredFileRepository {
       throw new Error('File scan state changed unexpectedly');
   }
 
-  // Only a record requester may read a file attached to that record in B02.
-  // B03a will replace this narrow policy with app/record authorization.
+  // A readable file must belong to a record requested by the caller. App
+  // membership is checked separately on every request by FileAccess.
   async findReadable(
     tenantId: string,
     fileId: string,
     membershipId: string,
-  ): Promise<StoredFileMetadata | null> {
+  ): Promise<ReadableStoredFileMetadata | null> {
     const result = await this.pool.query<StoredFileRow>(
-      `SELECT f.id, f.tenant_id, f.record_id, f.storage_key,
+      `SELECT f.id, f.tenant_id, f.record_id, r.application_id, f.storage_key,
               f.original_name, f.content_type, f.size_bytes::text AS size_bytes,
               f.checksum_sha256, f.scan_status, f.created_by_membership_id, f.created_at
        FROM stored_files f
@@ -106,11 +111,12 @@ export class StoredFileRepository {
       [tenantId, fileId, membershipId],
     );
     const row = result.rows[0];
-    return row
+    return row?.application_id
       ? {
           id: row.id,
           tenantId: row.tenant_id,
           recordId: row.record_id,
+          applicationId: row.application_id,
           storageKey: row.storage_key,
           originalName: row.original_name,
           contentType: row.content_type,
@@ -123,17 +129,17 @@ export class StoredFileRepository {
       : null;
   }
 
-  async recordOwnedBy(
+  async findOwnedRecordApplication(
     tenantId: string,
     recordId: string,
     membershipId: string,
-  ): Promise<boolean> {
-    const result = await this.pool.query(
-      `SELECT 1 FROM business_records
-       WHERE tenant_id = $1 AND id = $2 AND requester_membership_id = $3`,
+  ): Promise<string | null> {
+    const result = await this.pool.query<{ application_id: string }>(
+      `SELECT application_id FROM business_records
+        WHERE tenant_id = $1 AND id = $2 AND requester_membership_id = $3`,
       [tenantId, recordId, membershipId],
     );
-    return result.rowCount === 1;
+    return result.rows[0]?.application_id ?? null;
   }
 
   async createPending(
