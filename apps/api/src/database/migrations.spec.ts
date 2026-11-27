@@ -8,6 +8,10 @@ describe('database migrations', () => {
       '0003_app_acl',
       '0004_app_acl_backfill',
       '0005_shared_foundation',
+      '0006_erp_materials',
+      '0007_erp_purchase_requests',
+      '0008_erp_inventory_receipts',
+      '0009_erp_purchase_request_constraints',
     ]);
   });
 
@@ -101,5 +105,53 @@ describe('database migrations', () => {
     expect(migrations[4].sql).toContain(
       'UNIQUE (\n          tenant_id,\n          application_id,\n          actor_membership_id,\n          action,\n          idempotency_key\n        )',
     );
+  });
+
+  it('creates the ERP materials table with app and version scope', () => {
+    expect(migrations[5].sql).toContain('CREATE TABLE materials');
+    expect(migrations[5].sql).toContain(
+      'FOREIGN KEY (tenant_id, application_id)',
+    );
+    expect(migrations[5].sql).toContain(
+      'FOREIGN KEY (tenant_id, application_id, application_version_id)',
+    );
+    expect(migrations[5].sql).toContain(
+      'UNIQUE (tenant_id, application_id, sku)',
+    );
+  });
+
+  it('creates purchase requests and positive-quantity material lines', () => {
+    expect(migrations[6].sql).toContain('CREATE TABLE purchase_requests');
+    expect(migrations[6].sql).toContain('CREATE TABLE purchase_request_lines');
+    expect(migrations[6].sql).toContain(
+      'FOREIGN KEY (\n          tenant_id,\n          application_id,\n          application_version_id,\n          business_record_id\n        )',
+    );
+    expect(migrations[6].sql).toContain(
+      'CONSTRAINT purchase_request_lines_quantity_positive',
+    );
+    expect(migrations[6].sql).toContain(
+      'UNIQUE (tenant_id, application_id, purchase_request_id, material_id)',
+    );
+  });
+
+  it('creates immutable receipt tables with one receipt per request', () => {
+    expect(migrations[7].sql).toContain('CREATE TABLE inventory_receipts');
+    expect(migrations[7].sql).toContain('CREATE TABLE inventory_receipt_lines');
+    expect(migrations[7].sql).toContain(
+      'CONSTRAINT inventory_receipts_request_unique',
+    );
+    expect(migrations[7].sql).toContain(
+      'CONSTRAINT inventory_receipt_lines_quantity_positive',
+    );
+    expect(migrations[7].sql).toContain(
+      'UNIQUE (tenant_id, application_id, receipt_id, material_id)',
+    );
+  });
+
+  it('requires a non-null reason for rejected purchase requests', () => {
+    expect(migrations[8].sql).toContain(
+      'DROP CONSTRAINT purchase_requests_rejection_reason_valid',
+    );
+    expect(migrations[8].sql).toContain('rejection_reason IS NOT NULL');
   });
 });

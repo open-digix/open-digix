@@ -18,7 +18,12 @@ const REQUIRED_TABLES = [
   'business_records',
   'identity_users',
   'idempotency_keys',
+  'inventory_receipt_lines',
+  'inventory_receipts',
   'membership_roles',
+  'materials',
+  'purchase_request_lines',
+  'purchase_requests',
   'schema_migrations',
   'stored_files',
   'tenant_memberships',
@@ -30,11 +35,13 @@ const REQUIRED_TABLES = [
 
 interface DatabaseError extends Error {
   code?: string;
+  constraint?: string;
 }
 
 export interface SchemaVerificationResult {
   requiredTableCount: number;
   rejectedCrossTenantCases: string[];
+  rejectedIntegrityCases: string[];
   rollbackConfirmed: boolean;
 }
 
@@ -52,6 +59,7 @@ async function expectForeignKeyViolation(
   caseName: string,
   sql: string,
   values: unknown[],
+  expectedConstraint?: string,
 ): Promise<void> {
   const savepoint = `verify_case_${savepointNumber}`;
   await client.query(`SAVEPOINT ${savepoint}`);
@@ -70,12 +78,83 @@ async function expectForeignKeyViolation(
       );
     }
 
+    if (expectedConstraint && databaseError.constraint !== expectedConstraint) {
+      throw new Error(
+        `${caseName} failed with constraint ${databaseError.constraint ?? 'unknown'} instead of ${expectedConstraint}`,
+        { cause: databaseError },
+      );
+    }
+
     return;
   }
 
   await client.query(`ROLLBACK TO SAVEPOINT ${savepoint}`);
   await client.query(`RELEASE SAVEPOINT ${savepoint}`);
   throw new Error(`${caseName} unexpectedly allowed a cross-tenant reference`);
+}
+
+async function expectUniqueViolation(
+  client: PoolClient,
+  savepointNumber: number,
+  caseName: string,
+  sql: string,
+  values: unknown[],
+): Promise<void> {
+  const savepoint = `verify_unique_case_${savepointNumber}`;
+  await client.query(`SAVEPOINT ${savepoint}`);
+
+  try {
+    await client.query(sql, values);
+  } catch (error) {
+    const databaseError = asDatabaseError(error);
+    await client.query(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+    await client.query(`RELEASE SAVEPOINT ${savepoint}`);
+
+    if (databaseError.code !== '23505') {
+      throw new Error(
+        `${caseName} failed with PostgreSQL code ${databaseError.code ?? 'unknown'} instead of unique_violation`,
+        { cause: databaseError },
+      );
+    }
+
+    return;
+  }
+
+  await client.query(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+  await client.query(`RELEASE SAVEPOINT ${savepoint}`);
+  throw new Error(`${caseName} unexpectedly allowed a duplicate value`);
+}
+
+async function expectCheckViolation(
+  client: PoolClient,
+  savepointNumber: number,
+  caseName: string,
+  sql: string,
+  values: unknown[],
+): Promise<void> {
+  const savepoint = `verify_check_case_${savepointNumber}`;
+  await client.query(`SAVEPOINT ${savepoint}`);
+
+  try {
+    await client.query(sql, values);
+  } catch (error) {
+    const databaseError = asDatabaseError(error);
+    await client.query(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+    await client.query(`RELEASE SAVEPOINT ${savepoint}`);
+
+    if (databaseError.code !== '23514') {
+      throw new Error(
+        `${caseName} failed with PostgreSQL code ${databaseError.code ?? 'unknown'} instead of check_violation`,
+        { cause: databaseError },
+      );
+    }
+
+    return;
+  }
+
+  await client.query(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+  await client.query(`RELEASE SAVEPOINT ${savepoint}`);
+  throw new Error(`${caseName} unexpectedly allowed an invalid value`);
 }
 
 async function verifyRequiredTables(client: PoolClient): Promise<void> {
@@ -130,12 +209,23 @@ export async function verifySchema(
   const applicationRoleAlphaId = randomUUID();
   const applicationRoleBetaId = randomUUID();
   const applicationAlphaId = randomUUID();
+  const applicationBetaId = randomUUID();
+  const applicationSecondaryAlphaId = randomUUID();
   const applicationVersionAlphaId = randomUUID();
+  const applicationVersionBetaId = randomUUID();
+  const applicationVersionSecondaryAlphaId = randomUUID();
+  const applicationVersionAlphaV2Id = randomUUID();
   const sourceRevisionAlphaId = randomUUID();
   const draftRevisionAlphaId = randomUUID();
   const recordAlphaId = randomUUID();
   const workflowAlphaId = randomUUID();
+  const materialAlphaId = randomUUID();
+  const purchaseRequestAlphaId = randomUUID();
+  const purchaseRequestLineAlphaId = randomUUID();
+  const receiptAlphaId = randomUUID();
+  const receiptLineAlphaId = randomUUID();
   const rejectedCrossTenantCases: string[] = [];
+  const rejectedIntegrityCases: string[] = [];
 
   try {
     await verifyRequiredTables(client);
@@ -198,6 +288,16 @@ export async function verifySchema(
       [applicationAlphaId, tenantAlphaId],
     );
     await client.query(
+      `INSERT INTO applications (id, tenant_id, app_key, name)
+       VALUES ($1, $2, 'verification_beta_app', 'Verification Beta App')`,
+      [applicationBetaId, tenantBetaId],
+    );
+    await client.query(
+      `INSERT INTO applications (id, tenant_id, app_key, name)
+       VALUES ($1, $2, 'verification_secondary_app', 'Verification Secondary App')`,
+      [applicationSecondaryAlphaId, tenantAlphaId],
+    );
+    await client.query(
       `INSERT INTO application_roles (
          id,
          tenant_id,
@@ -249,6 +349,66 @@ export async function verifySchema(
         applicationAlphaId,
         JSON.stringify({ name: 'verification' }),
         'a'.repeat(64),
+        membershipAlphaId,
+      ],
+    );
+    await client.query(
+      `INSERT INTO application_versions (
+        id,
+        tenant_id,
+        application_id,
+        version,
+        schema_version,
+        definition,
+        definition_checksum,
+        created_by_membership_id
+      ) VALUES ($1, $2, $3, 1, '1.0', $4::jsonb, $5, $6)`,
+      [
+        applicationVersionBetaId,
+        tenantBetaId,
+        applicationBetaId,
+        JSON.stringify({ name: 'verification beta' }),
+        'b'.repeat(64),
+        membershipBetaId,
+      ],
+    );
+    await client.query(
+      `INSERT INTO application_versions (
+        id,
+        tenant_id,
+        application_id,
+        version,
+        schema_version,
+        definition,
+        definition_checksum,
+        created_by_membership_id
+      ) VALUES ($1, $2, $3, 1, '1.0', $4::jsonb, $5, $6)`,
+      [
+        applicationVersionSecondaryAlphaId,
+        tenantAlphaId,
+        applicationSecondaryAlphaId,
+        JSON.stringify({ name: 'verification secondary' }),
+        'c'.repeat(64),
+        membershipAlphaId,
+      ],
+    );
+    await client.query(
+      `INSERT INTO application_versions (
+        id,
+        tenant_id,
+        application_id,
+        version,
+        schema_version,
+        definition,
+        definition_checksum,
+        created_by_membership_id
+      ) VALUES ($1, $2, $3, 2, '1.0', $4::jsonb, $5, $6)`,
+      [
+        applicationVersionAlphaV2Id,
+        tenantAlphaId,
+        applicationAlphaId,
+        JSON.stringify({ name: 'verification v2' }),
+        'e'.repeat(64),
         membershipAlphaId,
       ],
     );
@@ -355,11 +515,108 @@ export async function verifySchema(
         `verify-process-${workflowAlphaId}`,
       ],
     );
+    await client.query(
+      `INSERT INTO materials (
+        id,
+        tenant_id,
+        application_id,
+        application_version_id,
+        sku,
+        name,
+        unit,
+        created_by_membership_id
+      ) VALUES ($1, $2, $3, $4, 'VERIFY-SKU', 'Verification Material', 'piece', $5)`,
+      [
+        materialAlphaId,
+        tenantAlphaId,
+        applicationAlphaId,
+        applicationVersionAlphaId,
+        membershipAlphaId,
+      ],
+    );
+    await client.query(
+      `INSERT INTO purchase_requests (
+        id,
+        tenant_id,
+        application_id,
+        application_version_id,
+        business_record_id,
+        requester_membership_id,
+        approver_membership_id,
+        status
+      ) VALUES ($1, $2, $3, $4, $5, $6, $6, 'approved')`,
+      [
+        purchaseRequestAlphaId,
+        tenantAlphaId,
+        applicationAlphaId,
+        applicationVersionAlphaId,
+        recordAlphaId,
+        membershipAlphaId,
+      ],
+    );
+    await client.query(
+      `INSERT INTO purchase_request_lines (
+        id,
+        tenant_id,
+        application_id,
+        application_version_id,
+        purchase_request_id,
+        material_id,
+        quantity
+      ) VALUES ($1, $2, $3, $4, $5, $6, 3)`,
+      [
+        purchaseRequestLineAlphaId,
+        tenantAlphaId,
+        applicationAlphaId,
+        applicationVersionAlphaId,
+        purchaseRequestAlphaId,
+        materialAlphaId,
+      ],
+    );
+    await client.query(
+      `INSERT INTO inventory_receipts (
+        id,
+        tenant_id,
+        application_id,
+        application_version_id,
+        purchase_request_id,
+        approved_by_membership_id,
+        received_by_membership_id
+      ) VALUES ($1, $2, $3, $4, $5, $6, $6)`,
+      [
+        receiptAlphaId,
+        tenantAlphaId,
+        applicationAlphaId,
+        applicationVersionAlphaId,
+        purchaseRequestAlphaId,
+        membershipAlphaId,
+      ],
+    );
+    await client.query(
+      `INSERT INTO inventory_receipt_lines (
+        id,
+        tenant_id,
+        application_id,
+        application_version_id,
+        receipt_id,
+        material_id,
+        quantity
+      ) VALUES ($1, $2, $3, $4, $5, $6, 3)`,
+      [
+        receiptLineAlphaId,
+        tenantAlphaId,
+        applicationAlphaId,
+        applicationVersionAlphaId,
+        receiptAlphaId,
+        materialAlphaId,
+      ],
+    );
 
     const cases: Array<{
       name: string;
       sql: string;
       values: unknown[];
+      expectedConstraint?: string;
     }> = [
       {
         name: 'membership cannot receive a role from another tenant',
@@ -514,6 +771,128 @@ export async function verifySchema(
               ) VALUES ($1, $2, 'verify', 'schema', 'success')`,
         values: [tenantAlphaId, membershipBetaId],
       },
+      {
+        name: 'material cannot use a membership from another tenant',
+        sql: `INSERT INTO materials (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                sku,
+                name,
+                unit,
+                created_by_membership_id
+              ) VALUES ($1, $2, $3, $4, 'CROSS-TENANT-SKU', 'Cross Tenant', 'piece', $5)`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          membershipBetaId,
+        ],
+      },
+      {
+        name: 'purchase request cannot use a business record from another tenant',
+        sql: `INSERT INTO purchase_requests (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                business_record_id,
+                requester_membership_id
+              ) VALUES ($1, $2, $3, $4, $5, $6)`,
+        values: [
+          randomUUID(),
+          tenantBetaId,
+          applicationBetaId,
+          applicationVersionBetaId,
+          recordAlphaId,
+          membershipBetaId,
+        ],
+        expectedConstraint: 'purchase_requests_business_record_fk',
+      },
+      {
+        name: 'receipt cannot use a purchase request from another tenant',
+        sql: `INSERT INTO inventory_receipts (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                purchase_request_id,
+                approved_by_membership_id,
+                received_by_membership_id
+              ) VALUES ($1, $2, $3, $4, $5, $6, $6)`,
+        values: [
+          randomUUID(),
+          tenantBetaId,
+          applicationBetaId,
+          applicationVersionBetaId,
+          purchaseRequestAlphaId,
+          membershipBetaId,
+        ],
+        expectedConstraint: 'inventory_receipts_request_fk',
+      },
+      {
+        name: 'purchase request cannot mix applications in the same tenant',
+        sql: `INSERT INTO purchase_requests (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                business_record_id,
+                requester_membership_id
+              ) VALUES ($1, $2, $3, $4, $5, $6)`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionSecondaryAlphaId,
+          recordAlphaId,
+          membershipAlphaId,
+        ],
+        expectedConstraint: 'purchase_requests_application_version_fk',
+      },
+      {
+        name: 'purchase request cannot use a record from another app version',
+        sql: `INSERT INTO purchase_requests (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                business_record_id,
+                requester_membership_id
+              ) VALUES ($1, $2, $3, $4, $5, $6)`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaV2Id,
+          recordAlphaId,
+          membershipAlphaId,
+        ],
+        expectedConstraint: 'purchase_requests_business_record_fk',
+      },
+      {
+        name: 'receipt cannot mix applications in the same tenant',
+        sql: `INSERT INTO inventory_receipts (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                purchase_request_id,
+                approved_by_membership_id,
+                received_by_membership_id
+              ) VALUES ($1, $2, $3, $4, $5, $6, $6)`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationSecondaryAlphaId,
+          applicationVersionAlphaId,
+          purchaseRequestAlphaId,
+          membershipAlphaId,
+        ],
+        expectedConstraint: 'inventory_receipts_application_version_fk',
+      },
     ];
 
     for (const [index, testCase] of cases.entries()) {
@@ -523,8 +902,177 @@ export async function verifySchema(
         testCase.name,
         testCase.sql,
         testCase.values,
+        testCase.expectedConstraint,
       );
       rejectedCrossTenantCases.push(testCase.name);
+    }
+
+    const integrityCases = [
+      {
+        name: 'duplicate material SKU is rejected within an application',
+        sql: `INSERT INTO materials (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                sku,
+                name,
+                unit,
+                created_by_membership_id
+              ) VALUES ($1, $2, $3, $4, 'VERIFY-SKU', 'Duplicate Material', 'piece', $5)`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          membershipAlphaId,
+        ],
+      },
+      {
+        name: 'duplicate receipt for a purchase request is rejected',
+        sql: `INSERT INTO inventory_receipts (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                purchase_request_id,
+                approved_by_membership_id,
+                received_by_membership_id
+              ) VALUES ($1, $2, $3, $4, $5, $6, $6)`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          purchaseRequestAlphaId,
+          membershipAlphaId,
+        ],
+      },
+    ];
+
+    for (const [index, testCase] of integrityCases.entries()) {
+      await expectUniqueViolation(
+        client,
+        index + 1,
+        testCase.name,
+        testCase.sql,
+        testCase.values,
+      );
+      rejectedIntegrityCases.push(testCase.name);
+    }
+
+    const edgeCases = [
+      {
+        name: 'blank material SKU is rejected',
+        sql: `INSERT INTO materials (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                sku,
+                name,
+                unit,
+                created_by_membership_id
+              ) VALUES ($1, $2, $3, $4, '   ', 'Invalid Material', 'piece', $5)`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          membershipAlphaId,
+        ],
+      },
+      {
+        name: 'invalid purchase request status is rejected',
+        sql: `INSERT INTO purchase_requests (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                business_record_id,
+                requester_membership_id,
+                status
+              ) VALUES ($1, $2, $3, $4, $5, $6, 'cancelled')`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          recordAlphaId,
+          membershipAlphaId,
+        ],
+      },
+      {
+        name: 'rejected purchase request requires a reason',
+        sql: `INSERT INTO purchase_requests (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                business_record_id,
+                requester_membership_id,
+                status
+              ) VALUES ($1, $2, $3, $4, $5, $6, 'rejected')`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          recordAlphaId,
+          membershipAlphaId,
+        ],
+      },
+      {
+        name: 'purchase request line quantity zero is rejected',
+        sql: `INSERT INTO purchase_request_lines (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                purchase_request_id,
+                material_id,
+                quantity
+              ) VALUES ($1, $2, $3, $4, $5, $6, 0)`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          purchaseRequestAlphaId,
+          materialAlphaId,
+        ],
+      },
+      {
+        name: 'inventory receipt line quantity zero is rejected',
+        sql: `INSERT INTO inventory_receipt_lines (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                receipt_id,
+                material_id,
+                quantity
+              ) VALUES ($1, $2, $3, $4, $5, $6, 0)`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          receiptAlphaId,
+          materialAlphaId,
+        ],
+      },
+    ];
+
+    for (const [index, testCase] of edgeCases.entries()) {
+      await expectCheckViolation(
+        client,
+        index + 1,
+        testCase.name,
+        testCase.sql,
+        testCase.values,
+      );
+      rejectedIntegrityCases.push(testCase.name);
     }
 
     await client.query('ROLLBACK');
@@ -542,6 +1090,7 @@ export async function verifySchema(
     return {
       requiredTableCount: REQUIRED_TABLES.length,
       rejectedCrossTenantCases,
+      rejectedIntegrityCases,
       rollbackConfirmed: true,
     };
   } catch (error) {
@@ -565,6 +1114,12 @@ if (require.main === module) {
         `Cross-tenant references rejected: ${result.rejectedCrossTenantCases.length}`,
       );
       for (const caseName of result.rejectedCrossTenantCases) {
+        console.log(`- ${caseName}`);
+      }
+      console.log(
+        `ERP integrity constraints rejected: ${result.rejectedIntegrityCases.length}`,
+      );
+      for (const caseName of result.rejectedIntegrityCases) {
         console.log(`- ${caseName}`);
       }
       console.log(`Rollback cleanup confirmed: ${result.rollbackConfirmed}`);
