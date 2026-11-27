@@ -30,7 +30,7 @@
       "id": "stock", "label": "Tồn kho", "path": "stock", "layout": "single", "menuOrder": 1,
       "components": [
         { "id": "stock_table", "type": "table", "featureId": "erp.inventory", "resource": "stock", "zone": "main" },
-        { "id": "receipt_form", "type": "form", "featureId": "erp.inventory", "resource": "receipts", "action": "receive", "zone": "main" }
+        { "id": "receipt_action", "type": "action", "featureId": "erp.inventory", "resource": "receipts", "action": "receive", "zone": "main" }
       ]
     }
   ],
