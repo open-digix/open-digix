@@ -35,6 +35,7 @@ const REQUIRED_TABLES = [
 
 interface DatabaseError extends Error {
   code?: string;
+  constraint?: string;
 }
 
 export interface SchemaVerificationResult {
@@ -58,6 +59,7 @@ async function expectForeignKeyViolation(
   caseName: string,
   sql: string,
   values: unknown[],
+  expectedConstraint?: string,
 ): Promise<void> {
   const savepoint = `verify_case_${savepointNumber}`;
   await client.query(`SAVEPOINT ${savepoint}`);
@@ -72,6 +74,13 @@ async function expectForeignKeyViolation(
     if (databaseError.code !== '23503') {
       throw new Error(
         `${caseName} failed with PostgreSQL code ${databaseError.code ?? 'unknown'} instead of foreign_key_violation`,
+        { cause: databaseError },
+      );
+    }
+
+    if (expectedConstraint && databaseError.constraint !== expectedConstraint) {
+      throw new Error(
+        `${caseName} failed with constraint ${databaseError.constraint ?? 'unknown'} instead of ${expectedConstraint}`,
         { cause: databaseError },
       );
     }
@@ -200,7 +209,12 @@ export async function verifySchema(
   const applicationRoleAlphaId = randomUUID();
   const applicationRoleBetaId = randomUUID();
   const applicationAlphaId = randomUUID();
+  const applicationBetaId = randomUUID();
+  const applicationSecondaryAlphaId = randomUUID();
   const applicationVersionAlphaId = randomUUID();
+  const applicationVersionBetaId = randomUUID();
+  const applicationVersionSecondaryAlphaId = randomUUID();
+  const applicationVersionAlphaV2Id = randomUUID();
   const sourceRevisionAlphaId = randomUUID();
   const draftRevisionAlphaId = randomUUID();
   const recordAlphaId = randomUUID();
@@ -274,6 +288,16 @@ export async function verifySchema(
       [applicationAlphaId, tenantAlphaId],
     );
     await client.query(
+      `INSERT INTO applications (id, tenant_id, app_key, name)
+       VALUES ($1, $2, 'verification_beta_app', 'Verification Beta App')`,
+      [applicationBetaId, tenantBetaId],
+    );
+    await client.query(
+      `INSERT INTO applications (id, tenant_id, app_key, name)
+       VALUES ($1, $2, 'verification_secondary_app', 'Verification Secondary App')`,
+      [applicationSecondaryAlphaId, tenantAlphaId],
+    );
+    await client.query(
       `INSERT INTO application_roles (
          id,
          tenant_id,
@@ -325,6 +349,66 @@ export async function verifySchema(
         applicationAlphaId,
         JSON.stringify({ name: 'verification' }),
         'a'.repeat(64),
+        membershipAlphaId,
+      ],
+    );
+    await client.query(
+      `INSERT INTO application_versions (
+        id,
+        tenant_id,
+        application_id,
+        version,
+        schema_version,
+        definition,
+        definition_checksum,
+        created_by_membership_id
+      ) VALUES ($1, $2, $3, 1, '1.0', $4::jsonb, $5, $6)`,
+      [
+        applicationVersionBetaId,
+        tenantBetaId,
+        applicationBetaId,
+        JSON.stringify({ name: 'verification beta' }),
+        'b'.repeat(64),
+        membershipBetaId,
+      ],
+    );
+    await client.query(
+      `INSERT INTO application_versions (
+        id,
+        tenant_id,
+        application_id,
+        version,
+        schema_version,
+        definition,
+        definition_checksum,
+        created_by_membership_id
+      ) VALUES ($1, $2, $3, 1, '1.0', $4::jsonb, $5, $6)`,
+      [
+        applicationVersionSecondaryAlphaId,
+        tenantAlphaId,
+        applicationSecondaryAlphaId,
+        JSON.stringify({ name: 'verification secondary' }),
+        'c'.repeat(64),
+        membershipAlphaId,
+      ],
+    );
+    await client.query(
+      `INSERT INTO application_versions (
+        id,
+        tenant_id,
+        application_id,
+        version,
+        schema_version,
+        definition,
+        definition_checksum,
+        created_by_membership_id
+      ) VALUES ($1, $2, $3, 2, '1.0', $4::jsonb, $5, $6)`,
+      [
+        applicationVersionAlphaV2Id,
+        tenantAlphaId,
+        applicationAlphaId,
+        JSON.stringify({ name: 'verification v2' }),
+        'e'.repeat(64),
         membershipAlphaId,
       ],
     );
@@ -532,6 +616,7 @@ export async function verifySchema(
       name: string;
       sql: string;
       values: unknown[];
+      expectedConstraint?: string;
     }> = [
       {
         name: 'membership cannot receive a role from another tenant',
@@ -719,11 +804,12 @@ export async function verifySchema(
         values: [
           randomUUID(),
           tenantBetaId,
-          applicationAlphaId,
-          applicationVersionAlphaId,
+          applicationBetaId,
+          applicationVersionBetaId,
           recordAlphaId,
           membershipBetaId,
         ],
+        expectedConstraint: 'purchase_requests_business_record_fk',
       },
       {
         name: 'receipt cannot use a purchase request from another tenant',
@@ -739,11 +825,73 @@ export async function verifySchema(
         values: [
           randomUUID(),
           tenantBetaId,
-          applicationAlphaId,
-          applicationVersionAlphaId,
+          applicationBetaId,
+          applicationVersionBetaId,
           purchaseRequestAlphaId,
           membershipBetaId,
         ],
+        expectedConstraint: 'inventory_receipts_request_fk',
+      },
+      {
+        name: 'purchase request cannot mix applications in the same tenant',
+        sql: `INSERT INTO purchase_requests (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                business_record_id,
+                requester_membership_id
+              ) VALUES ($1, $2, $3, $4, $5, $6)`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionSecondaryAlphaId,
+          recordAlphaId,
+          membershipAlphaId,
+        ],
+        expectedConstraint: 'purchase_requests_application_version_fk',
+      },
+      {
+        name: 'purchase request cannot use a record from another app version',
+        sql: `INSERT INTO purchase_requests (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                business_record_id,
+                requester_membership_id
+              ) VALUES ($1, $2, $3, $4, $5, $6)`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaV2Id,
+          recordAlphaId,
+          membershipAlphaId,
+        ],
+        expectedConstraint: 'purchase_requests_business_record_fk',
+      },
+      {
+        name: 'receipt cannot mix applications in the same tenant',
+        sql: `INSERT INTO inventory_receipts (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                purchase_request_id,
+                approved_by_membership_id,
+                received_by_membership_id
+              ) VALUES ($1, $2, $3, $4, $5, $6, $6)`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationSecondaryAlphaId,
+          applicationVersionAlphaId,
+          purchaseRequestAlphaId,
+          membershipAlphaId,
+        ],
+        expectedConstraint: 'inventory_receipts_application_version_fk',
       },
     ];
 
@@ -754,6 +902,7 @@ export async function verifySchema(
         testCase.name,
         testCase.sql,
         testCase.values,
+        testCase.expectedConstraint,
       );
       rejectedCrossTenantCases.push(testCase.name);
     }
