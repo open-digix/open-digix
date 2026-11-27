@@ -20,6 +20,8 @@ const REQUIRED_TABLES = [
   'idempotency_keys',
   'membership_roles',
   'materials',
+  'purchase_request_lines',
+  'purchase_requests',
   'schema_migrations',
   'stored_files',
   'tenant_memberships',

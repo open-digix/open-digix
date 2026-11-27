@@ -9,6 +9,7 @@ describe('database migrations', () => {
       '0004_app_acl_backfill',
       '0005_shared_foundation',
       '0006_erp_materials',
+      '0007_erp_purchase_requests',
     ]);
   });
 
@@ -114,6 +115,20 @@ describe('database migrations', () => {
     );
     expect(migrations[5].sql).toContain(
       'UNIQUE (tenant_id, application_id, sku)',
+    );
+  });
+
+  it('creates purchase requests and positive-quantity material lines', () => {
+    expect(migrations[6].sql).toContain('CREATE TABLE purchase_requests');
+    expect(migrations[6].sql).toContain('CREATE TABLE purchase_request_lines');
+    expect(migrations[6].sql).toContain(
+      'FOREIGN KEY (\n          tenant_id,\n          application_id,\n          application_version_id,\n          business_record_id\n        )',
+    );
+    expect(migrations[6].sql).toContain(
+      'CONSTRAINT purchase_request_lines_quantity_positive',
+    );
+    expect(migrations[6].sql).toContain(
+      'UNIQUE (tenant_id, application_id, purchase_request_id, material_id)',
     );
   });
 });
