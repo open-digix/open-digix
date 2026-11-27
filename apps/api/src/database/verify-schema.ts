@@ -116,6 +116,38 @@ async function expectUniqueViolation(
   throw new Error(`${caseName} unexpectedly allowed a duplicate value`);
 }
 
+async function expectCheckViolation(
+  client: PoolClient,
+  savepointNumber: number,
+  caseName: string,
+  sql: string,
+  values: unknown[],
+): Promise<void> {
+  const savepoint = `verify_check_case_${savepointNumber}`;
+  await client.query(`SAVEPOINT ${savepoint}`);
+
+  try {
+    await client.query(sql, values);
+  } catch (error) {
+    const databaseError = asDatabaseError(error);
+    await client.query(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+    await client.query(`RELEASE SAVEPOINT ${savepoint}`);
+
+    if (databaseError.code !== '23514') {
+      throw new Error(
+        `${caseName} failed with PostgreSQL code ${databaseError.code ?? 'unknown'} instead of check_violation`,
+        { cause: databaseError },
+      );
+    }
+
+    return;
+  }
+
+  await client.query(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+  await client.query(`RELEASE SAVEPOINT ${savepoint}`);
+  throw new Error(`${caseName} unexpectedly allowed an invalid value`);
+}
+
 async function verifyRequiredTables(client: PoolClient): Promise<void> {
   const result = await client.query<{ tablename: string }>(`
     SELECT tablename
@@ -771,6 +803,120 @@ export async function verifySchema(
 
     for (const [index, testCase] of integrityCases.entries()) {
       await expectUniqueViolation(
+        client,
+        index + 1,
+        testCase.name,
+        testCase.sql,
+        testCase.values,
+      );
+      rejectedIntegrityCases.push(testCase.name);
+    }
+
+    const edgeCases = [
+      {
+        name: 'blank material SKU is rejected',
+        sql: `INSERT INTO materials (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                sku,
+                name,
+                unit,
+                created_by_membership_id
+              ) VALUES ($1, $2, $3, $4, '   ', 'Invalid Material', 'piece', $5)`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          membershipAlphaId,
+        ],
+      },
+      {
+        name: 'invalid purchase request status is rejected',
+        sql: `INSERT INTO purchase_requests (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                business_record_id,
+                requester_membership_id,
+                status
+              ) VALUES ($1, $2, $3, $4, $5, $6, 'cancelled')`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          recordAlphaId,
+          membershipAlphaId,
+        ],
+      },
+      {
+        name: 'rejected purchase request requires a reason',
+        sql: `INSERT INTO purchase_requests (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                business_record_id,
+                requester_membership_id,
+                status
+              ) VALUES ($1, $2, $3, $4, $5, $6, 'rejected')`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          recordAlphaId,
+          membershipAlphaId,
+        ],
+      },
+      {
+        name: 'purchase request line quantity zero is rejected',
+        sql: `INSERT INTO purchase_request_lines (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                purchase_request_id,
+                material_id,
+                quantity
+              ) VALUES ($1, $2, $3, $4, $5, $6, 0)`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          purchaseRequestAlphaId,
+          materialAlphaId,
+        ],
+      },
+      {
+        name: 'inventory receipt line quantity zero is rejected',
+        sql: `INSERT INTO inventory_receipt_lines (
+                id,
+                tenant_id,
+                application_id,
+                application_version_id,
+                receipt_id,
+                material_id,
+                quantity
+              ) VALUES ($1, $2, $3, $4, $5, $6, 0)`,
+        values: [
+          randomUUID(),
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          receiptAlphaId,
+          materialAlphaId,
+        ],
+      },
+    ];
+
+    for (const [index, testCase] of edgeCases.entries()) {
+      await expectCheckViolation(
         client,
         index + 1,
         testCase.name,
