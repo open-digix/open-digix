@@ -21,6 +21,7 @@ import { OptimisticVersionModule } from './versioning/optimistic-version.module'
 import { FeatureModuleModule } from './feature-modules/feature-module.module';
 import { WorkflowModule } from './workflow/workflow.module';
 import { MaterialsModule } from './materials/materials.module';
+import { PurchaseRequestsModule } from './purchase-requests/purchase-requests.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { MaterialsModule } from './materials/materials.module';
     FeatureModuleModule,
     WorkflowModule,
     MaterialsModule,
+    PurchaseRequestsModule,
   ],
   controllers: [AppController, HealthController],
   providers: [

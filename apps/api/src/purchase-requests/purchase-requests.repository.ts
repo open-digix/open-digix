@@ -50,6 +50,33 @@ const REQUEST_COLUMNS = `
 export class PurchaseRequestsRepository {
   constructor(@Inject(DATABASE_POOL) private readonly pool: Pool) {}
 
+  async getPublishedFeatureStatus(
+    tenantId: string,
+    applicationId: string,
+  ): Promise<'missing' | 'disabled' | 'enabled'> {
+    const result = await this.pool.query<{ feature_enabled: boolean }>(
+      `
+        SELECT definition @> $3::jsonb AS feature_enabled
+        FROM application_versions
+        WHERE tenant_id = $1
+          AND application_id = $2
+          AND status = 'published'
+        ORDER BY version DESC
+        LIMIT 1
+      `,
+      [
+        tenantId,
+        applicationId,
+        JSON.stringify({
+          features: [{ id: 'erp.purchase_requests', version: 1 }],
+        }),
+      ],
+    );
+    const row = result.rows[0];
+    if (!row) return 'missing';
+    return row.feature_enabled ? 'enabled' : 'disabled';
+  }
+
   async create(input: {
     tenantId: string;
     applicationId: string;

@@ -118,25 +118,20 @@ function parseLines(
       `/lines/${index}`,
     );
     const quantity = record.quantity;
-    if (
-      typeof quantity !== 'number' ||
-      !Number.isSafeInteger(quantity) ||
-      quantity < 1
-    ) {
+    const validQuantity =
+      typeof quantity === 'number' &&
+      Number.isSafeInteger(quantity) &&
+      quantity >= 1;
+    if (!validQuantity) {
       issues.push({
         path: `/lines/${index}/quantity`,
         message: 'quantity must be a positive integer.',
       });
     }
 
-    if (
-      materialId &&
-      !seen.has(materialId) &&
-      Number.isSafeInteger(quantity) &&
-      quantity >= 1
-    ) {
+    if (materialId && !seen.has(materialId) && validQuantity) {
       seen.add(materialId);
-      lines.push({ materialId, quantity: quantity as number });
+      lines.push({ materialId, quantity });
     } else if (materialId && seen.has(materialId)) {
       issues.push({
         path: `/lines/${index}/materialId`,
