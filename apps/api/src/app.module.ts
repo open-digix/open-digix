@@ -11,6 +11,7 @@ import { AppService } from './app.service';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
 import { IdempotencyModule } from './idempotency/idempotency.module';
+import { InventoryModule } from './inventory/inventory.module';
 import { IdentityModule } from './identity/identity.module';
 import { AppPermissionGuard } from './identity/app-permission.guard';
 import { RolesGuard } from './identity/roles.guard';
@@ -20,6 +21,8 @@ import { StorageModule } from './storage/storage.module';
 import { OptimisticVersionModule } from './versioning/optimistic-version.module';
 import { FeatureModuleModule } from './feature-modules/feature-module.module';
 import { WorkflowModule } from './workflow/workflow.module';
+import { MaterialsModule } from './materials/materials.module';
+import { PurchaseRequestsModule } from './purchase-requests/purchase-requests.module';
 
 @Module({
   imports: [
@@ -28,6 +31,7 @@ import { WorkflowModule } from './workflow/workflow.module';
     AuthModule,
     IdentityModule,
     IdempotencyModule,
+    InventoryModule,
     OnboardingModule,
     BuilderModule,
     CatalogModule,
@@ -35,6 +39,8 @@ import { WorkflowModule } from './workflow/workflow.module';
     OptimisticVersionModule,
     FeatureModuleModule,
     WorkflowModule,
+    MaterialsModule,
+    PurchaseRequestsModule,
   ],
   controllers: [AppController, HealthController],
   providers: [

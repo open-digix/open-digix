@@ -14,6 +14,11 @@ export interface GetWorkflowTaskInput {
   taskId: string;
 }
 
+export interface FindWorkflowTaskInput {
+  tenantId: string;
+  processInstanceId: string;
+}
+
 export interface CompleteWorkflowTaskInput extends GetWorkflowTaskInput {
   actorId: string;
   candidateGroups: readonly string[];
@@ -42,6 +47,10 @@ interface FlowableTaskResponse {
   tenantId?: unknown;
   suspended?: unknown;
   createTime?: unknown;
+}
+
+interface FlowableTaskListResponse {
+  data?: unknown;
 }
 
 interface FlowableIdentityLink {
@@ -124,6 +133,57 @@ function validateCompletionInput(input: CompleteWorkflowTaskInput): void {
 @Injectable()
 export class WorkflowTaskService {
   constructor(private readonly client: WorkflowClient) {}
+
+  async findActiveForProcess(
+    input: FindWorkflowTaskInput,
+  ): Promise<WorkflowTask | null> {
+    validateIdentifier(input.tenantId, 'tenantId');
+    validateIdentifier(input.processInstanceId, 'processInstanceId');
+
+    const response = await this.client.request<FlowableTaskListResponse>(
+      '/service/runtime/tasks',
+      {
+        query: new URLSearchParams({
+          processInstanceId: input.processInstanceId,
+          active: 'true',
+        }),
+      },
+    );
+    const data = response.data;
+    if (!Array.isArray(data)) {
+      throw new WorkflowRequestError(
+        'Workflow task list response is not an array',
+        'invalid_response',
+        200,
+        false,
+      );
+    }
+    if (data.length === 0) return null;
+
+    const first = (data as unknown[])[0];
+    if (typeof first !== 'object' || first === null) {
+      throw new WorkflowRequestError(
+        'Workflow task list response contains an invalid item',
+        'invalid_response',
+        200,
+        false,
+      );
+    }
+
+    const task = await this.get({
+      tenantId: input.tenantId,
+      taskId: requiredString(first as Record<string, unknown>, 'id'),
+    });
+    if (task.processInstanceId !== input.processInstanceId) {
+      throw new WorkflowRequestError(
+        'Workflow task does not belong to the requested process instance',
+        'invalid_response',
+        200,
+        false,
+      );
+    }
+    return task;
+  }
 
   async get(input: GetWorkflowTaskInput): Promise<WorkflowTask> {
     validateIdentifier(input.tenantId, 'tenantId');

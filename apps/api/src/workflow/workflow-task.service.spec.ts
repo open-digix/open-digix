@@ -74,6 +74,29 @@ describe('WorkflowTaskService', () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
+  it('finds the active task for a tenant-scoped process instance', async () => {
+    request
+      .mockResolvedValueOnce({ data: [{ id: 'task-44' }] })
+      .mockResolvedValueOnce(flowableTask);
+
+    await expect(
+      service.findActiveForProcess({
+        tenantId: 'tenant-beta',
+        processInstanceId: 'instance-43',
+      }),
+    ).resolves.toMatchObject({
+      id: 'task-44',
+      processInstanceId: 'instance-43',
+      tenantId: 'tenant-beta',
+    });
+    expect(request).toHaveBeenNthCalledWith(1, '/service/runtime/tasks', {
+      query: new URLSearchParams({
+        processInstanceId: 'instance-43',
+        active: 'true',
+      }),
+    });
+  });
+
   it.each([
     { id: 'task-45' },
     { processInstanceId: undefined },
