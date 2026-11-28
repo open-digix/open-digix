@@ -14,7 +14,9 @@ import { CurrentTenantContext } from '../identity/tenant-context.decorator';
 import { parseAppId } from '../identity/app-role.input';
 import {
   parseCreatePurchaseRequestBody,
+  parsePurchaseRequestActionBody,
   parsePurchaseRequestId,
+  parseRejectPurchaseRequestBody,
   requirePurchaseRequestIdempotencyKey,
 } from './purchase-requests.input';
 import { PurchaseRequestsService } from './purchase-requests.service';
@@ -52,6 +54,66 @@ export class PurchaseRequestsController {
       actorMembershipId: context.membership.id,
       idempotencyKey: requirePurchaseRequestIdempotencyKey(idempotencyKey),
       body: parseCreatePurchaseRequestBody(body),
+    });
+  }
+
+  @Post(':purchaseRequestId/actions/submit')
+  @HttpCode(HttpStatus.OK)
+  @RequireAppPermission('erp.purchase_requests.requests.submit')
+  submit(
+    @Param('appId') appId: string,
+    @Param('purchaseRequestId') purchaseRequestId: string,
+    @Headers('idempotency-key') idempotencyKey: string | undefined,
+    @Body() body: unknown,
+    @CurrentTenantContext() context: TenantContext,
+  ) {
+    return this.purchaseRequests.submit({
+      tenantId: context.membership.tenant.id,
+      applicationId: parseAppId(appId),
+      actorMembershipId: context.membership.id,
+      purchaseRequestId: parsePurchaseRequestId(purchaseRequestId),
+      idempotencyKey: requirePurchaseRequestIdempotencyKey(idempotencyKey),
+      ...parsePurchaseRequestActionBody(body),
+    });
+  }
+
+  @Post(':purchaseRequestId/actions/approve')
+  @HttpCode(HttpStatus.OK)
+  @RequireAppPermission('erp.purchase_requests.requests.approve')
+  approve(
+    @Param('appId') appId: string,
+    @Param('purchaseRequestId') purchaseRequestId: string,
+    @Headers('idempotency-key') idempotencyKey: string | undefined,
+    @Body() body: unknown,
+    @CurrentTenantContext() context: TenantContext,
+  ) {
+    return this.purchaseRequests.approve({
+      tenantId: context.membership.tenant.id,
+      applicationId: parseAppId(appId),
+      actorMembershipId: context.membership.id,
+      purchaseRequestId: parsePurchaseRequestId(purchaseRequestId),
+      idempotencyKey: requirePurchaseRequestIdempotencyKey(idempotencyKey),
+      ...parsePurchaseRequestActionBody(body),
+    });
+  }
+
+  @Post(':purchaseRequestId/actions/reject')
+  @HttpCode(HttpStatus.OK)
+  @RequireAppPermission('erp.purchase_requests.requests.reject')
+  reject(
+    @Param('appId') appId: string,
+    @Param('purchaseRequestId') purchaseRequestId: string,
+    @Headers('idempotency-key') idempotencyKey: string | undefined,
+    @Body() body: unknown,
+    @CurrentTenantContext() context: TenantContext,
+  ) {
+    return this.purchaseRequests.reject({
+      tenantId: context.membership.tenant.id,
+      applicationId: parseAppId(appId),
+      actorMembershipId: context.membership.id,
+      purchaseRequestId: parsePurchaseRequestId(purchaseRequestId),
+      idempotencyKey: requirePurchaseRequestIdempotencyKey(idempotencyKey),
+      ...parseRejectPurchaseRequestBody(body),
     });
   }
 }

@@ -1,10 +1,12 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { IdempotencyService } from '../idempotency/idempotency.service';
 import type { IdempotencyScope } from '../idempotency/idempotency.types';
+import { OptimisticVersionService } from '../versioning/optimistic-version.service';
 import { PurchaseRequestsRepository } from './purchase-requests.repository';
 import type {
   CreatePurchaseRequestBody,
@@ -16,6 +18,7 @@ export class PurchaseRequestsService {
   constructor(
     private readonly repository: PurchaseRequestsRepository,
     private readonly idempotency: IdempotencyService,
+    private readonly optimisticVersion: OptimisticVersionService,
   ) {}
 
   async create(input: {
@@ -85,6 +88,128 @@ export class PurchaseRequestsService {
     return request;
   }
 
+  async submit(
+    input: PurchaseRequestActionInput,
+  ): Promise<PurchaseRequestRecord> {
+    return this.transition(input, {
+      action: 'erp.purchase_requests.requests.submit',
+      fromStatus: 'draft',
+      toStatus: 'submitted',
+    });
+  }
+
+  async approve(
+    input: PurchaseRequestActionInput,
+  ): Promise<PurchaseRequestRecord> {
+    return this.transition(input, {
+      action: 'erp.purchase_requests.requests.approve',
+      fromStatus: 'submitted',
+      toStatus: 'approved',
+      requiresDifferentApprover: true,
+    });
+  }
+
+  async reject(
+    input: PurchaseRequestActionInput & { reason: string },
+  ): Promise<PurchaseRequestRecord> {
+    return this.transition(input, {
+      action: 'erp.purchase_requests.requests.reject',
+      fromStatus: 'submitted',
+      toStatus: 'rejected',
+      requiresDifferentApprover: true,
+      rejectionReason: input.reason,
+    });
+  }
+
+  private async transition(
+    input: PurchaseRequestActionInput,
+    config: {
+      action: string;
+      fromStatus: PurchaseRequestRecord['status'];
+      toStatus: PurchaseRequestRecord['status'];
+      requiresDifferentApprover?: boolean;
+      rejectionReason?: string;
+    },
+  ): Promise<PurchaseRequestRecord> {
+    await this.requireFeature(input.tenantId, input.applicationId);
+    const scope = this.scope(input, config.action, input.idempotencyKey);
+    const payload = {
+      applicationId: input.applicationId,
+      purchaseRequestId: input.purchaseRequestId,
+      expectedVersion: input.expectedVersion,
+      ...(config.rejectionReason ? { reason: config.rejectionReason } : {}),
+    };
+    const claim = await this.idempotency.claim(scope, payload);
+    if (claim.kind === 'replay') {
+      return claim.responseBody as PurchaseRequestRecord;
+    }
+
+    try {
+      const current = await this.repository.findById(
+        input.tenantId,
+        input.applicationId,
+        input.purchaseRequestId,
+      );
+      if (!current) {
+        throw new NotFoundException({
+          error: {
+            code: 'PURCHASE_REQUEST_NOT_FOUND',
+            message:
+              'The purchase request was not found in the selected application.',
+          },
+        });
+      }
+      if (current.status !== config.fromStatus) {
+        throw new ConflictException({
+          error: {
+            code: 'INVALID_PURCHASE_REQUEST_STATUS',
+            message: `The request must be ${config.fromStatus} before it can be ${config.toStatus}.`,
+          },
+        });
+      }
+      if (
+        config.requiresDifferentApprover &&
+        current.requesterMembershipId === input.actorMembershipId
+      ) {
+        throw new ForbiddenException({
+          error: {
+            code: 'PURCHASE_REQUEST_SELF_APPROVAL',
+            message:
+              'The requester cannot approve or reject their own request.',
+          },
+        });
+      }
+
+      const updated = await this.optimisticVersion.update({
+        expectedVersion: input.expectedVersion,
+        updateIfVersionMatches: (expectedVersion) =>
+          this.repository.transitionIfVersionMatches({
+            tenantId: input.tenantId,
+            applicationId: input.applicationId,
+            purchaseRequestId: input.purchaseRequestId,
+            expectedVersion,
+            fromStatus: config.fromStatus,
+            toStatus: config.toStatus,
+            approverMembershipId: config.requiresDifferentApprover
+              ? input.actorMembershipId
+              : undefined,
+            rejectionReason: config.rejectionReason,
+          }),
+        getCurrentVersion: () =>
+          this.repository.currentVersion(
+            input.tenantId,
+            input.applicationId,
+            input.purchaseRequestId,
+          ),
+      });
+      await this.idempotency.complete(scope, payload, 200, updated);
+      return updated;
+    } catch (error) {
+      await this.completeFailure(scope, payload, error);
+      throw error;
+    }
+  }
+
   private async requireFeature(
     tenantId: string,
     applicationId: string,
@@ -145,4 +270,13 @@ export class PurchaseRequestsService {
     };
     await this.idempotency.fail(scope, payload, status, response);
   }
+}
+
+interface PurchaseRequestActionInput {
+  readonly tenantId: string;
+  readonly applicationId: string;
+  readonly actorMembershipId: string;
+  readonly purchaseRequestId: string;
+  readonly idempotencyKey: string;
+  readonly expectedVersion: number;
 }

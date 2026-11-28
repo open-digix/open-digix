@@ -193,6 +193,97 @@ export class PurchaseRequestsRepository {
     );
     return toPurchaseRequest(requestRow, linesResult.rows);
   }
+
+  async transitionIfVersionMatches(input: {
+    tenantId: string;
+    applicationId: string;
+    purchaseRequestId: string;
+    expectedVersion: number;
+    fromStatus: PurchaseRequestRecord['status'];
+    toStatus: PurchaseRequestRecord['status'];
+    approverMembershipId?: string;
+    rejectionReason?: string;
+  }): Promise<PurchaseRequestRecord | null> {
+    const client = await this.pool.connect();
+
+    try {
+      await client.query('BEGIN');
+      const result = await client.query<PurchaseRequestRow>(
+        `
+          UPDATE purchase_requests
+          SET status = $4,
+              approver_membership_id = COALESCE($5, approver_membership_id),
+              rejection_reason = $6,
+              lock_version = lock_version + 1,
+              updated_at = now(),
+              submitted_at = CASE
+                WHEN $4 = 'submitted' THEN now()
+                ELSE submitted_at
+              END,
+              decided_at = CASE
+                WHEN $4 IN ('approved', 'rejected') THEN now()
+                ELSE decided_at
+              END
+          WHERE tenant_id = $1
+            AND application_id = $2
+            AND id = $3
+            AND lock_version = $7
+            AND status = $8
+          RETURNING ${REQUEST_COLUMNS}
+        `,
+        [
+          input.tenantId,
+          input.applicationId,
+          input.purchaseRequestId,
+          input.toStatus,
+          input.approverMembershipId ?? null,
+          input.rejectionReason ?? null,
+          input.expectedVersion,
+          input.fromStatus,
+        ],
+      );
+      const row = result.rows[0];
+      if (!row) {
+        await client.query('ROLLBACK');
+        return null;
+      }
+
+      const linesResult = await client.query<PurchaseRequestLineRow>(
+        `
+          SELECT id, material_id, quantity
+          FROM purchase_request_lines
+          WHERE tenant_id = $1
+            AND application_id = $2
+            AND purchase_request_id = $3
+          ORDER BY id
+        `,
+        [input.tenantId, input.applicationId, input.purchaseRequestId],
+      );
+      await client.query('COMMIT');
+      return toPurchaseRequest(row, linesResult.rows);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async currentVersion(
+    tenantId: string,
+    applicationId: string,
+    purchaseRequestId: string,
+  ): Promise<number | null> {
+    const result = await this.pool.query<{ lock_version: number }>(
+      `
+        SELECT lock_version
+        FROM purchase_requests
+        WHERE tenant_id = $1 AND application_id = $2 AND id = $3
+      `,
+      [tenantId, applicationId, purchaseRequestId],
+    );
+    return result.rows[0]?.lock_version ?? null;
+  }
 }
 
 function toPurchaseRequest(

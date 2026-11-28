@@ -1,4 +1,8 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import type { IdempotencyService } from '../idempotency/idempotency.service';
 import { PurchaseRequestsRepository } from './purchase-requests.repository';
 import { PurchaseRequestsService } from './purchase-requests.service';
@@ -28,11 +32,16 @@ describe('PurchaseRequestsService', () => {
     getPublishedFeatureStatus: jest.Mock;
     create: jest.Mock;
     findById: jest.Mock;
+    transitionIfVersionMatches: jest.Mock;
+    currentVersion: jest.Mock;
   };
   let idempotency: {
     claim: jest.Mock;
     complete: jest.Mock;
     fail: jest.Mock;
+  };
+  let optimisticVersion: {
+    update: jest.Mock;
   };
 
   beforeEach(() => {
@@ -40,6 +49,12 @@ describe('PurchaseRequestsService', () => {
       getPublishedFeatureStatus: jest.fn().mockResolvedValue('enabled'),
       create: jest.fn().mockResolvedValue(request),
       findById: jest.fn().mockResolvedValue(request),
+      transitionIfVersionMatches: jest.fn().mockResolvedValue({
+        ...request,
+        status: 'submitted',
+        lockVersion: 2,
+      }),
+      currentVersion: jest.fn().mockResolvedValue(request.lockVersion),
     };
     idempotency = {
       claim: jest
@@ -48,9 +63,20 @@ describe('PurchaseRequestsService', () => {
       complete: jest.fn().mockResolvedValue(undefined),
       fail: jest.fn().mockResolvedValue(undefined),
     };
+    optimisticVersion = {
+      update: jest.fn(
+        (command: {
+          expectedVersion: number;
+          updateIfVersionMatches: (
+            expectedVersion: number,
+          ) => Promise<PurchaseRequestRecord | null>;
+        }) => command.updateIfVersionMatches(command.expectedVersion),
+      ),
+    };
     service = new PurchaseRequestsService(
       repository as unknown as PurchaseRequestsRepository,
       idempotency as unknown as IdempotencyService,
+      optimisticVersion,
     );
   });
 
@@ -117,5 +143,45 @@ describe('PurchaseRequestsService', () => {
       }),
     ).rejects.toBeInstanceOf(ConflictException);
     expect(repository.findById).not.toHaveBeenCalled();
+  });
+
+  it('submits a draft with optimistic version checking', async () => {
+    const response = await service.submit({
+      tenantId: request.tenantId,
+      applicationId: request.applicationId,
+      actorMembershipId: request.requesterMembershipId,
+      purchaseRequestId: request.id,
+      idempotencyKey: 'submit-1',
+      expectedVersion: 1,
+    });
+
+    expect(response.status).toBe('submitted');
+    expect(optimisticVersion.update).toHaveBeenCalledWith(
+      expect.objectContaining({ expectedVersion: 1 }),
+    );
+    expect(repository.transitionIfVersionMatches).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fromStatus: 'draft',
+        toStatus: 'submitted',
+        expectedVersion: 1,
+      }),
+    );
+  });
+
+  it('blocks the requester from approving their own request', async () => {
+    const submitted = { ...request, status: 'submitted' as const };
+    repository.findById.mockResolvedValueOnce(submitted);
+
+    await expect(
+      service.approve({
+        tenantId: request.tenantId,
+        applicationId: request.applicationId,
+        actorMembershipId: request.requesterMembershipId,
+        purchaseRequestId: request.id,
+        idempotencyKey: 'approve-1',
+        expectedVersion: 1,
+      }),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(optimisticVersion.update).not.toHaveBeenCalled();
   });
 });
