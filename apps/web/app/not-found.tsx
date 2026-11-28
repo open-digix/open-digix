@@ -1,9 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
+import EnforceLightMode from "@/components/common/EnforceLightMode";
 
 export default function NotFound() {
   return (
     <div
+      data-theme="light"
       style={{
         minHeight: "100vh",
         display: "flex",
@@ -16,6 +18,7 @@ export default function NotFound() {
         color: "var(--ws-text)",
       }}
     >
+      <EnforceLightMode />
       <div
         style={{
           width: "min(480px, 100%)",

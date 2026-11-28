@@ -18,6 +18,8 @@ import "./workspace.css";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { cookies } from "next/headers";
+import { parseTheme } from "../../lib/theme";
 import {
   getServerSessionToken,
   getMeCached,
@@ -240,12 +242,17 @@ export async function WorkspaceLayoutContent({
     needsTenantSelection,
   } = context;
 
+  const cookieStore = await cookies();
+  const themeCookie = cookieStore.get("digix_theme")?.value;
+  const initialTheme = parseTheme(themeCookie);
+
   return (
     <AppShell
       user={me.user}
       activeMemberships={activeMemberships}
       currentTenantId={currentTenant?.id ?? null}
       roles={roles}
+      initialTheme={initialTheme}
     >
       {needsTenantSelection ? (
         <div className="page">

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import EnforceLightMode from "@/components/common/EnforceLightMode";
 
 const navigation = [
   { label: "Trang chủ", href: "#home" },
@@ -69,7 +70,8 @@ export default function LandingExperience({ initialAuth }: { initialAuth?: AuthM
   }, [authMode, initialAuth, router]);
 
   return (
-    <div className="landing-page">
+    <div className="landing-page" data-theme="light">
+      <EnforceLightMode />
       <main>
         <section className="landing-hero" id="home" aria-labelledby="landing-headline">
           <div className="landing-background" aria-hidden="true">
@@ -127,7 +129,7 @@ export default function LandingExperience({ initialAuth }: { initialAuth?: AuthM
                   </a>
                 ))}
                 <button className="landing-mobile-signin" type="button" onClick={() => openAuth("login")}>
-                  Đăng nhập ↗
+                  Đăng nhập
                 </button>
               </nav>
             </>
@@ -155,10 +157,17 @@ export default function LandingExperience({ initialAuth }: { initialAuth?: AuthM
         <div className="landing-auth-backdrop">
           <button className="landing-auth-dismiss" type="button" aria-label="Đóng hộp thoại" onClick={closeAuth} />
           <section className="landing-auth-dialog" role="dialog" aria-modal="true" aria-labelledby="landing-auth-heading">
-            <button className="landing-auth-close" type="button" ref={authCloseRef} aria-label="Đóng" onClick={closeAuth}>×</button>
-            <div className="landing-auth-tabs" role="group" aria-label="Tài khoản DigiX">
-              <button type="button" className={authMode === "login" ? "active" : ""} onClick={() => setAuthMode("login")}>Đăng nhập</button>
-              <button type="button" className={authMode === "register" ? "active" : ""} onClick={() => { setAuthMode(null); router.push("/register"); }}>Đăng ký</button>
+            <div className="landing-auth-header">
+              <div className="landing-auth-tabs" role="group" aria-label="Tài khoản DigiX">
+                <button type="button" className={authMode === "login" ? "active" : ""} onClick={() => setAuthMode("login")}>Đăng nhập</button>
+                <button type="button" className={authMode === "register" ? "active" : ""} onClick={() => { setAuthMode(null); router.push("/register"); }}>Đăng ký</button>
+              </div>
+              <button className="landing-auth-close" type="button" ref={authCloseRef} aria-label="Đóng" onClick={closeAuth}>
+                <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
             </div>
             <p className="landing-auth-label">{authMode === "login" ? "CHÀO MỪNG TRỞ LẠI" : "BẮT ĐẦU CÙNG DIGIX"}</p>
             <h2 id="landing-auth-heading">{authMode === "login" ? "Đăng nhập tài khoản" : "Đăng ký tài khoản"}</h2>
@@ -166,14 +175,14 @@ export default function LandingExperience({ initialAuth }: { initialAuth?: AuthM
               <>
                 <p>Bạn sẽ được chuyển đến trang đăng nhập an toàn của DigiX.</p>
                 <button className="landing-auth-primary" type="button" onClick={() => void signIn("keycloak", { callbackUrl: "/dashboard" })}>
-                  Tiếp tục đăng nhập <span aria-hidden="true">→</span>
+                  Tiếp tục đăng nhập
                 </button>
               </>
             ) : (
               <>
                 <p>Tính năng tự đăng ký chưa được bật. Vui lòng liên hệ quản trị viên để được cấp tài khoản và quyền truy cập doanh nghiệp.</p>
                 <button className="landing-auth-primary" type="button" onClick={() => setAuthMode("login")}>
-                  Đã có tài khoản? Đăng nhập <span aria-hidden="true">→</span>
+                  Đã có tài khoản? Đăng nhập
                 </button>
               </>
             )}

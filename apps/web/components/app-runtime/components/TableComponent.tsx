@@ -42,6 +42,7 @@ export default function TableComponent({
     stock: "Tồn kho vật tư",
     customers: "Danh sách khách hàng",
     opportunities: "Danh sách cơ hội bán hàng",
+    deals: "Danh sách cơ hội bán hàng",
   };
   const displayTitle = label || RESOURCE_TITLES[resource] || `Danh sách ${resource}`;
 
@@ -202,8 +203,8 @@ export default function TableComponent({
   });
 
   // Xác định các cột hiển thị: loại bỏ id nếu đã có code để tránh trùng cột Mã
-  const hasCode = items.some((item) => "code" in item);
   const rawKeys = items.length > 0 ? Object.keys(items[0]) : [];
+  const hasCode = rawKeys.includes("code");
   const columns = rawKeys
     .filter((k) => {
       if (k === "createdAt" || k === "updatedAt") return false;

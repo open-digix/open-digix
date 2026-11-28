@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import BackButton from "./BackButton";
+import EnforceLightMode from "@/components/common/EnforceLightMode";
 import "../register/register.css";
 
 export const metadata: Metadata = {
@@ -11,7 +11,8 @@ export const metadata: Metadata = {
 
 export default function DieuKhoanPage() {
   return (
-    <div className="register-page">
+    <div className="register-page" data-theme="light">
+      <EnforceLightMode />
       <aside className="side">
         <div className="brandrow">
           <Image
@@ -158,19 +159,7 @@ export default function DieuKhoanPage() {
                 </p>
               </div>
             </article>
-
-            <p className="foot" style={{ marginTop: "32px", textAlign: "left" }}>
-              <BackButton fallbackHref="/" className="link">
-                ← Quay lại
-              </BackButton>
-            </p>
           </div>
-
-          <p className="foot mobile-back">
-            <Link href="/" className="link">
-              ← Về trang giới thiệu DigiX
-            </Link>
-          </p>
         </section>
       </main>
     </div>

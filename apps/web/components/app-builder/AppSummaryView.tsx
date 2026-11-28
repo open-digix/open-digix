@@ -280,11 +280,11 @@ export default function AppSummaryView({
       )}
 
       {/* Header */}
-      <header className="page-header" style={{ marginBottom: 24 }}>
+      <header className="page-header" style={{ marginBottom: 24, padding: "0 24px" }}>
         <div>
           <div className="eyebrow" style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <span>QUẢN TRỊ BẢN NHÁP v2.5</span>
-            <span className="badge" style={{ fontSize: 11, background: "var(--ws-soft)", color: "var(--ws-teal)" }}>
+            <span className="badge" style={{ fontSize: 11, background: "var(--ws-bg-soft)", color: "var(--ws-accent)", border: "1px solid var(--ws-border)" }}>
               Khóa: v{lockVersion}
             </span>
           </div>
@@ -293,20 +293,138 @@ export default function AppSummaryView({
             Lối vào khởi tạo: <strong>{startingPointLabel}</strong> · Phiên bản: <strong>v{draft.version}</strong>
           </p>
         </div>
-        <div className="page-header-actions" style={{ display: "flex", gap: 10 }}>
+        <div className="page-header-actions" style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <Link href="/builder" className="button secondary">
             ← Danh sách ứng dụng
           </Link>
           <button
             type="button"
-            className="button primary"
+            className="button secondary"
             onClick={handleValidate}
             disabled={isValidating}
           >
             {isValidating ? "Đang kiểm tra..." : "Kiểm tra bản nháp"}
           </button>
+          <span
+            data-tooltip="Chờ API xuất bản (B10)"
+            tabIndex={0}
+            role="note"
+            aria-label="Chờ API xuất bản (B10)"
+            style={{ display: "inline-flex" }}
+          >
+            <button
+              type="button"
+              className="button primary"
+              disabled
+              title="Chờ API xuất bản (B10)"
+              aria-disabled="true"
+              style={{ cursor: "not-allowed" }}
+            >
+              Xuất bản
+            </button>
+          </span>
         </div>
       </header>
+
+      {/* Thanh tiến trình bản nháp v2.5 */}
+      <div className="draft-progress-stepper" aria-label="Tiến trình hoàn thiện bản nháp">
+        {/* Bước 1: Chọn chức năng */}
+        <div
+          className={`draft-progress-step ${validationResults?.valid ? "step-completed" : ""}`}
+        >
+          <div className="draft-step-icon" aria-hidden="true">
+            {validationResults?.valid ? (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1" />
+                <rect x="14" y="3" width="7" height="7" rx="1" />
+                <rect x="14" y="14" width="7" height="7" rx="1" />
+                <rect x="3" y="14" width="7" height="7" rx="1" />
+              </svg>
+            )}
+          </div>
+          <div className="draft-step-content">
+            <div className="draft-step-header">
+              <h4 className="draft-step-title">1. Chọn chức năng</h4>
+              <span
+                className="draft-step-badge"
+                style={{
+                  background: validationResults?.valid ? "var(--ws-bg-soft)" : "var(--ws-bg-surface-2)",
+                  color: validationResults?.valid ? "var(--ws-success)" : "var(--ws-text-muted)",
+                  border: "1px solid var(--ws-border)",
+                }}
+              >
+                {validationResults?.valid ? "Đã hợp lệ" : "Đang soạn thảo"}
+              </span>
+            </div>
+            <p className="draft-step-note">
+              {validationResults?.valid
+                ? "Đã kiểm tra hợp lệ cấu hình chức năng nghiệp vụ."
+                : `Đã chọn ${selectedIds.length} chức năng nghiệp vụ.`}
+            </p>
+          </div>
+        </div>
+
+        {/* Bước 2: Thiết kế trang */}
+        <div className="draft-progress-step step-locked">
+          <div className="draft-step-icon" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2" />
+              <path d="M3 9h18" />
+              <path d="M9 21V9" />
+            </svg>
+          </div>
+          <div className="draft-step-content">
+            <div className="draft-step-header">
+              <h4 className="draft-step-title">2. Thiết kế trang</h4>
+              <span
+                className="draft-step-badge"
+                style={{
+                  background: "var(--ws-bg-warning-soft)",
+                  color: "var(--ws-warning)",
+                  border: "1px solid var(--ws-border-warning-soft)",
+                }}
+              >
+                Đang phát triển
+              </span>
+            </div>
+            <p className="draft-step-note">
+              Trình thiết kế trang sẽ có khi API bản nháp (B09) sẵn sàng.
+            </p>
+          </div>
+        </div>
+
+        {/* Bước 3: Xuất bản */}
+        <div className="draft-progress-step step-locked">
+          <div className="draft-step-icon" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+          <div className="draft-step-content">
+            <div className="draft-step-header">
+              <h4 className="draft-step-title">3. Xuất bản</h4>
+              <span
+                className="draft-step-badge"
+                style={{
+                  background: "var(--ws-bg-surface-2)",
+                  color: "var(--ws-text-muted)",
+                  border: "1px solid var(--ws-border)",
+                }}
+              >
+                Bị khóa
+              </span>
+            </div>
+            <p className="draft-step-note">
+              Chờ API xuất bản (B10)
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Cảnh báo nháp rỗng */}
       {selectedIds.length === 0 && (
@@ -362,7 +480,7 @@ export default function AppSummaryView({
             )}
             <h3 style={{ margin: 0, fontSize: 16 }}>
               {validationResults.valid
-                ? "Chức năng hợp lệ. Cần thiết kế trang giao diện trước khi xuất bản."
+                ? "Chức năng hợp lệ. Bước tiếp theo là thiết kế trang – tính năng đang phát triển, chưa xuất bản được."
                 : "Phát hiện vấn đề cần giải quyết"}
             </h3>
           </div>
@@ -412,9 +530,10 @@ export default function AppSummaryView({
                   key={featId}
                   style={{
                     padding: 16,
-                    border: "1px solid var(--ws-line)",
-                    borderRadius: 6,
-                    background: "var(--ws-surface)",
+                    border: "1px solid var(--ws-border)",
+                    borderRadius: 8,
+                    background: "var(--ws-bg-surface-2)",
+                    color: "var(--ws-text)",
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
@@ -459,7 +578,7 @@ export default function AppSummaryView({
       </section>
 
       {/* Thông tin kỹ thuật (được thu gọn để ưu tiên thông tin nghiệp vụ) */}
-      <details className="panel" style={{ padding: 16, borderRadius: 8, background: "var(--ws-surface)" }}>
+      <details className="panel" style={{ padding: 16, borderRadius: 8, background: "var(--ws-bg-surface)", border: "1px solid var(--ws-border)", color: "var(--ws-text)" }}>
         <summary style={{ fontSize: 13, fontWeight: 600, color: "var(--ws-muted)", cursor: "pointer" }}>
           Thông tin kỹ thuật (Mã ID, Schema, Khóa)
         </summary>
@@ -524,9 +643,10 @@ export default function AppSummaryView({
                     alignItems: "flex-start",
                     gap: 12,
                     padding: 12,
-                    border: "1px solid var(--ws-line)",
-                    borderRadius: 6,
-                    background: isSelected ? "var(--ws-soft)" : "var(--ws-surface)",
+                    border: "1px solid var(--ws-border)",
+                    borderRadius: 8,
+                    background: isSelected ? "var(--ws-bg-soft)" : "var(--ws-bg-surface)",
+                    color: "var(--ws-text)",
                     cursor: isSupported ? "pointer" : "not-allowed",
                     opacity: isSupported ? 1 : 0.6,
                   }}

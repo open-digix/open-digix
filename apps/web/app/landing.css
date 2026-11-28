@@ -311,21 +311,50 @@
   box-shadow: 0 25px 90px #00182766;
 }
 
+.landing-auth-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.landing-auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  flex: 1;
+  padding: 4px;
+  border-radius: 11px;
+  background: #edf3f5;
+}
+
 .landing-auth-close {
-  position: absolute;
-  top: 15px;
-  right: 17px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
   width: 36px;
   height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
   border: 0;
   border-radius: 50%;
   background: #edf3f5;
   color: var(--landing-navy);
-  font-size: 25px;
-  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
 }
 
-.landing-auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 2px 42px 30px 0; padding: 4px; border-radius: 11px; background: #edf3f5; }
+.landing-auth-close:hover {
+  background: #dfe8ec;
+  color: #0b1e30;
+}
+
+.landing-auth-close:focus-visible {
+  outline: 2px solid var(--landing-teal);
+  outline-offset: 2px;
+}
 .landing-auth-tabs button { min-height: 39px; border: 0; border-radius: 8px; background: transparent; color: #607482; font-size: 13px; font-weight: 600; }
 .landing-auth-tabs button.active { background: #fff; color: var(--landing-navy); box-shadow: 0 2px 8px #112b451a; }
 .landing-auth-label { margin: 0 0 10px; color: var(--landing-teal); font-size: 11px; font-weight: 700; letter-spacing: 0.18em; }

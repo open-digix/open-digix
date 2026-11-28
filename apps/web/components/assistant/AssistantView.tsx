@@ -940,14 +940,14 @@ export default function AssistantView({
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20 }}>
           <button
             type="button"
-            className="assistant-btn-secondary"
+            className="button secondary"
             onClick={() => setIsSwitchConfirmOpen(false)}
           >
             Giữ lại
           </button>
           <button
             type="button"
-            className="assistant-btn-primary"
+            className="button primary"
             onClick={() => {
               if (pendingSwitchAppId) {
                 executeAppSwitch(pendingSwitchAppId);

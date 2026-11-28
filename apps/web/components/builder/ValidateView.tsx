@@ -175,10 +175,10 @@ export default function ValidateView({
                 }}
               >
                 <div>
-                  <b>Chạy thử và Xuất bản: chờ API (M3)</b>
+                  <b>Chạy thử và Xuất bản: chờ API xuất bản (B10)</b>
                   <p style={{ margin: "4px 0 0" }}>
-                    Quy trình đã sẵn sàng để tích hợp vào các bước chạy thử hồ sơ thật
-                    và xuất bản sang không gian làm việc của nhân viên khi backend hoàn tất M3.
+                    Quy trình đã sẵn sàng. Bước tiếp theo là thiết kế trang – tính năng đang phát triển.
+                    Xuất bản sang không gian làm việc sẽ có khi API xuất bản (B10) sẵn sàng.
                   </p>
                 </div>
               </div>

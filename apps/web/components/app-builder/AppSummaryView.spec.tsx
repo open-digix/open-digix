@@ -162,7 +162,7 @@ describe("AppSummaryView Component (v2.5 draft summary)", () => {
     });
 
     expect(
-      screen.getByText(/Chức năng hợp lệ. Cần thiết kế trang giao diện trước khi xuất bản./i),
+      screen.getByText(/Chức năng hợp lệ. Bước tiếp theo là thiết kế trang – tính năng đang phát triển, chưa xuất bản được./i),
     ).toBeInTheDocument();
   });
 
