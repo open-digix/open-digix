@@ -6,6 +6,7 @@ import {
 import type { IdempotencyService } from '../idempotency/idempotency.service';
 import { PurchaseRequestsRepository } from './purchase-requests.repository';
 import { PurchaseRequestsService } from './purchase-requests.service';
+import type { PurchaseRequestWorkflowService } from './purchase-request-workflow.service';
 import type { PurchaseRequestRecord } from './purchase-requests.types';
 
 const request: PurchaseRequestRecord = {
@@ -43,6 +44,9 @@ describe('PurchaseRequestsService', () => {
   let optimisticVersion: {
     update: jest.Mock;
   };
+  let workflow: {
+    startIfConfigured: jest.Mock;
+  };
 
   beforeEach(() => {
     repository = {
@@ -73,10 +77,14 @@ describe('PurchaseRequestsService', () => {
         }) => command.updateIfVersionMatches(command.expectedVersion),
       ),
     };
+    workflow = {
+      startIfConfigured: jest.fn().mockResolvedValue(null),
+    };
     service = new PurchaseRequestsService(
       repository as unknown as PurchaseRequestsRepository,
       idempotency as unknown as IdempotencyService,
       optimisticVersion,
+      workflow as unknown as PurchaseRequestWorkflowService,
     );
   });
 
@@ -164,6 +172,12 @@ describe('PurchaseRequestsService', () => {
         fromStatus: 'draft',
         toStatus: 'submitted',
         expectedVersion: 1,
+      }),
+    );
+    expect(workflow.startIfConfigured).toHaveBeenCalledWith(
+      expect.objectContaining({
+        purchaseRequestId: request.id,
+        businessRecordId: request.businessRecordId,
       }),
     );
   });

@@ -8,6 +8,7 @@ import { IdempotencyService } from '../idempotency/idempotency.service';
 import type { IdempotencyScope } from '../idempotency/idempotency.types';
 import { OptimisticVersionService } from '../versioning/optimistic-version.service';
 import { PurchaseRequestsRepository } from './purchase-requests.repository';
+import { PurchaseRequestWorkflowService } from './purchase-request-workflow.service';
 import type {
   CreatePurchaseRequestBody,
   PurchaseRequestRecord,
@@ -19,6 +20,7 @@ export class PurchaseRequestsService {
     private readonly repository: PurchaseRequestsRepository,
     private readonly idempotency: IdempotencyService,
     private readonly optimisticVersion: OptimisticVersionService,
+    private readonly workflow: PurchaseRequestWorkflowService,
   ) {}
 
   async create(input: {
@@ -202,6 +204,16 @@ export class PurchaseRequestsService {
             input.purchaseRequestId,
           ),
       });
+      if (config.toStatus === 'submitted') {
+        await this.workflow.startIfConfigured({
+          tenantId: input.tenantId,
+          applicationId: input.applicationId,
+          applicationVersionId: updated.applicationVersionId,
+          purchaseRequestId: updated.id,
+          businessRecordId: updated.businessRecordId,
+          requesterMembershipId: updated.requesterMembershipId,
+        });
+      }
       await this.idempotency.complete(scope, payload, 200, updated);
       return updated;
     } catch (error) {
