@@ -17,7 +17,7 @@
   --success: var(--ws-success, #176b4d);
   --ease: var(--ws-ease, cubic-bezier(0.22, 1, 0.36, 1));
   --register-hero-gradient: linear-gradient(160deg, #112b45 0%, #0e3a4a 60%, #0b5a58 100%);
-  --register-hero-mobile-gradient: var(--register-hero-mobile-gradient);
+  --register-hero-mobile-gradient: linear-gradient(180deg, #0b1e30 0%, #0d2942 55%, #082133 100%);
 
   font-family: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
   color: var(--ink);
@@ -46,7 +46,7 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 44px 48px;
-  color: var(--soft);
+  color: #ffffff;
   background: var(--register-hero-gradient);
 }
 
@@ -75,12 +75,13 @@
   line-height: 1.15;
   letter-spacing: -0.03em;
   font-weight: 600;
+  color: #ffffff;
 }
 
 .register-page .side p {
   margin: 0;
   max-width: 430px;
-  color: rgba(237, 243, 245, 0.78);
+  color: rgba(237, 243, 245, 0.88);
   font-size: 15px;
   line-height: 1.65;
 }

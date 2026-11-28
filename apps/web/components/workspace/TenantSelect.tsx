@@ -50,7 +50,7 @@ export default function TenantSelect({
     return (
       <div className="tenant-select" title={`Doanh nghiệp: ${tenantName}`}>
         <span className="tenant-label">Doanh nghiệp:</span>
-        <strong className="tenant-name" style={{ color: "var(--ws-ink)" }}>
+        <strong className="tenant-name">
           {tenantName}
         </strong>
       </div>

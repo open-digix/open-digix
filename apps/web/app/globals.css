@@ -25,7 +25,8 @@ body {
 }
 
 /* UI-04 Theme: Light */
-:root[data-theme="light"] {
+:root[data-theme="light"],
+[data-theme="light"] {
   color-scheme: light;
   --ws-bg-canvas: #f6f8fa;
   --ws-bg-surface: #ffffff;
@@ -72,6 +73,28 @@ body {
   --ws-toast-shadow: rgba(9, 39, 53, 0.23);
   --ws-tooltip-bg: #0b1e30;
   --ws-modal-backdrop: rgba(11, 36, 52, 0.68);
+  --ws-focus-ring: 0 0 0 2px var(--ws-focus);
+  --ws-modal-shadow: 0 20px 40px rgba(17, 43, 69, 0.2);
+  --ws-sidebar-scrim: rgba(11, 30, 48, 0.5);
+  --ws-sidebar-shadow: rgba(17, 43, 69, 0.12);
+  --ws-sidebar-open-shadow: rgba(17, 43, 69, 0.25);
+  --ws-intro-bg: var(--ws-bg-soft);
+  --ws-intro-pill-border: var(--ws-border);
+  --ws-theme-accent: var(--ws-accent);
+
+  --ws-line: var(--ws-border);
+  --ws-surface: var(--ws-bg-surface);
+  --ws-muted: var(--ws-text-muted);
+  --ws-ink: var(--ws-text);
+  --ws-soft: var(--ws-bg-soft);
+  --ws-canvas: var(--ws-bg-canvas);
+  --ws-white: var(--ws-text-on-accent, #ffffff);
+  --ws-teal: var(--ws-accent);
+  --ws-teal-bright: var(--ws-focus);
+  --ws-navy: var(--ws-sidebar-bg);
+  --ws-navy-2: var(--ws-hero-band-bg, #183c55);
+  --ws-sb-w: 242px;
+  --ws-sb-mini: 76px;
 
   --ws-glass-bg: rgba(255, 255, 255, 0.85);
   --ws-glass-bg-strong: rgba(255, 255, 255, 0.94);
@@ -83,7 +106,8 @@ body {
 }
 
 /* UI-04 Theme: Dark */
-:root[data-theme="dark"] {
+:root[data-theme="dark"],
+[data-theme="dark"] {
   color-scheme: dark;
   --ws-bg-canvas: #0b1620;
   --ws-bg-surface: #111f2b;
@@ -130,6 +154,32 @@ body {
   --ws-toast-shadow: rgba(0, 0, 0, 0.4);
   --ws-tooltip-bg: #07111a;
   --ws-modal-backdrop: rgba(0, 0, 0, 0.7);
+  --ws-focus-ring: 0 0 0 2px var(--ws-focus);
+  --ws-modal-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  --ws-sidebar-scrim: rgba(11, 30, 48, 0.7);
+  --ws-sidebar-shadow: rgba(17, 43, 69, 0.45);
+  --ws-sidebar-open-shadow: rgba(17, 43, 69, 0.6);
+  --ws-intro-bg: var(--ws-bg-soft);
+  --ws-intro-pill-border: var(--ws-border);
+  --ws-theme-accent: var(--ws-accent);
+
+  --ws-line: var(--ws-border);
+  --ws-surface: var(--ws-bg-surface);
+  --ws-muted: var(--ws-text-muted);
+  --ws-ink: var(--ws-text);
+  --ws-soft: var(--ws-bg-soft);
+  --ws-canvas: var(--ws-bg-canvas);
+  --ws-white: var(--ws-text);
+  --ws-teal: var(--ws-accent);
+  --ws-teal-bright: var(--ws-focus);
+  --ws-navy: var(--ws-sidebar-bg);
+  --ws-navy-2: var(--ws-hero-band-bg);
+  --ws-dur-fast: 150ms;
+  --ws-dur-base: 200ms;
+  --ws-dur-slow: 280ms;
+  --ws-ease: cubic-bezier(.22, 1, .36, 1);
+  --ws-sb-w: 242px;
+  --ws-sb-mini: 76px;
 
   --ws-glass-bg: rgba(17, 31, 43, 0.85);
   --ws-glass-bg-strong: rgba(17, 31, 43, 0.94);
@@ -189,6 +239,28 @@ body {
   --ws-toast-shadow: rgba(9, 39, 53, 0.23);
   --ws-tooltip-bg: #0b1e30;
   --ws-modal-backdrop: rgba(11, 36, 52, 0.68);
+  --ws-focus-ring: 0 0 0 2px var(--ws-focus);
+  --ws-modal-shadow: 0 20px 40px rgba(17, 43, 69, 0.2);
+  --ws-sidebar-scrim: rgba(11, 30, 48, 0.5);
+  --ws-sidebar-shadow: rgba(17, 43, 69, 0.12);
+  --ws-sidebar-open-shadow: rgba(17, 43, 69, 0.25);
+  --ws-intro-bg: var(--ws-bg-soft);
+  --ws-intro-pill-border: var(--ws-border);
+  --ws-theme-accent: var(--ws-accent);
+
+  --ws-line: var(--ws-border);
+  --ws-surface: var(--ws-bg-surface);
+  --ws-muted: var(--ws-text-muted);
+  --ws-ink: var(--ws-text);
+  --ws-soft: var(--ws-bg-soft);
+  --ws-canvas: var(--ws-bg-canvas);
+  --ws-white: var(--ws-text-on-accent, #ffffff);
+  --ws-teal: var(--ws-accent);
+  --ws-teal-bright: var(--ws-focus);
+  --ws-navy: var(--ws-sidebar-bg);
+  --ws-navy-2: var(--ws-hero-band-bg, #183c55);
+  --ws-sb-w: 242px;
+  --ws-sb-mini: 76px;
 
   --ws-glass-bg: rgba(255, 255, 255, 0.85);
   --ws-glass-bg-strong: rgba(255, 255, 255, 0.94);
@@ -248,6 +320,32 @@ body {
   --ws-toast-shadow: rgba(0, 0, 0, 0.4);
   --ws-tooltip-bg: #07111a;
   --ws-modal-backdrop: rgba(0, 0, 0, 0.7);
+  --ws-focus-ring: 0 0 0 2px var(--ws-focus);
+  --ws-modal-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  --ws-sidebar-scrim: rgba(11, 30, 48, 0.7);
+  --ws-sidebar-shadow: rgba(17, 43, 69, 0.45);
+  --ws-sidebar-open-shadow: rgba(17, 43, 69, 0.6);
+  --ws-intro-bg: var(--ws-bg-soft);
+  --ws-intro-pill-border: var(--ws-border);
+  --ws-theme-accent: var(--ws-accent);
+
+  --ws-line: var(--ws-border);
+  --ws-surface: var(--ws-bg-surface);
+  --ws-muted: var(--ws-text-muted);
+  --ws-ink: var(--ws-text);
+  --ws-soft: var(--ws-bg-soft);
+  --ws-canvas: var(--ws-bg-canvas);
+  --ws-white: var(--ws-text);
+  --ws-teal: var(--ws-accent);
+  --ws-teal-bright: var(--ws-focus);
+  --ws-navy: var(--ws-sidebar-bg);
+  --ws-navy-2: var(--ws-hero-band-bg);
+  --ws-dur-fast: 150ms;
+  --ws-dur-base: 200ms;
+  --ws-dur-slow: 280ms;
+  --ws-ease: cubic-bezier(.22, 1, .36, 1);
+  --ws-sb-w: 242px;
+  --ws-sb-mini: 76px;
 
     --ws-glass-bg: rgba(17, 31, 43, 0.85);
     --ws-glass-bg-strong: rgba(17, 31, 43, 0.94);

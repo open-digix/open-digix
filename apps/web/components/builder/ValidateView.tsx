@@ -142,11 +142,27 @@ export default function ValidateView({
                 className="flow-validation valid"
                 style={{ marginBottom: 20 }}
               >
-                <div>
-                  <strong>✓ Bản nháp hợp lệ</strong>
-                  <p style={{ margin: "4px 0 0", fontSize: 11 }}>
-                    Tất cả các ràng buộc mô hình v1 đã được kiểm tra thành công.
-                  </p>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    style={{ color: "var(--ws-success)", flexShrink: 0 }}
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <div>
+                    <strong>Bản nháp hợp lệ</strong>
+                    <p style={{ margin: "4px 0 0", fontSize: 11 }}>
+                      Tất cả các ràng buộc mô hình v1 đã được kiểm tra thành công.
+                    </p>
+                  </div>
                 </div>
                 <span>Checksum: {result.snapshotChecksum.slice(0, 8)}</span>
               </div>
@@ -171,21 +187,33 @@ export default function ValidateView({
                 <h3>Check-list đạt chuẩn:</h3>
                 <ul className="check-list">
                   <li>
-                    <span className="check-mark">✓</span>
+                    <span className="check-mark" aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </span>
                     <div>
                       <strong>Cấu trúc ứng dụng hợp lệ</strong>
                       <small>Đúng schema quy trình v1.</small>
                     </div>
                   </li>
                   <li>
-                    <span className="check-mark">✓</span>
+                    <span className="check-mark" aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </span>
                     <div>
                       <strong>Đầy đủ vai trò và biểu mẫu</strong>
                       <small>Không có trường hoặc vai trò mồ côi.</small>
                     </div>
                   </li>
                   <li>
-                    <span className="check-mark">✓</span>
+                    <span className="check-mark" aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </span>
                     <div>
                       <strong>Luồng điều hướng hoàn chỉnh</strong>
                       <small>Điểm bắt đầu kết nối tới điểm kết thúc, không có vòng lặp.</small>
@@ -200,11 +228,28 @@ export default function ValidateView({
                 className="flow-validation invalid"
                 style={{ marginBottom: 20 }}
               >
-                <div>
-                  <strong>✕ Bản nháp chưa hợp lệ ({result.issues.length} vấn đề)</strong>
-                  <p style={{ margin: "4px 0 0", fontSize: 11 }}>
-                    Vui lòng xem chi tiết danh sách lỗi bên dưới và quay lại bước Chỉnh sửa để khắc phục.
-                  </p>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    style={{ color: "var(--ws-danger)", flexShrink: 0 }}
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                  <div>
+                    <strong>Bản nháp chưa hợp lệ ({result.issues.length} vấn đề)</strong>
+                    <p style={{ margin: "4px 0 0", fontSize: 11 }}>
+                      Vui lòng xem chi tiết danh sách lỗi bên dưới và quay lại bước Chỉnh sửa để khắc phục.
+                    </p>
+                  </div>
                 </div>
                 <span>Checksum: {result.snapshotChecksum?.slice(0, 8)}</span>
               </div>

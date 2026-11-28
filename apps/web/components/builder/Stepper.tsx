@@ -42,7 +42,25 @@ export default function Stepper({ currentStep }: StepperProps) {
 
         return (
           <div key={s.id} className={`flow-stage ${statusClass}`}>
-            <span className="flow-stage-num">{isComplete ? "✓" : s.no}</span>
+            <span className="flow-stage-num">
+              {isComplete ? (
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : (
+                s.no
+              )}
+            </span>
             <b className="flow-stage-label">{s.label}</b>
           </div>
         );

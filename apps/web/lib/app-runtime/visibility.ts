@@ -105,6 +105,26 @@ export function isPageVisible(
     }
   }
 
+  // Khi page không khai báo visibleToRoles cụ thể (hoặc rỗng),
+  // kiểm tra xem roleId hiện tại có quyền xem ít nhất 1 component trong trang hay không.
+  // Nếu có roleId (và không phải quyền quản trị) mà không xem được component nào thì ẩn trang.
+  if (
+    roleId &&
+    !["admin", "owner", "tenant_admin"].includes(roleId) &&
+    Array.isArray(page.components) &&
+    page.components.length > 0
+  ) {
+    const role = (app.roles || []).find((r) => r.id === roleId);
+    if (role) {
+      const hasAnyVisibleComponent = page.components.some((comp) =>
+        isComponentVisible(comp, app, role, roleId)
+      );
+      if (!hasAnyVisibleComponent) {
+        return false;
+      }
+    }
+  }
+
   return true;
 }
 

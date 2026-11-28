@@ -135,6 +135,40 @@ describe("visibility rules", () => {
     expect(isPageVisible(page, sampleApp, "manager")).toBe(true);
   });
 
+  it("ẩn trang nếu role không có quyền xem bất kỳ component nào trong trang", () => {
+    const stockPage: NormalizedPage = {
+      id: "stock",
+      label: "Tồn kho",
+      path: "stock",
+      layout: "single",
+      menuOrder: 1,
+      hidden: false,
+      components: [
+        {
+          id: "act_approve",
+          type: "action",
+          componentVersion: 1,
+          featureId: "erp.purchase_requests",
+          resource: "requests",
+          action: "approve",
+          zone: "main",
+          order: 0,
+          hidden: false,
+        },
+      ],
+    };
+
+    const appWithRoles: NormalizedApp = {
+      ...sampleApp,
+      roles: [buyerRole, approverRole],
+    };
+
+    // Buyer không có quyền approve -> 0 component hiển thị -> ẩn trang
+    expect(isPageVisible(stockPage, appWithRoles, "buyer")).toBe(false);
+    // Approver có quyền approve -> có ít nhất 1 component -> hiển thị trang
+    expect(isPageVisible(stockPage, appWithRoles, "approver")).toBe(true);
+  });
+
   it("resolveVisibleComponents lọc chính xác các thành phần thỏa mãn", () => {
     const page: NormalizedPage = {
       id: "p1",

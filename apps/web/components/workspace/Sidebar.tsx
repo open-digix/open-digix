@@ -19,10 +19,12 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { getRuntimeSync } from "../../lib/app-runtime/fixtures";
 import { getRuntimeAction } from "../../lib/app-config/actions";
 import type { PublishedAppV25 } from "../../lib/app-runtime/types";
+import { normalizeApp } from "../../lib/app-runtime/normalize";
+import { isPageVisible } from "../../lib/app-runtime/visibility";
 
 interface SidebarProps {
   roles: string[];
@@ -54,6 +56,13 @@ export default function Sidebar({
   onHideTip,
 }: SidebarProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams?.() ?? null;
+  const tabParam = searchParams?.get?.("tab") ?? null;
+  const isDraftTab =
+    pathname === "/apps" && (tabParam === "draft" || tabParam === "drafts");
+  const isAppsActive =
+    (pathname === "/apps" || pathname.startsWith("/apps/")) && !isDraftTab;
+  const isBuilderActive = isDraftTab || pathname.startsWith("/builder");
 
   const canAccessBuilder = roles.some((r) =>
     ["designer", "publisher", "tenant_admin", "admin", "owner"].includes(r),
@@ -166,43 +175,55 @@ export default function Sidebar({
             <div className="nav-group-label" style={{ textTransform: "uppercase" }}>
               {currentApp.name}
             </div>
-            {currentApp.pages.map((page, index) => {
-              const pageHref = `/app/${currentAppId}/${page.id}`;
-              const pageTitle = page.label || page.id;
-              const isPageActive =
-                pathname === pageHref ||
-                (pathname === `/app/${currentAppId}` && index === 0);
-
-              return (
-                <Link
-                  key={page.id}
-                  href={pageHref}
-                  className={`nav-link ${isPageActive ? "active" : ""}`}
-                  aria-current={isPageActive ? "page" : undefined}
-                  data-tip={pageTitle}
-                  onClick={onClose}
-                  onMouseEnter={handleTipEnter(pageTitle)}
-                  onMouseLeave={onHideTip}
-                  onFocus={handleTipEnter(pageTitle)}
-                  onBlur={onHideTip}
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    aria-hidden="true"
-                  >
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                    <line x1="10" y1="9" x2="8" y2="9" />
-                  </svg>
-                  <span className="lbl">{pageTitle}</span>
-                </Link>
+            {(() => {
+              const normalized = normalizeApp(currentApp);
+              const matchingRole = (normalized.roles || []).find((r) =>
+                roles.includes(r.id) ||
+                (roles.includes("employee") && (r.id === "buyer" || r.id === "sales")) ||
+                (roles.includes("manager") && (r.id === "approver" || r.id === "manager")) ||
+                roles.some((userRole) => ["admin", "owner", "tenant_admin", "designer"].includes(userRole))
               );
-            })}
+              const activeRoleId = matchingRole?.id || roles[0];
+              return normalized.pages
+                .filter((page) => isPageVisible(page, normalized, activeRoleId))
+                .map((page, index) => {
+                  const pageHref = `/app/${currentAppId}/${page.id}`;
+                  const pageTitle = page.label || page.id;
+                  const isPageActive =
+                    pathname === pageHref ||
+                    (pathname === `/app/${currentAppId}` && index === 0);
+
+                  return (
+                    <Link
+                      key={page.id}
+                      href={pageHref}
+                      className={`nav-link ${isPageActive ? "active" : ""}`}
+                      aria-current={isPageActive ? "page" : undefined}
+                      data-tip={pageTitle}
+                      onClick={onClose}
+                      onMouseEnter={handleTipEnter(pageTitle)}
+                      onMouseLeave={onHideTip}
+                      onFocus={handleTipEnter(pageTitle)}
+                      onBlur={onHideTip}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        aria-hidden="true"
+                      >
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <line x1="10" y1="9" x2="8" y2="9" />
+                      </svg>
+                      <span className="lbl">{pageTitle}</span>
+                    </Link>
+                  );
+                });
+            })()}
           </div>
         )}
 
@@ -210,8 +231,8 @@ export default function Sidebar({
         <div className="nav-group-label">HỆ THỐNG</div>
         <Link
           href="/apps"
-          className={`nav-link ${isActive("/apps") ? "active" : ""}`}
-          aria-current={isActive("/apps") ? "page" : undefined}
+          className={`nav-link ${isAppsActive ? "active" : ""}`}
+          aria-current={isAppsActive ? "page" : undefined}
           data-tip="Ứng dụng"
           onClick={onClose}
           onMouseEnter={handleTipEnter("Ứng dụng")}
@@ -260,9 +281,9 @@ export default function Sidebar({
         {/* Thiết kế ứng dụng - chỉ cho designer, publisher, tenant_admin, admin, owner */}
         {canAccessBuilder && (
           <Link
-            href="/apps?tab=draft"
-            className={`nav-link ${isActive("/builder") ? "active" : ""}`}
-            aria-current={isActive("/builder") ? "page" : undefined}
+            href="/apps?tab=drafts"
+            className={`nav-link ${isBuilderActive ? "active" : ""}`}
+            aria-current={isBuilderActive ? "page" : undefined}
             data-tip="Thiết kế ứng dụng"
             onClick={onClose}
             onMouseEnter={handleTipEnter("Thiết kế ứng dụng")}

@@ -21,6 +21,7 @@ import Sidebar from "./Sidebar";
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   usePathname: () => "/apps",
+  useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
 }));
 

@@ -340,7 +340,26 @@ export default function TenantRegistrationForm({ onBackToChoice }: TenantRegistr
                 className={`st ${step === 1 ? "on" : "done"}`}
                 aria-current={step === 1 ? "step" : undefined}
               >
-                <b>{step > 1 ? "✓" : "1"}</b>
+                <b>
+                  {step > 1 ? (
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                      style={{ verticalAlign: "middle" }}
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  ) : (
+                    "1"
+                  )}
+                </b>
                 Doanh nghiệp
               </div>
               <div className={`bar ${step > 1 ? "done" : ""}`} />

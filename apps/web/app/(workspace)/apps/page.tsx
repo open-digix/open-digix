@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import AppsView from "./AppsView";
 
@@ -6,5 +7,17 @@ export const metadata: Metadata = {
 };
 
 export default function AppsPage() {
-  return <AppsView />;
+  return (
+    <Suspense
+      fallback={
+        <div className="page apps-page">
+          <div className="panel empty-state">
+            <p>Đang tải danh sách ứng dụng...</p>
+          </div>
+        </div>
+      }
+    >
+      <AppsView />
+    </Suspense>
+  );
 }

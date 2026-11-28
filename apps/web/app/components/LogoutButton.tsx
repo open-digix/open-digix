@@ -29,9 +29,7 @@ export default function LogoutButton({ className }: LogoutButtonProps) {
     >
       <button
         type="submit"
-        className={
-          className ?? "font-medium text-blue-700 underline hover:text-blue-900"
-        }
+        className={className ?? "link button-link"}
       >
         Đăng xuất
       </button>

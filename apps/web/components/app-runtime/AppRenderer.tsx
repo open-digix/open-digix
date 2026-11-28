@@ -17,12 +17,14 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import type {
   PublishedAppV25,
   DataSource,
 } from "@/lib/app-runtime/types";
 import { normalizeApp } from "@/lib/app-runtime/normalize";
 import { isPageVisible, resolveVisibleComponents } from "@/lib/app-runtime/visibility";
+import { getRoleLabel } from "@/lib/tenant/types";
 import SingleLayout from "./layouts/SingleLayout";
 import TwoColumnsLayout from "./layouts/TwoColumnsLayout";
 
@@ -60,20 +62,28 @@ export default function AppRenderer({
     );
   }, [normalizedApp, roleId]);
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const urlTab = searchParams?.get("tab") || searchParams?.get("page");
+
   // Trang đang được chọn (internal state)
   const [internalPageId, setInternalPageId] = useState<string>("");
 
   const activePage = useMemo(() => {
-    if (controlledPageId) {
-      const match = visiblePages.find((p) => p.id === controlledPageId);
-      if (match) return match;
-    }
     if (internalPageId) {
       const match = visiblePages.find((p) => p.id === internalPageId);
       if (match) return match;
     }
+    if (urlTab) {
+      const match = visiblePages.find((p) => p.id === urlTab);
+      if (match) return match;
+    }
+    if (controlledPageId) {
+      const match = visiblePages.find((p) => p.id === controlledPageId);
+      if (match) return match;
+    }
     return visiblePages[0];
-  }, [visiblePages, controlledPageId, internalPageId]);
+  }, [visiblePages, internalPageId, urlTab, controlledPageId]);
 
   // Các component được phép hiển thị trên trang đang chọn
   const visibleComponents = useMemo(() => {
@@ -84,6 +94,11 @@ export default function AppRenderer({
   const handleSelectPage = (pageId: string) => {
     setInternalPageId(pageId);
     onPageChange?.(pageId);
+    if (typeof window !== "undefined") {
+      const currentParams = new URLSearchParams(window.location.search);
+      currentParams.set("tab", pageId);
+      router.replace(`?${currentParams.toString()}`, { scroll: false });
+    }
   };
 
   const isMock = showMockBanner !== undefined ? showMockBanner : dataSource.isMock;
@@ -121,7 +136,7 @@ export default function AppRenderer({
           </div>
           {roleId && (
             <span className="badge" style={{ fontSize: 11, background: "var(--ws-soft)", color: "var(--ws-teal)" }}>
-              Vai trò: {roleId}
+              Vai trò: {getRoleLabel(roleId)}
             </span>
           )}
         </div>
@@ -140,27 +155,43 @@ export default function AppRenderer({
 
         {/* Thanh tab trang của hệ thống */}
         {visiblePages.length > 0 && (
-          <nav aria-label="Menu các trang trong ứng dụng" className="tabs" style={{ borderBottom: "none", margin: 0 }}>
+          <div
+            role="tablist"
+            aria-label="Menu các trang trong ứng dụng"
+            className="tabs"
+            style={{ borderBottom: "none", margin: 0 }}
+          >
             {visiblePages.map((page) => {
               const isActive = activePage?.id === page.id;
               return (
                 <button
                   key={page.id}
                   type="button"
+                  role="tab"
+                  id={`tab-${page.id}`}
+                  aria-selected={isActive}
+                  aria-current={isActive ? "page" : undefined}
+                  aria-controls={`panel-${page.id}`}
+                  tabIndex={isActive ? 0 : -1}
                   onClick={() => handleSelectPage(page.id)}
                   className={`tab ${isActive ? "active" : ""}`}
-                  aria-current={isActive ? "page" : undefined}
                 >
                   {page.label}
                 </button>
               );
             })}
-          </nav>
+          </div>
         )}
       </div>
 
       {/* Vùng nội dung trang */}
-      <main className="flex-1 w-full">
+      <main
+        id={activePage ? `panel-${activePage.id}` : undefined}
+        role="tabpanel"
+        aria-labelledby={activePage ? `tab-${activePage.id}` : undefined}
+        className="app-runtime-main"
+        style={{ flex: 1, width: "100%" }}
+      >
         {!activePage ? (
           <div className="panel" style={{ padding: 48, textAlign: "center" }}>
             <p style={{ margin: 0, color: "var(--ws-muted)", fontSize: 14 }}>

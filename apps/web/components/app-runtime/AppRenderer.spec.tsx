@@ -36,14 +36,14 @@ describe("AppRenderer", () => {
     expect(screen.getByText("Vật tư và mua hàng")).toBeDefined();
     expect(screen.getByTestId("mock-preview-banner")).toBeDefined();
     expect(screen.getByText("Yêu cầu mua")).toBeDefined();
-    expect(screen.getByText("Tồn kho")).toBeDefined();
+    expect(screen.queryByText("Tồn kho")).toBeNull();
   });
 
   it("chuyển trang khi bấm vào tab khác", () => {
     render(
       <AppRenderer
         app={FIXTURE_ERP_A}
-        roleId="buyer"
+        roleId="warehouse"
         dataSource={dataSource}
       />
     );

@@ -73,66 +73,49 @@ export default function SourceEditor({
 
   const storageKey = `ws_source_${tenantId}_${appId}`;
 
-  const [sections, setSections] = useState<Record<string, string>>(() => {
+  const [sections, setSections] = useState<Record<string, string>>({
+    goal: "",
+    inputs: "",
+    roles: "",
+    steps: "",
+    branches: "",
+    outputs: "",
+    exceptions: "",
+  });
+
+  const [revisionNo, setRevisionNo] = useState<number>(0);
+
+  useEffect(() => {
     let initialGoal = "";
-    if (typeof window !== "undefined") {
-      try {
-        const apps = getStoredBuilderApps(tenantId);
-        const found = apps.find((a) => a.appId === appId);
-        if (found?.goal) initialGoal = found.goal;
-      } catch {
-        // Ignore
-      }
+    try {
+      const apps = getStoredBuilderApps(tenantId);
+      const found = apps.find((a) => a.appId === appId);
+      if (found?.goal) initialGoal = found.goal;
+    } catch {
+      // Ignore
     }
-    if (typeof window === "undefined") {
-      return {
-        goal: initialGoal,
-        inputs: "",
-        roles: "",
-        steps: "",
-        branches: "",
-        outputs: "",
-        exceptions: "",
-      };
-    }
+
     try {
       const raw = sessionStorage.getItem(`ws_source_${tenantId}_${appId}`);
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed.sections) {
-          return {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setSections({
             ...parsed.sections,
             goal: initialGoal || parsed.sections.goal || "",
-          };
+          });
         }
+        if (typeof parsed.revisionNo === "number") {
+          setRevisionNo(parsed.revisionNo);
+        }
+      } else if (initialGoal) {
+        setSections((prev) => ({ ...prev, goal: initialGoal }));
       }
     } catch {
       // Ignore
     }
-    return {
-      goal: initialGoal,
-      inputs: "",
-      roles: "",
-      steps: "",
-      branches: "",
-      outputs: "",
-      exceptions: "",
-    };
-  });
-
-  const [revisionNo, setRevisionNo] = useState<number>(() => {
-    if (typeof window === "undefined") return 0;
-    try {
-      const raw = sessionStorage.getItem(`ws_source_${tenantId}_${appId}`);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (typeof parsed.revisionNo === "number") return parsed.revisionNo;
-      }
-    } catch {
-      // Ignore
-    }
-    return 0;
-  });
+  }, [tenantId, appId]);
 
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -363,10 +346,23 @@ export default function SourceEditor({
             <button
               type="button"
               className="button secondary"
-              style={{ fontSize: 10 }}
+              style={{ fontSize: 10, display: "inline-flex", alignItems: "center", gap: 4 }}
               onClick={fillSample}
             >
-              ✦ Điền ví dụ (MẪU THỬ)
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z" />
+              </svg>
+              <span>Điền ví dụ (MẪU THỬ)</span>
             </button>
           </div>
 

@@ -2,44 +2,32 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { listAppsAction } from "@/lib/app-config/actions";
 import type { AppSummary } from "@/lib/app-config/types";
 import { useMockToast } from "@/components/workspace/MockToast";
 import { getAppInitials } from "@/lib/app-runtime/initials";
 
 export default function AppsView() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const tab: "all" | "published" | "draft" =
+    tabParam === "draft" || tabParam === "drafts"
+      ? "draft"
+      : tabParam === "published"
+        ? tabParam
+        : "all";
+
   const [apps, setApps] = useState<AppSummary[]>([]);
-  const [tab, setTab] = useState<"all" | "published" | "draft">(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const t = params.get("tab");
-        if (t === "draft" || t === "published") return t;
-      } catch {
-        // ignore
-      }
-    }
-    return "all";
-  });
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const { ToastContainer } = useMockToast();
 
   useEffect(() => {
-    const handlePopState = () => {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const t = params.get("tab");
-        if (t === "draft" || t === "published" || t === "all") {
-          setTab(t);
-        }
-      } catch {
-        // ignore
-      }
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
+    document.title =
+      tab === "draft" ? "Thiết kế ứng dụng · DigiX" : "Ứng dụng · DigiX";
+  }, [tab]);
 
   useEffect(() => {
     let isMounted = true;
@@ -61,15 +49,12 @@ export default function AppsView() {
   }, []);
 
   const setTabAndUrl = (newTab: "all" | "published" | "draft") => {
-    setTab(newTab);
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      if (newTab === "all") {
-        url.searchParams.delete("tab");
-      } else {
-        url.searchParams.set("tab", newTab);
-      }
-      window.history.pushState({}, "", url.toString());
+    if (newTab === "all") {
+      router.replace("/apps");
+    } else if (newTab === "draft") {
+      router.replace("/apps?tab=drafts");
+    } else {
+      router.replace(`/apps?tab=${newTab}`);
     }
   };
 
@@ -90,17 +75,48 @@ export default function AppsView() {
     <div className="page apps-page">
       <header className="page-header">
         <div>
-          <div className="eyebrow">KHÔNG GIAN LÀM VIỆC</div>
-          <h2>Ứng dụng doanh nghiệp</h2>
+          <div className="eyebrow">
+            {tab === "draft" ? "THIẾT KẾ ỨNG DỤNG" : "KHÔNG GIAN LÀM VIỆC"}
+          </div>
+          <h1>
+            {tab === "draft" ? "Thiết kế ứng dụng" : "Ứng dụng doanh nghiệp"}
+          </h1>
           <p>
-            Chọn ứng dụng để làm việc hoặc theo dõi tiến trình thực hiện.
+            {tab === "draft"
+              ? "Tùy chỉnh và tạo cấu hình cho các ứng dụng composable trong tổ chức."
+              : "Chọn ứng dụng để làm việc hoặc theo dõi tiến trình thực hiện."}
           </p>
         </div>
+        {tab === "draft" && (
+          <div className="page-header-actions">
+            <Link href="/builder/new" className="button primary">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                width="16"
+                height="16"
+                aria-hidden="true"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>Tạo ứng dụng mới</span>
+            </Link>
+          </div>
+        )}
       </header>
 
-      <div className="app-filter-tabs">
+      <div
+        className="app-filter-tabs"
+        role="tablist"
+        aria-label="Bộ lọc trạng thái ứng dụng"
+      >
         <button
           type="button"
+          role="tab"
+          aria-selected={tab === "all"}
           className={`app-filter-tab ${tab === "all" ? "active" : ""}`}
           onClick={() => setTabAndUrl("all")}
         >
@@ -108,6 +124,8 @@ export default function AppsView() {
         </button>
         <button
           type="button"
+          role="tab"
+          aria-selected={tab === "published"}
           className={`app-filter-tab ${tab === "published" ? "active" : ""}`}
           onClick={() => setTabAndUrl("published")}
         >
@@ -115,6 +133,8 @@ export default function AppsView() {
         </button>
         <button
           type="button"
+          role="tab"
+          aria-selected={tab === "draft"}
           className={`app-filter-tab ${tab === "draft" ? "active" : ""}`}
           onClick={() => setTabAndUrl("draft")}
         >
