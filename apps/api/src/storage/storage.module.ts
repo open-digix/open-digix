@@ -12,8 +12,10 @@ import { ClamavScanner } from './clamav-scanner';
 import { loadScannerConfig } from './scanner.config';
 import { FILE_SCANNER, SCANNER_CONFIG } from './storage.constants';
 import { FileAccess } from './file-access.service';
+import { IdentityModule } from '../identity/identity.module';
 
 @Module({
+  imports: [IdentityModule],
   controllers: [StoredFileController],
   providers: [
     { provide: SCANNER_CONFIG, useFactory: loadScannerConfig },

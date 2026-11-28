@@ -75,4 +75,79 @@ describe('StoredFileRepository', () => {
       'Database did not return the created file metadata',
     );
   });
+
+  it('derives the file app from its clean, requester-owned record', async () => {
+    pool.query.mockResolvedValueOnce({
+      rows: [
+        {
+          id: 'file-a',
+          tenant_id: input.tenantId,
+          application_id: 'app-a',
+          record_id: 'record-a',
+          storage_key: input.storageKey,
+          original_name: input.originalName,
+          content_type: input.contentType,
+          size_bytes: String(input.sizeBytes),
+          checksum_sha256: input.checksumSha256,
+          scan_status: 'clean',
+          created_by_membership_id: input.createdByMembershipId,
+          created_at: createdAt,
+        },
+      ],
+    });
+
+    await expect(
+      repository.findReadable(
+        input.tenantId,
+        'file-a',
+        input.createdByMembershipId,
+      ),
+    ).resolves.toMatchObject({
+      applicationId: 'app-a',
+      recordId: 'record-a',
+      scanStatus: 'clean',
+    });
+    expect(pool.query).toHaveBeenCalledWith(
+      expect.stringContaining("f.scan_status = 'clean'"),
+      [input.tenantId, 'file-a', input.createdByMembershipId],
+    );
+    expect(pool.query).toHaveBeenCalledWith(
+      expect.stringContaining('r.requester_membership_id = $3'),
+      [input.tenantId, 'file-a', input.createdByMembershipId],
+    );
+    expect(pool.query).toHaveBeenCalledWith(
+      expect.stringContaining('r.application_id'),
+      [input.tenantId, 'file-a', input.createdByMembershipId],
+    );
+  });
+
+  it('never treats an unattached file as readable', async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+    await expect(
+      repository.findReadable(
+        input.tenantId,
+        'file-a',
+        input.createdByMembershipId,
+      ),
+    ).resolves.toBeNull();
+    expect(pool.query).toHaveBeenCalledWith(
+      expect.stringContaining('JOIN business_records'),
+      [input.tenantId, 'file-a', input.createdByMembershipId],
+    );
+  });
+
+  it('looks up the app only for a record requested in the active tenant', async () => {
+    pool.query.mockResolvedValueOnce({ rows: [{ application_id: 'app-a' }] });
+    await expect(
+      repository.findOwnedRecordApplication(
+        input.tenantId,
+        'record-a',
+        input.createdByMembershipId,
+      ),
+    ).resolves.toBe('app-a');
+    expect(pool.query).toHaveBeenCalledWith(
+      expect.stringContaining('requester_membership_id = $3'),
+      [input.tenantId, 'record-a', input.createdByMembershipId],
+    );
+  });
 });

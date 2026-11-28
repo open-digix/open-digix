@@ -13,10 +13,13 @@ import {
   type UploadPendingFileInput,
 } from './stored-file.service';
 import type { StorageConfig } from './storage.config';
+import { AppAuthorizationService } from '../identity/app-authorization.service';
+import { ForbiddenException } from '@nestjs/common';
 
 describe('StoredFileService', () => {
   const tenantId = '11111111-1111-4111-8111-111111111111';
   const membershipId = '22222222-2222-4222-8222-222222222222';
+  const applicationId = '55555555-5555-4555-8555-555555555555';
   const input: UploadPendingFileInput = {
     tenantId,
     recordId: '33333333-3333-4333-8333-333333333333',
@@ -37,7 +40,8 @@ describe('StoredFileService', () => {
   let putObject: jest.MockedFunction<StorageObjectService['putObject']>;
   let deleteObject: jest.MockedFunction<StorageObjectService['deleteObject']>;
   let createPending: jest.MockedFunction<StoredFileRepository['createPending']>;
-  let recordOwnedBy: jest.Mock;
+  let findOwnedRecordApplication: jest.Mock;
+  let requireAppAccess: jest.Mock;
   let service: StoredFileService;
 
   beforeEach(() => {
@@ -65,10 +69,15 @@ describe('StoredFileService', () => {
           createdAt,
         }),
     );
-    recordOwnedBy = jest.fn().mockResolvedValue(true);
+    findOwnedRecordApplication = jest.fn().mockResolvedValue(applicationId);
+    requireAppAccess = jest.fn().mockResolvedValue({ applicationId });
     service = new StoredFileService(
       { putObject, deleteObject } as unknown as StorageObjectService,
-      { createPending, recordOwnedBy } as unknown as StoredFileRepository,
+      {
+        createPending,
+        findOwnedRecordApplication,
+      } as unknown as StoredFileRepository,
+      { requireAppAccess } as unknown as AppAuthorizationService,
       config,
     );
   });
@@ -104,6 +113,16 @@ describe('StoredFileService', () => {
       sizeBytes: 3,
       scanStatus: 'pending',
     });
+    expect(findOwnedRecordApplication).toHaveBeenCalledWith(
+      tenantId,
+      input.recordId,
+      membershipId,
+    );
+    expect(requireAppAccess).toHaveBeenCalledWith({
+      tenantId,
+      applicationId,
+      membershipId,
+    });
     expect(deleteObject).not.toHaveBeenCalled();
   });
 
@@ -117,7 +136,28 @@ describe('StoredFileService', () => {
   });
 
   it('denies attaching a file to a record outside the requester scope', async () => {
-    recordOwnedBy.mockResolvedValue(false);
+    findOwnedRecordApplication.mockResolvedValue(null);
+    await expect(service.uploadPending(input)).rejects.toMatchObject({
+      status: 404,
+    });
+    expect(putObject).not.toHaveBeenCalled();
+  });
+
+  it('denies upload before object storage if the requester lost app access', async () => {
+    requireAppAccess.mockRejectedValue(new ForbiddenException());
+    await expect(service.uploadPending(input)).rejects.toMatchObject({
+      status: 404,
+      response: { error: { code: 'RECORD_NOT_FOUND' } },
+    });
+    expect(putObject).not.toHaveBeenCalled();
+    expect(createPending).not.toHaveBeenCalled();
+  });
+
+  it('cannot attach a same-tenant record using only membership in another app', async () => {
+    requireAppAccess.mockImplementationOnce(({ applicationId: app }) => {
+      expect(app).toBe(applicationId);
+      throw new ForbiddenException();
+    });
     await expect(service.uploadPending(input)).rejects.toMatchObject({
       status: 404,
     });
@@ -136,9 +176,10 @@ describe('StoredFileService', () => {
         { putObject, deleteObject } as unknown as StorageObjectService,
         {
           createPending,
-          recordOwnedBy,
+          findOwnedRecordApplication,
           setScanStatus,
         } as unknown as StoredFileRepository,
+        { requireAppAccess } as unknown as AppAuthorizationService,
         config,
         { scan },
       );

@@ -6,7 +6,9 @@ import {
   PayloadTooLargeException,
   UnsupportedMediaTypeException,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
+import { AppAuthorizationService } from '../identity/app-authorization.service';
 import type { StorageConfig } from './storage.config';
 import { STORAGE_CONFIG } from './storage.constants';
 import { FILE_SCANNER } from './storage.constants';
@@ -32,6 +34,7 @@ export class StoredFileService {
   constructor(
     private readonly objectStorage: StorageObjectService,
     private readonly repository: StoredFileRepository,
+    private readonly authorization: AppAuthorizationService,
     @Inject(STORAGE_CONFIG) private readonly config: StorageConfig,
     @Inject(FILE_SCANNER) private readonly scanner?: FileScanner,
   ) {}
@@ -65,17 +68,34 @@ export class StoredFileService {
       });
     }
 
-    if (
-      input.recordId &&
-      !(await this.repository.recordOwnedBy(
+    if (input.recordId) {
+      const applicationId = await this.repository.findOwnedRecordApplication(
         input.tenantId,
         input.recordId,
         input.createdByMembershipId,
-      ))
-    ) {
-      throw new NotFoundException({
-        error: { code: 'RECORD_NOT_FOUND', message: 'Record not found.' },
-      });
+      );
+      if (!applicationId) {
+        throw new NotFoundException({
+          error: { code: 'RECORD_NOT_FOUND', message: 'Record not found.' },
+        });
+      }
+      try {
+        await this.authorization.requireAppAccess({
+          tenantId: input.tenantId,
+          applicationId,
+          membershipId: input.createdByMembershipId,
+        });
+      } catch (error) {
+        if (
+          error instanceof ForbiddenException ||
+          error instanceof NotFoundException
+        ) {
+          throw new NotFoundException({
+            error: { code: 'RECORD_NOT_FOUND', message: 'Record not found.' },
+          });
+        }
+        throw error;
+      }
     }
 
     const storageKey = createStorageObjectKey(input.tenantId);
