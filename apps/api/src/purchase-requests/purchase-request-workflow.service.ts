@@ -1,5 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { WorkflowRuntimeService } from '../workflow/workflow-runtime.service';
+import { WorkflowTaskService } from '../workflow/workflow-task.service';
 import { PurchaseRequestWorkflowRepository } from './purchase-request-workflow.repository';
 
 export interface StartPurchaseRequestWorkflowInput {
@@ -9,6 +10,12 @@ export interface StartPurchaseRequestWorkflowInput {
   readonly purchaseRequestId: string;
   readonly businessRecordId: string;
   readonly requesterMembershipId: string;
+}
+
+export interface CompletePurchaseRequestDecisionInput extends StartPurchaseRequestWorkflowInput {
+  readonly actorMembershipId: string;
+  readonly decision: 'approved' | 'rejected';
+  readonly rejectionReason?: string;
 }
 
 export interface PurchaseRequestWorkflowStartResult {
@@ -21,6 +28,7 @@ export class PurchaseRequestWorkflowService {
   constructor(
     private readonly repository: PurchaseRequestWorkflowRepository,
     private readonly runtime: WorkflowRuntimeService,
+    private readonly tasks: WorkflowTaskService,
   ) {}
 
   async startIfConfigured(
@@ -91,5 +99,51 @@ export class PurchaseRequestWorkflowService {
       });
       throw error;
     }
+  }
+
+  async completeDecisionIfConfigured(
+    input: CompletePurchaseRequestDecisionInput,
+  ): Promise<boolean> {
+    const instance = await this.repository.findByRecord(
+      input.tenantId,
+      input.businessRecordId,
+    );
+    if (!instance) return false;
+    if (instance.status !== 'running') {
+      throw new ConflictException({
+        error: {
+          code: 'WORKFLOW_NOT_RUNNING',
+          message: 'The purchase request workflow is not running.',
+        },
+      });
+    }
+
+    const task = await this.tasks.findActiveForProcess({
+      tenantId: input.tenantId,
+      processInstanceId: instance.engineProcessInstanceId,
+    });
+    if (!task) {
+      throw new ConflictException({
+        error: {
+          code: 'WORKFLOW_TASK_NOT_FOUND',
+          message: 'The purchase request has no active decision task.',
+        },
+      });
+    }
+
+    await this.tasks.complete({
+      tenantId: input.tenantId,
+      taskId: task.id,
+      actorId: input.actorMembershipId,
+      candidateGroups: ['approver'],
+      variables: {
+        manager_decision:
+          input.decision === 'approved' ? 'approved' : 'rejected',
+        ...(input.rejectionReason
+          ? { rejection_reason: input.rejectionReason }
+          : {}),
+      },
+    });
+    return true;
   }
 }

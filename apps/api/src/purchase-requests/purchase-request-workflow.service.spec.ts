@@ -1,4 +1,5 @@
 import type { WorkflowRuntimeService } from '../workflow/workflow-runtime.service';
+import type { WorkflowTaskService } from '../workflow/workflow-task.service';
 import { ConflictException } from '@nestjs/common';
 import { PurchaseRequestWorkflowRepository } from './purchase-request-workflow.repository';
 import { PurchaseRequestWorkflowService } from './purchase-request-workflow.service';
@@ -22,6 +23,7 @@ describe('PurchaseRequestWorkflowService', () => {
 
   let repository: {
     findWorkflowDefinitionId: jest.Mock;
+    findByRecord: jest.Mock;
     createStarting: jest.Mock;
     markStarted: jest.Mock;
     markFailed: jest.Mock;
@@ -31,11 +33,16 @@ describe('PurchaseRequestWorkflowService', () => {
       (input: RuntimeStartInput) => Promise<{ id: string }>
     >;
   };
+  let tasks: {
+    findActiveForProcess: jest.Mock;
+    complete: jest.Mock;
+  };
   let service: PurchaseRequestWorkflowService;
 
   beforeEach(() => {
     repository = {
       findWorkflowDefinitionId: jest.fn().mockResolvedValue('definition-1'),
+      findByRecord: jest.fn().mockResolvedValue(null),
       createStarting: jest.fn().mockResolvedValue({
         id: 'workflow-1',
         created: true,
@@ -48,9 +55,14 @@ describe('PurchaseRequestWorkflowService', () => {
     runtime = {
       start: jest.fn().mockResolvedValue({ id: 'engine-instance-1' }),
     };
+    tasks = {
+      findActiveForProcess: jest.fn().mockResolvedValue({ id: 'task-1' }),
+      complete: jest.fn().mockResolvedValue(undefined),
+    };
     service = new PurchaseRequestWorkflowService(
       repository as unknown as PurchaseRequestWorkflowRepository,
       runtime as unknown as WorkflowRuntimeService,
+      tasks as unknown as WorkflowTaskService,
     );
   });
 
@@ -109,5 +121,33 @@ describe('PurchaseRequestWorkflowService', () => {
       ConflictException,
     );
     expect(runtime.start).not.toHaveBeenCalled();
+  });
+
+  it('completes the active approval task for an app workflow', async () => {
+    repository.findByRecord = jest.fn().mockResolvedValue({
+      id: 'workflow-1',
+      created: false,
+      status: 'running',
+      engineProcessInstanceId: 'engine-instance-1',
+    });
+
+    await expect(
+      service.completeDecisionIfConfigured({
+        ...input,
+        actorMembershipId: 'approver-1',
+        decision: 'approved',
+      }),
+    ).resolves.toBe(true);
+    expect(tasks.findActiveForProcess).toHaveBeenCalledWith({
+      tenantId: 'tenant-1',
+      processInstanceId: 'engine-instance-1',
+    });
+    expect(tasks.complete).toHaveBeenCalledWith({
+      tenantId: 'tenant-1',
+      taskId: 'task-1',
+      actorId: 'approver-1',
+      candidateGroups: ['approver'],
+      variables: { manager_decision: 'approved' },
+    });
   });
 });

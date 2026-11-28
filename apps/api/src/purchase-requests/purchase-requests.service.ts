@@ -182,6 +182,22 @@ export class PurchaseRequestsService {
         });
       }
 
+      if (config.requiresDifferentApprover) {
+        await this.workflow.completeDecisionIfConfigured({
+          tenantId: input.tenantId,
+          applicationId: input.applicationId,
+          applicationVersionId: current.applicationVersionId,
+          purchaseRequestId: current.id,
+          businessRecordId: current.businessRecordId,
+          requesterMembershipId: current.requesterMembershipId,
+          actorMembershipId: input.actorMembershipId,
+          decision: config.toStatus === 'approved' ? 'approved' : 'rejected',
+          ...(config.rejectionReason
+            ? { rejectionReason: config.rejectionReason }
+            : {}),
+        });
+      }
+
       const updated = await this.optimisticVersion.update({
         expectedVersion: input.expectedVersion,
         updateIfVersionMatches: (expectedVersion) =>

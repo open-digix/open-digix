@@ -46,6 +46,7 @@ describe('PurchaseRequestsService', () => {
   };
   let workflow: {
     startIfConfigured: jest.Mock;
+    completeDecisionIfConfigured: jest.Mock;
   };
 
   beforeEach(() => {
@@ -79,6 +80,7 @@ describe('PurchaseRequestsService', () => {
     };
     workflow = {
       startIfConfigured: jest.fn().mockResolvedValue(null),
+      completeDecisionIfConfigured: jest.fn().mockResolvedValue(false),
     };
     service = new PurchaseRequestsService(
       repository as unknown as PurchaseRequestsRepository,
