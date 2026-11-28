@@ -3,6 +3,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import type { ReceiveInventoryBody } from './inventory.types';
+import { parseStockCursor } from './inventory.cursor';
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -51,6 +52,8 @@ export function parseOptionalMaterialId(
   if (value === undefined || value.trim() === '') return undefined;
   return parseUuid(value, 'materialId');
 }
+
+export { parseStockCursor };
 
 function parseUuid(value: string, field: string): string {
   const normalized = value.trim().toLowerCase();

@@ -6,7 +6,11 @@ import {
 import { IdempotencyService } from '../idempotency/idempotency.service';
 import type { IdempotencyScope } from '../idempotency/idempotency.types';
 import { InventoryRepository } from './inventory.repository';
-import type { InventoryReceiptRecord } from './inventory.types';
+import type {
+  InventoryReceiptRecord,
+  StockListCursor,
+  StockListResult,
+} from './inventory.types';
 
 @Injectable()
 export class InventoryService {
@@ -85,6 +89,23 @@ export class InventoryService {
       });
     }
     return receipt;
+  }
+
+  async listStock(input: {
+    tenantId: string;
+    applicationId: string;
+    limit: number;
+    materialId?: string;
+    cursor?: StockListCursor;
+  }): Promise<StockListResult> {
+    await this.requireFeature(input.tenantId, input.applicationId);
+    return this.repository.listStock(
+      input.tenantId,
+      input.applicationId,
+      input.limit,
+      input.materialId,
+      input.cursor,
+    );
   }
 
   private async requireFeature(tenantId: string, applicationId: string) {

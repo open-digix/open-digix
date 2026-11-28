@@ -1,7 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Pool, PoolClient, QueryResultRow } from 'pg';
 import { DATABASE_POOL } from '../database/database.module';
-import type { InventoryReceiptRecord } from './inventory.types';
+import type {
+  InventoryReceiptRecord,
+  StockItem,
+  StockListCursor,
+  StockListResult,
+} from './inventory.types';
+import { encodeStockCursor } from './inventory.cursor';
 
 interface ReceiptRow extends QueryResultRow {
   id: string;
@@ -17,6 +23,14 @@ interface ReceiptRow extends QueryResultRow {
 interface ReceiptLineRow extends QueryResultRow {
   id: string;
   material_id: string;
+  quantity: number;
+}
+
+interface StockRow extends QueryResultRow {
+  material_id: string;
+  sku: string;
+  name: string;
+  unit: string;
   quantity: number;
 }
 
@@ -147,6 +161,57 @@ export class InventoryRepository {
     );
     return toReceipt(receipt, lines.rows);
   }
+
+  async listStock(
+    tenantId: string,
+    applicationId: string,
+    limit: number,
+    materialId?: string,
+    cursor?: StockListCursor,
+  ): Promise<StockListResult> {
+    const result = await this.pool.query<StockRow>(
+      `
+        SELECT m.id AS material_id,
+               m.sku,
+               m.name,
+               m.unit,
+               COALESCE(SUM(l.quantity), 0)::integer AS quantity
+        FROM materials m
+        LEFT JOIN inventory_receipt_lines l
+          ON l.tenant_id = m.tenant_id
+         AND l.application_id = m.application_id
+         AND l.material_id = m.id
+        WHERE m.tenant_id = $1
+          AND m.application_id = $2
+          AND ($3::uuid IS NULL OR m.id = $3::uuid)
+          AND (
+            $4::text IS NULL
+            OR (m.sku, m.id) > ($4::text, $5::uuid)
+          )
+        GROUP BY m.id, m.sku, m.name, m.unit
+        ORDER BY m.sku ASC, m.id ASC
+        LIMIT $6
+      `,
+      [
+        tenantId,
+        applicationId,
+        materialId ?? null,
+        cursor?.sku ?? null,
+        cursor?.id ?? null,
+        limit + 1,
+      ],
+    );
+    const hasNextPage = result.rows.length > limit;
+    const rows = hasNextPage ? result.rows.slice(0, limit) : result.rows;
+    const lastRow = rows.at(-1);
+    return {
+      items: rows.map(toStockItem),
+      nextCursor:
+        hasNextPage && lastRow
+          ? encodeStockCursor({ sku: lastRow.sku, id: lastRow.material_id })
+          : null,
+    };
+  }
 }
 
 async function copyRequestLines(
@@ -205,5 +270,15 @@ function toReceipt(
       materialId: line.material_id,
       quantity: line.quantity,
     })),
+  };
+}
+
+function toStockItem(row: StockRow): StockItem {
+  return {
+    materialId: row.material_id,
+    sku: row.sku,
+    name: row.name,
+    unit: row.unit,
+    quantity: row.quantity,
   };
 }

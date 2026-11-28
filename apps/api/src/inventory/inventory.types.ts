@@ -28,6 +28,11 @@ export interface StockItem {
   readonly quantity: number;
 }
 
+export interface StockListCursor {
+  readonly sku: string;
+  readonly id: string;
+}
+
 export interface StockListResult {
   readonly items: readonly StockItem[];
   readonly nextCursor: string | null;
