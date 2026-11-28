@@ -103,20 +103,26 @@ export class CrmRepository {
     }
     values.push(page.limit + 1);
     const result = await this.pool.query<Row>(
-      `SELECT * FROM ${table} WHERE tenant_id = $1 AND application_id = $2
+      `SELECT *, created_at::text AS cursor_created_at
+       FROM ${table} WHERE tenant_id = $1 AND application_id = $2
        ${condition} ORDER BY created_at DESC, id DESC LIMIT $${values.length}`,
       values,
     );
     const hasMore = result.rows.length > page.limit;
-    const items = result.rows.slice(0, page.limit);
-    const last = items.at(-1);
+    const rows = result.rows.slice(0, page.limit);
+    const last = rows.at(-1);
+    const items = rows.map((row) => {
+      const item = { ...row };
+      delete item.cursor_created_at;
+      return item;
+    });
     return {
       items,
       nextCursor:
         hasMore && last
-          ? Buffer.from(JSON.stringify([last.created_at, last.id])).toString(
-              'base64url',
-            )
+          ? Buffer.from(
+              JSON.stringify([last.cursor_created_at, last.id]),
+            ).toString('base64url')
           : null,
     };
   }
@@ -138,20 +144,26 @@ export class CrmRepository {
     }
     values.push(page.limit + 1);
     const result = await this.pool.query<Row>(
-      `SELECT * FROM contacts WHERE tenant_id = $1 AND application_id = $2
+      `SELECT *, created_at::text AS cursor_created_at
+       FROM contacts WHERE tenant_id = $1 AND application_id = $2
        AND customer_id = $3 ${condition}
        ORDER BY created_at DESC, id DESC LIMIT $${values.length}`,
       values,
     );
-    const items = result.rows.slice(0, page.limit);
-    const last = items.at(-1);
+    const rows = result.rows.slice(0, page.limit);
+    const last = rows.at(-1);
+    const items = rows.map((row) => {
+      const item = { ...row };
+      delete item.cursor_created_at;
+      return item;
+    });
     return {
       items,
       nextCursor:
         result.rows.length > page.limit && last
-          ? Buffer.from(JSON.stringify([last.created_at, last.id])).toString(
-              'base64url',
-            )
+          ? Buffer.from(
+              JSON.stringify([last.cursor_created_at, last.id]),
+            ).toString('base64url')
           : null,
     };
   }
