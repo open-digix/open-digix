@@ -47,6 +47,7 @@ integration('CRM HTTP guards and persistence (isolated database)', () => {
   const role = randomUUID();
   const readerRole = randomUUID();
   const customerIds: string[] = [];
+  let contactId: string;
   let opportunityId: string;
 
   async function start(): Promise<INestApplication<App>> {
@@ -201,6 +202,13 @@ integration('CRM HTTP guards and persistence (isolated database)', () => {
       .set('x-tenant-id', tenant)
       .expect(403);
     await request(app.getHttpServer())
+      .get(
+        `/v1/apps/${application}/customers/${randomUUID()}/contacts/${randomUUID()}`,
+      )
+      .set('authorization', 'Bearer reader')
+      .set('x-tenant-id', tenant)
+      .expect(403);
+    await request(app.getHttpServer())
       .get(`/v1/apps/${otherApplication}/customers`)
       .set('authorization', 'Bearer owner')
       .set('x-tenant-id', tenant)
@@ -248,8 +256,49 @@ integration('CRM HTTP guards and persistence (isolated database)', () => {
         .expect(201);
       contactIds.push((contact.body as { id: string }).id);
     }
+    const detailPath = `/v1/apps/${application}/customers/${firstCustomer}/contacts/${contactIds[0]}`;
+    contactId = contactIds[0];
+    const detail = await request(app.getHttpServer())
+      .get(detailPath)
+      .set('authorization', 'Bearer owner')
+      .set('x-tenant-id', tenant)
+      .expect(200);
+    expect((detail.body as { customer_id: string }).customer_id).toBe(
+      firstCustomer,
+    );
+    await request(app.getHttpServer())
+      .get(
+        `/v1/apps/${application}/customers/${customerIds[1]}/contacts/${contactIds[0]}`,
+      )
+      .set('authorization', 'Bearer owner')
+      .set('x-tenant-id', tenant)
+      .expect(404);
+    await request(app.getHttpServer())
+      .get(
+        `/v1/apps/${application}/customers/${firstCustomer}/contacts/${randomUUID()}`,
+      )
+      .set('authorization', 'Bearer owner')
+      .set('x-tenant-id', tenant)
+      .expect(404);
+    await request(app.getHttpServer())
+      .get(
+        `/v1/apps/${otherApplication}/customers/${firstCustomer}/contacts/${contactIds[0]}`,
+      )
+      .set('authorization', 'Bearer owner')
+      .set('x-tenant-id', tenant)
+      .expect(403);
+    await request(app.getHttpServer())
+      .get(detailPath)
+      .set('authorization', 'Bearer owner')
+      .set('x-tenant-id', otherTenant)
+      .expect(403);
     await request(app.getHttpServer())
       .get(`/v1/apps/${application}/customers/${firstCustomer}/contacts`)
+      .set('authorization', 'Bearer reader')
+      .set('x-tenant-id', tenant)
+      .expect(403);
+    await request(app.getHttpServer())
+      .get(detailPath)
       .set('authorization', 'Bearer reader')
       .set('x-tenant-id', tenant)
       .expect(403);
@@ -301,6 +350,11 @@ integration('CRM HTTP guards and persistence (isolated database)', () => {
     );
     await app.close();
     app = await start();
+    await request(app.getHttpServer())
+      .get(detailPath)
+      .set('authorization', 'Bearer owner')
+      .set('x-tenant-id', tenant)
+      .expect(200);
 
     const seen: string[] = [];
     let cursor: string | null = null;
@@ -364,6 +418,13 @@ integration('CRM HTTP guards and persistence (isolated database)', () => {
     await api().expect(404);
     await request(app.getHttpServer())
       .get(`/v1/apps/${application}/opportunities/${opportunityId}`)
+      .set('authorization', 'Bearer owner')
+      .set('x-tenant-id', tenant)
+      .expect(404);
+    await request(app.getHttpServer())
+      .get(
+        `/v1/apps/${application}/customers/${customerIds[0]}/contacts/${contactId}`,
+      )
       .set('authorization', 'Bearer owner')
       .set('x-tenant-id', tenant)
       .expect(404);

@@ -87,6 +87,28 @@ integration('CRM PostgreSQL integration (isolated database)', () => {
       email: 'contact@example.test',
     });
     expect(contact.customer_id).toBe(id);
+    expect(
+      await service.contact(scope, id, contact.id as string),
+    ).toMatchObject({
+      id: contact.id,
+      customer_id: id,
+    });
+    await expect(
+      service.contact(other, id, contact.id as string),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(
+      service.contact(scope, randomUUID(), contact.id as string),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(
+      service.contact(scope, id, randomUUID()),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(
+      service.contact(
+        { ...scope, tenantId: randomUUID() },
+        id,
+        contact.id as string,
+      ),
+    ).rejects.toBeInstanceOf(NotFoundException);
     const opportunity = await service.createOpportunity(
       scope,
       'opportunity-1',

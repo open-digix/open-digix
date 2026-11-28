@@ -55,6 +55,11 @@ export class CrmService {
     return this.repository.contacts(scope, id, page);
   }
 
+  async contact(scope: CrmScope, customerId: string, contactId: string) {
+    await this.repository.version(scope, 'crm.customers');
+    return this.repository.contact(scope, customerId, contactId);
+  }
+
   async createContact(
     scope: CrmScope,
     id: string,

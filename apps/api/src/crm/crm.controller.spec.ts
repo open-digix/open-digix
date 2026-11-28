@@ -7,6 +7,7 @@ describe('CRM route permissions', () => {
     ['customer', 'crm.customers.customers.read'],
     ['createCustomer', 'crm.customers.customers.create'],
     ['contacts', 'crm.customers.contacts.read'],
+    ['contact', 'crm.customers.contacts.read'],
     ['createContact', 'crm.customers.contacts.create_contact'],
     ['opportunities', 'crm.opportunities.opportunities.read'],
     ['opportunity', 'crm.opportunities.opportunities.read'],

@@ -168,6 +168,20 @@ export class CrmRepository {
     };
   }
 
+  async contact(
+    scope: CrmScope,
+    customerId: string,
+    contactId: string,
+  ): Promise<Row> {
+    const result = await this.pool.query<Row>(
+      `SELECT * FROM contacts
+       WHERE tenant_id = $1 AND application_id = $2
+         AND customer_id = $3 AND id = $4`,
+      [scope.tenantId, scope.appId, customerId, contactId],
+    );
+    return result.rows[0] ?? missing();
+  }
+
   async history(scope: CrmScope, id: string): Promise<Row[]> {
     const result = await this.pool.query<Row>(
       `SELECT actor_membership_id, from_stage, to_stage,

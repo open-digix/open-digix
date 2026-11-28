@@ -87,6 +87,21 @@ export class CrmController {
     );
   }
 
+  @Get('customers/:customerId/contacts/:contactId')
+  @RequireAppPermission('crm.customers.contacts.read')
+  contact(
+    @Param('appId') app: string,
+    @Param('customerId') customerId: string,
+    @Param('contactId') contactId: string,
+    @CurrentTenantContext() ctx: TenantContext,
+  ) {
+    return this.crm.contact(
+      scope(app, ctx),
+      uuid(customerId, 'customerId'),
+      uuid(contactId, 'contactId'),
+    );
+  }
+
   @Post('customers/:id/contacts')
   @RequireAppPermission('crm.customers.contacts.create_contact')
   createContact(
