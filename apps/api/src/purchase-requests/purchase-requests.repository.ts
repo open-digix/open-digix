@@ -1,5 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Pool, QueryResultRow } from 'pg';
+import {
+  AuditAction,
+  AuditResult,
+} from '../audit/constants/audit-policy.constants';
+import { AuditService } from '../audit/audit.service';
 import { DATABASE_POOL } from '../database/database.module';
 import { encodePurchaseRequestCursor } from './purchase-requests.cursor';
 import type {
@@ -54,7 +59,10 @@ const REQUEST_COLUMNS = `
 
 @Injectable()
 export class PurchaseRequestsRepository {
-  constructor(@Inject(DATABASE_POOL) private readonly pool: Pool) {}
+  constructor(
+    @Inject(DATABASE_POOL) private readonly pool: Pool,
+    private readonly audit: AuditService,
+  ) {}
 
   async getPublishedFeatureStatus(
     tenantId: string,
@@ -159,6 +167,21 @@ export class PurchaseRequestsRepository {
           throw new Error('Database did not return a request line.');
         lines.push(lineRow);
       }
+
+      await this.audit.record(
+        {
+          tenantId: input.tenantId,
+          actorMembershipId: input.requesterMembershipId,
+          action: AuditAction.PURCHASE_REQUEST_CREATED,
+          resourceType: 'purchase_request',
+          resourceId: requestRow.id,
+          result: AuditResult.SUCCESS,
+          metadata: {
+            applicationVersionId: requestRow.application_version_id,
+          },
+        },
+        client,
+      );
 
       await client.query('COMMIT');
       return toPurchaseRequest(requestRow, lines);
@@ -278,6 +301,7 @@ export class PurchaseRequestsRepository {
     toStatus: PurchaseRequestRecord['status'];
     approverMembershipId?: string;
     rejectionReason?: string;
+    actorMembershipId: string;
   }): Promise<PurchaseRequestRecord | null> {
     const client = await this.pool.connect();
 
@@ -333,6 +357,25 @@ export class PurchaseRequestsRepository {
           ORDER BY id
         `,
         [input.tenantId, input.applicationId, input.purchaseRequestId],
+      );
+      await this.audit.record(
+        {
+          tenantId: input.tenantId,
+          actorMembershipId: input.actorMembershipId,
+          action: AuditAction.PURCHASE_REQUEST_STATUS_CHANGED,
+          resourceType: 'purchase_request',
+          resourceId: row.id,
+          result: AuditResult.SUCCESS,
+          metadata: {
+            applicationVersionId: row.application_version_id,
+            fromStatus: input.fromStatus,
+            toStatus: input.toStatus,
+            ...(input.rejectionReason
+              ? { reasonCode: 'rejection_reason_provided' }
+              : {}),
+          },
+        },
+        client,
       );
       await client.query('COMMIT');
       return toPurchaseRequest(row, linesResult.rows);

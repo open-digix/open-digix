@@ -247,6 +247,7 @@ export class PurchaseRequestsService {
             expectedVersion,
             fromStatus: config.fromStatus,
             toStatus: config.toStatus,
+            actorMembershipId: input.actorMembershipId,
             approverMembershipId: config.requiresDifferentApprover
               ? input.actorMembershipId
               : undefined,

@@ -1,4 +1,5 @@
 import type { Pool } from 'pg';
+import type { AuditService } from '../audit/audit.service';
 import { PurchaseRequestsRepository } from './purchase-requests.repository';
 
 const requestRow = {
@@ -38,7 +39,11 @@ describe('PurchaseRequestsRepository', () => {
       release: jest.fn(),
     };
     const pool = { connect: jest.fn().mockResolvedValue(client) };
-    const repository = new PurchaseRequestsRepository(pool as unknown as Pool);
+    const audit = { record: jest.fn().mockResolvedValue({}) };
+    const repository = new PurchaseRequestsRepository(
+      pool as unknown as Pool,
+      audit as unknown as AuditService,
+    );
 
     const result = await repository.create({
       tenantId: requestRow.tenant_id,
@@ -54,6 +59,13 @@ describe('PurchaseRequestsRepository', () => {
 
     expect(result?.status).toBe('draft');
     expect(result?.lines).toHaveLength(1);
+    expect(audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        resourceType: 'purchase_request',
+        resourceId: requestRow.id,
+      }),
+      client,
+    );
     expect(client.query).toHaveBeenNthCalledWith(1, 'BEGIN');
     expect(client.query).toHaveBeenLastCalledWith('COMMIT');
     expect(client.release).toHaveBeenCalled();
@@ -85,7 +97,11 @@ describe('PurchaseRequestsRepository', () => {
           ],
         }),
     };
-    const repository = new PurchaseRequestsRepository(pool as unknown as Pool);
+    const audit = { record: jest.fn() };
+    const repository = new PurchaseRequestsRepository(
+      pool as unknown as Pool,
+      audit as unknown as AuditService,
+    );
 
     const result = await repository.list({
       tenantId: requestRow.tenant_id,

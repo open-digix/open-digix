@@ -20,6 +20,10 @@ export const AuditAction = {
   APP_PUBLISHED: 'app.published',
   // Một bước trong quy trình được ra quyết định.
   WORKFLOW_DECIDED: 'workflow.decided',
+  // Yêu cầu mua được tạo.
+  PURCHASE_REQUEST_CREATED: 'purchase_request.created',
+  // Trạng thái yêu cầu mua được thay đổi.
+  PURCHASE_REQUEST_STATUS_CHANGED: 'purchase_request.status_changed',
 } as const;
 
 export type AuditActionType = (typeof AuditAction)[keyof typeof AuditAction];
@@ -103,6 +107,13 @@ export const METADATA_ALLOWLIST: Record<string, readonly string[]> = {
     'instanceId',
     'stepId',
     'decision',
+    'reasonCode',
+  ],
+  [AuditAction.PURCHASE_REQUEST_CREATED]: ['applicationVersionId'],
+  [AuditAction.PURCHASE_REQUEST_STATUS_CHANGED]: [
+    'applicationVersionId',
+    'fromStatus',
+    'toStatus',
     'reasonCode',
   ],
 };
