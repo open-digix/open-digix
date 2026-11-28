@@ -27,6 +27,8 @@ describe('PurchaseRequestWorkflowService', () => {
     createStarting: jest.Mock;
     markStarted: jest.Mock;
     markFailed: jest.Mock;
+    upsertTask: jest.Mock;
+    markTaskCompleted: jest.Mock;
   };
   let runtime: {
     start: jest.MockedFunction<
@@ -51,12 +53,17 @@ describe('PurchaseRequestWorkflowService', () => {
       }),
       markStarted: jest.fn().mockResolvedValue(undefined),
       markFailed: jest.fn().mockResolvedValue(undefined),
+      upsertTask: jest.fn().mockResolvedValue(undefined),
+      markTaskCompleted: jest.fn().mockResolvedValue(undefined),
     };
     runtime = {
       start: jest.fn().mockResolvedValue({ id: 'engine-instance-1' }),
     };
     tasks = {
-      findActiveForProcess: jest.fn().mockResolvedValue({ id: 'task-1' }),
+      findActiveForProcess: jest.fn().mockResolvedValue({
+        id: 'task-1',
+        assignee: null,
+      }),
       complete: jest.fn().mockResolvedValue(undefined),
     };
     service = new PurchaseRequestWorkflowService(
@@ -88,6 +95,29 @@ describe('PurchaseRequestWorkflowService', () => {
       instanceId: 'workflow-1',
       engineProcessInstanceId: 'engine-instance-1',
     });
+    expect(repository.upsertTask).toHaveBeenCalledWith({
+      tenantId: 'tenant-1',
+      workflowInstanceId: 'workflow-1',
+      engineTaskId: 'task-1',
+      roleCode: 'approver',
+      assigneeMembershipId: null,
+    });
+  });
+
+  it('does not persist a non-UUID Flowable assignee as a membership id', async () => {
+    tasks.findActiveForProcess.mockResolvedValueOnce({
+      id: 'task-1',
+      assignee: 'flowable-user-1',
+    });
+
+    await service.startIfConfigured(input);
+
+    expect(repository.upsertTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        engineTaskId: 'task-1',
+        assigneeMembershipId: null,
+      }),
+    );
   });
 
   it('does not contact Flowable when the published version has no definition', async () => {
@@ -148,6 +178,10 @@ describe('PurchaseRequestWorkflowService', () => {
       actorId: 'approver-1',
       candidateGroups: ['approver'],
       variables: { manager_decision: 'approved' },
+    });
+    expect(repository.markTaskCompleted).toHaveBeenCalledWith({
+      tenantId: 'tenant-1',
+      engineTaskId: 'task-1',
     });
   });
 });

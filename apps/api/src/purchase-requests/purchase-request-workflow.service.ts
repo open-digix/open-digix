@@ -3,6 +3,9 @@ import { WorkflowRuntimeService } from '../workflow/workflow-runtime.service';
 import { WorkflowTaskService } from '../workflow/workflow-task.service';
 import { PurchaseRequestWorkflowRepository } from './purchase-request-workflow.repository';
 
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export interface StartPurchaseRequestWorkflowInput {
   readonly tenantId: string;
   readonly applicationId: string;
@@ -87,6 +90,11 @@ export class PurchaseRequestWorkflowService {
         instanceId: workflowInstance.id,
         engineProcessInstanceId: process.id,
       });
+      await this.projectActiveTask({
+        tenantId: input.tenantId,
+        workflowInstanceId: workflowInstance.id,
+        engineProcessInstanceId: process.id,
+      });
 
       return {
         workflowInstanceId: workflowInstance.id,
@@ -144,6 +152,32 @@ export class PurchaseRequestWorkflowService {
           : {}),
       },
     });
+    await this.repository.markTaskCompleted({
+      tenantId: input.tenantId,
+      engineTaskId: task.id,
+    });
     return true;
+  }
+
+  private async projectActiveTask(input: {
+    tenantId: string;
+    workflowInstanceId: string;
+    engineProcessInstanceId: string;
+  }): Promise<void> {
+    const task = await this.tasks.findActiveForProcess({
+      tenantId: input.tenantId,
+      processInstanceId: input.engineProcessInstanceId,
+    });
+    if (!task) return;
+
+    await this.repository.upsertTask({
+      tenantId: input.tenantId,
+      workflowInstanceId: input.workflowInstanceId,
+      engineTaskId: task.id,
+      roleCode: 'approver',
+      assigneeMembershipId: UUID_PATTERN.test(task.assignee ?? '')
+        ? task.assignee
+        : null,
+    });
   }
 }
