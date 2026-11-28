@@ -96,8 +96,8 @@ body {
   --ws-sb-w: 242px;
   --ws-sb-mini: 76px;
 
-  --ws-glass-bg: rgba(255, 255, 255, 0.72);
-  --ws-glass-bg-strong: rgba(255, 255, 255, 0.90);
+  --ws-glass-bg: rgba(255, 255, 255, 0.85);
+  --ws-glass-bg-strong: rgba(255, 255, 255, 0.94);
   --ws-glass-border: rgba(255, 255, 255, 0.75);
   --ws-glass-blur: blur(14px) saturate(140%);
   --ws-shadow-color: rgba(17, 43, 69, 0.08);
@@ -181,8 +181,8 @@ body {
   --ws-sb-w: 242px;
   --ws-sb-mini: 76px;
 
-  --ws-glass-bg: rgba(17, 31, 43, 0.72);
-  --ws-glass-bg-strong: rgba(17, 31, 43, 0.92);
+  --ws-glass-bg: rgba(17, 31, 43, 0.85);
+  --ws-glass-bg-strong: rgba(17, 31, 43, 0.94);
   --ws-glass-border: rgba(255, 255, 255, 0.09);
   --ws-glass-blur: blur(14px) saturate(140%);
   --ws-shadow-color: rgba(0, 0, 0, 0.35);
@@ -192,7 +192,8 @@ body {
 
 /* UI-04 Theme: System (Default) */
 :root[data-theme="system"],
-:root:not([data-theme]) {
+:root:not([data-theme]),
+[data-theme="system"] {
   color-scheme: light;
   --ws-bg-canvas: #f6f8fa;
   --ws-bg-surface: #ffffff;
@@ -262,8 +263,8 @@ body {
   --ws-sb-w: 242px;
   --ws-sb-mini: 76px;
 
-  --ws-glass-bg: rgba(255, 255, 255, 0.72);
-  --ws-glass-bg-strong: rgba(255, 255, 255, 0.90);
+  --ws-glass-bg: rgba(255, 255, 255, 0.85);
+  --ws-glass-bg-strong: rgba(255, 255, 255, 0.94);
   --ws-glass-border: rgba(255, 255, 255, 0.75);
   --ws-glass-blur: blur(14px) saturate(140%);
   --ws-shadow-color: rgba(17, 43, 69, 0.08);
@@ -273,7 +274,8 @@ body {
 
 @media (prefers-color-scheme: dark) {
   :root[data-theme="system"],
-  :root:not([data-theme]) {
+  :root:not([data-theme]),
+  [data-theme="system"] {
     color-scheme: dark;
     --ws-bg-canvas: #0b1620;
     --ws-bg-surface: #111f2b;
@@ -347,8 +349,8 @@ body {
   --ws-sb-w: 242px;
   --ws-sb-mini: 76px;
 
-    --ws-glass-bg: rgba(17, 31, 43, 0.72);
-    --ws-glass-bg-strong: rgba(17, 31, 43, 0.92);
+    --ws-glass-bg: rgba(17, 31, 43, 0.85);
+    --ws-glass-bg-strong: rgba(17, 31, 43, 0.94);
     --ws-glass-border: rgba(255, 255, 255, 0.09);
     --ws-glass-blur: blur(14px) saturate(140%);
     --ws-shadow-color: rgba(0, 0, 0, 0.35);

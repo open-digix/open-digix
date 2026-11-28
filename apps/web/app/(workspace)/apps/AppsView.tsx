@@ -37,7 +37,6 @@ export default function AppsView() {
   }, [tabParam, router]);
 
   const [apps, setApps] = useState<AppSummary[]>([]);
-  const [selectedFilter, setSelectedFilter] = useState<"all" | "published">("all");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const { ToastContainer } = useMockToast();
@@ -88,31 +87,6 @@ export default function AppsView() {
           </p>
         </div>
       </header>
-
-      <div
-        className="app-filter-tabs"
-        role="tablist"
-        aria-label="Bộ lọc ứng dụng"
-      >
-        <button
-          type="button"
-          role="tab"
-          aria-selected={selectedFilter === "all"}
-          className={`app-filter-tab ${selectedFilter === "all" ? "active" : ""}`}
-          onClick={() => setSelectedFilter("all")}
-        >
-          Tất cả ({apps.length})
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={selectedFilter === "published"}
-          className={`app-filter-tab ${selectedFilter === "published" ? "active" : ""}`}
-          onClick={() => setSelectedFilter("published")}
-        >
-          Đang dùng ({apps.length})
-        </button>
-      </div>
 
       <div className="app-search-bar">
         <input

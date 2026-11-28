@@ -280,7 +280,7 @@ export default function AppSummaryView({
       )}
 
       {/* Header */}
-      <header className="page-header" style={{ marginBottom: 24 }}>
+      <header className="page-header" style={{ marginBottom: 24, padding: "0 24px" }}>
         <div>
           <div className="eyebrow" style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <span>QUẢN TRỊ BẢN NHÁP v2.5</span>
@@ -293,17 +293,27 @@ export default function AppSummaryView({
             Lối vào khởi tạo: <strong>{startingPointLabel}</strong> · Phiên bản: <strong>v{draft.version}</strong>
           </p>
         </div>
-        <div className="page-header-actions" style={{ display: "flex", gap: 10 }}>
+        <div className="page-header-actions" style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <Link href="/builder" className="button secondary">
             ← Danh sách ứng dụng
           </Link>
           <button
             type="button"
-            className="button primary"
+            className="button secondary"
             onClick={handleValidate}
             disabled={isValidating}
           >
             {isValidating ? "Đang kiểm tra..." : "Kiểm tra bản nháp"}
+          </button>
+          <button
+            type="button"
+            className="button primary"
+            disabled
+            title="Đang chờ API xuất bản"
+            aria-disabled="true"
+            style={{ opacity: 0.6, cursor: "not-allowed" }}
+          >
+            Xuất bản
           </button>
         </div>
       </header>

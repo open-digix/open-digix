@@ -256,6 +256,10 @@ for (const dir of uiSourceDirs) {
       if (trimmed.includes("Danh sách: ${resource}") || trimmed.includes("Danh sách: ${")) {
         errors.push(`[Untranslated String] Line ${idx + 1} in ${path.relative(webRoot, file)}: "${trimmed}"`);
       }
+
+      if (/backdrop-filter:\s*var\(/i.test(trimmed) || /backdropFilter:\s*["'`]var\(/i.test(trimmed)) {
+        errors.push(`[Forbidden backdrop-filter: var()] Line ${idx + 1} in ${path.relative(webRoot, file)}: "${trimmed}"`);
+      }
     });
   }
 }

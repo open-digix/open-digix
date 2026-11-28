@@ -187,7 +187,22 @@
 }
 
 .ws-root .topbar {
-  height:72px;background:var(--ws-glass-bg);backdrop-filter:var(--ws-glass-blur);-webkit-backdrop-filter:var(--ws-glass-blur);border-bottom:1px solid var(--ws-glass-border);display:flex;align-items:center;justify-content:space-between;padding:0 38px;gap:16px
+  height: 60px;
+  background: var(--ws-glass-bg);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid var(--ws-glass-border);
+  border-radius: 14px;
+  box-shadow: var(--ws-shadow);
+  margin: 16px 16px 0 16px;
+  position: sticky;
+  top: 16px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  gap: 16px;
 }
 
 .ws-root .top-left, .ws-root .top-actions, .ws-root .breadcrumb {
@@ -449,7 +464,12 @@
 }
 
 .ws-root .stat-card, .ws-root .panel {
-  background:var(--ws-glass-bg);backdrop-filter:var(--ws-glass-blur);-webkit-backdrop-filter:var(--ws-glass-blur);border:1px solid var(--ws-glass-border);border-radius:14px;box-shadow:var(--ws-shadow)
+  background: var(--ws-glass-bg);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid var(--ws-glass-border);
+  border-radius: 14px;
+  box-shadow: var(--ws-shadow);
 }
 
 .ws-root .stat-card {
@@ -1237,9 +1257,12 @@
     padding:24px 16px 50px
   }
   .ws-root .topbar {
-    padding:0 12px;
-    gap:8px;
-    max-width:100vw;
+    padding: 0 12px;
+    gap: 8px;
+    margin: 8px 8px 0 8px;
+    top: 8px;
+    border-radius: 10px;
+    max-width: calc(100vw - 16px);
   }
   .ws-root .demo-pill,
   .ws-root .app-select {
@@ -1793,11 +1816,10 @@
 @supports not (backdrop-filter: blur(1px)) {
   .ws-root .topbar {
     background: var(--ws-bg-surface);
-    border-bottom-color: var(--ws-border);
+    border-color: var(--ws-border);
   }
   .ws-root .stat-card, .ws-root .panel {
     background: var(--ws-bg-surface);
-    border-color: var(--ws-border);
   }
 }
 
@@ -2842,8 +2864,8 @@
   flex-direction: column;
   padding: 20px;
   background: var(--ws-glass-bg);
-  backdrop-filter: var(--ws-glass-blur);
-  -webkit-backdrop-filter: var(--ws-glass-blur);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
   border: 1px solid var(--ws-glass-border);
   border-radius: 14px;
   box-shadow: var(--ws-shadow);
@@ -3034,6 +3056,10 @@
   margin: 0 auto;
 }
 
+.ws-root .app-summary-view .page-header {
+  padding: 0 24px;
+}
+
 .ws-root .validation-results-panel {
   background: var(--ws-bg-surface);
   border: 1px solid var(--ws-border);
@@ -3130,11 +3156,14 @@
   }
 
   .ws-root .topbar {
-    max-width: 100vw;
+    max-width: calc(100vw - 16px);
     box-sizing: border-box;
     overflow: hidden;
     padding: 0 10px;
     gap: 8px;
+    margin: 8px 8px 0 8px;
+    top: 8px;
+    border-radius: 10px;
   }
 
   .ws-root .top-left {
