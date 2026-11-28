@@ -200,4 +200,43 @@ describe('PurchaseRequestsService', () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
     expect(optimisticVersion.update).not.toHaveBeenCalled();
   });
+
+  it('completes the workflow task when a different member approves', async () => {
+    const submitted = { ...request, status: 'submitted' as const };
+    const approved = {
+      ...submitted,
+      status: 'approved' as const,
+      approverMembershipId: 'ffffffff-ffff-4fff-8fff-ffffffffffff',
+      lockVersion: 2,
+    };
+    repository.findById.mockResolvedValueOnce(submitted);
+    repository.transitionIfVersionMatches.mockResolvedValueOnce(approved);
+    workflow.completeDecisionIfConfigured.mockResolvedValueOnce(true);
+
+    await expect(
+      service.approve({
+        tenantId: request.tenantId,
+        applicationId: request.applicationId,
+        actorMembershipId: 'ffffffff-ffff-4fff-8fff-ffffffffffff',
+        purchaseRequestId: request.id,
+        idempotencyKey: 'approve-1',
+        expectedVersion: 1,
+      }),
+    ).resolves.toBe(approved);
+
+    expect(workflow.completeDecisionIfConfigured).toHaveBeenCalledWith(
+      expect.objectContaining({
+        purchaseRequestId: request.id,
+        actorMembershipId: 'ffffffff-ffff-4fff-8fff-ffffffffffff',
+        decision: 'approved',
+      }),
+    );
+    expect(repository.transitionIfVersionMatches).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fromStatus: 'submitted',
+        toStatus: 'approved',
+        approverMembershipId: 'ffffffff-ffff-4fff-8fff-ffffffffffff',
+      }),
+    );
+  });
 });
