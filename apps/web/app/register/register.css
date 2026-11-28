@@ -75,6 +75,7 @@
   border-radius: 50%;
   border: 1px solid rgba(45, 212, 191, 0.18);
   box-shadow: 0 0 0 60px rgba(45, 212, 191, 0.04), 0 0 0 120px rgba(45, 212, 191, 0.03);
+  pointer-events: none;
 }
 
 .register-page .side img {
@@ -138,6 +139,8 @@
   justify-content: space-between;
   gap: 16px;
   margin-top: 24px;
+  position: relative;
+  z-index: 10;
 }
 
 .register-page .side small {
@@ -151,11 +154,18 @@
   font-weight: 500;
   text-decoration: none;
   transition: opacity 0.2s;
+  cursor: pointer;
+  position: relative;
+  z-index: 11;
 }
 
-.register-page .side-back-link:hover {
+.register-page .side-back-link:hover,
+.register-page .side-back-link:focus-visible {
   text-decoration: underline;
-  opacity: 0.9;
+  opacity: 0.95;
+  outline: 2px solid var(--teal-light);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 /* === MAIN FORM COLUMN === */
@@ -832,10 +842,19 @@
   }
 
   .register-page .side::after,
-  .register-page .side-foot,
   .register-page .side p,
   .register-page .steps {
     display: none;
+  }
+
+  .register-page .side-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 14px;
+    position: relative;
+    z-index: 10;
   }
 
   .register-page .side h2 {

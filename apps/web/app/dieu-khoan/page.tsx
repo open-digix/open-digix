@@ -159,19 +159,7 @@ export default function DieuKhoanPage() {
                 </p>
               </div>
             </article>
-
-            <p className="foot" style={{ marginTop: "32px", textAlign: "left" }}>
-              <Link href="/" className="side-back-link" style={{ fontSize: "13.5px" }}>
-                ← Về trang giới thiệu DigiX
-              </Link>
-            </p>
           </div>
-
-          <p className="foot mobile-back">
-            <Link href="/" className="link">
-              ← Về trang giới thiệu DigiX
-            </Link>
-          </p>
         </section>
       </main>
     </div>
