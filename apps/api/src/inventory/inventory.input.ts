@@ -25,20 +25,10 @@ export function parseReceiveInventoryBody(body: unknown): ReceiveInventoryBody {
     issues,
   );
   const requestId = parseUuidValue(value.requestId, 'requestId', issues);
-  const expectedVersion = value.expectedVersion;
-  if (
-    typeof expectedVersion !== 'number' ||
-    !Number.isSafeInteger(expectedVersion) ||
-    expectedVersion < 1
-  ) {
-    issues.push({
-      path: '/expectedVersion',
-      message: 'expectedVersion must be a positive integer.',
-    });
-  }
+  const expectedVersion = parseExpectedVersion(value.expectedVersion, issues);
 
   if (issues.length > 0) throw invalidInput(issues);
-  return { requestId: requestId!, expectedVersion };
+  return { requestId: requestId!, expectedVersion: expectedVersion! };
 }
 
 export function parseStockLimit(value: string | undefined): number {
@@ -88,6 +78,20 @@ function parseUuidValue(
     return undefined;
   }
   return value.trim().toLowerCase();
+}
+
+function parseExpectedVersion(
+  value: unknown,
+  issues: InputIssue[],
+): number | undefined {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1) {
+    issues.push({
+      path: '/expectedVersion',
+      message: 'expectedVersion must be a positive integer.',
+    });
+    return undefined;
+  }
+  return value;
 }
 
 function asRecord(body: unknown): Record<string, unknown> {

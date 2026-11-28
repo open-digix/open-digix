@@ -11,6 +11,7 @@ import { AppService } from './app.service';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
 import { IdempotencyModule } from './idempotency/idempotency.module';
+import { InventoryModule } from './inventory/inventory.module';
 import { IdentityModule } from './identity/identity.module';
 import { AppPermissionGuard } from './identity/app-permission.guard';
 import { RolesGuard } from './identity/roles.guard';
@@ -30,6 +31,7 @@ import { PurchaseRequestsModule } from './purchase-requests/purchase-requests.mo
     AuthModule,
     IdentityModule,
     IdempotencyModule,
+    InventoryModule,
     OnboardingModule,
     BuilderModule,
     CatalogModule,
