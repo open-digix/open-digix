@@ -16,12 +16,16 @@ const REQUIRED_TABLES = [
   'builder_source_files',
   'builder_source_revisions',
   'business_records',
+  'contacts',
+  'customers',
   'identity_users',
   'idempotency_keys',
   'inventory_receipt_lines',
   'inventory_receipts',
   'membership_roles',
   'materials',
+  'opportunities',
+  'opportunity_stage_events',
   'purchase_request_lines',
   'purchase_requests',
   'schema_migrations',
@@ -224,6 +228,10 @@ export async function verifySchema(
   const purchaseRequestLineAlphaId = randomUUID();
   const receiptAlphaId = randomUUID();
   const receiptLineAlphaId = randomUUID();
+  const customerAlphaId = randomUUID();
+  const customerSecondaryAlphaId = randomUUID();
+  const contactAlphaId = randomUUID();
+  const opportunityAlphaId = randomUUID();
   const rejectedCrossTenantCases: string[] = [];
   const rejectedIntegrityCases: string[] = [];
 
@@ -611,6 +619,77 @@ export async function verifySchema(
         materialAlphaId,
       ],
     );
+    await client.query(
+      `INSERT INTO customers (
+         id, tenant_id, application_id, application_version_id,
+         customer_code, name, created_by_membership_id
+       ) VALUES ($1, $2, $3, $4, 'VERIFY-CRM', 'CRM Customer', $5)`,
+      [
+        customerAlphaId,
+        tenantAlphaId,
+        applicationAlphaId,
+        applicationVersionAlphaId,
+        membershipAlphaId,
+      ],
+    );
+    // The same code is valid in another app in the same tenant.
+    await client.query(
+      `INSERT INTO customers (
+         id, tenant_id, application_id, application_version_id,
+         customer_code, name, created_by_membership_id
+       ) VALUES ($1, $2, $3, $4, 'VERIFY-CRM', 'Other App Customer', $5)`,
+      [
+        customerSecondaryAlphaId,
+        tenantAlphaId,
+        applicationSecondaryAlphaId,
+        applicationVersionSecondaryAlphaId,
+        membershipAlphaId,
+      ],
+    );
+    await client.query(
+      `INSERT INTO contacts (
+         id, tenant_id, application_id, application_version_id,
+         customer_id, name, email, created_by_membership_id
+       ) VALUES ($1, $2, $3, $4, $5, 'CRM Contact', 'contact@example.test', $6)`,
+      [
+        contactAlphaId,
+        tenantAlphaId,
+        applicationAlphaId,
+        applicationVersionAlphaV2Id,
+        customerAlphaId,
+        membershipAlphaId,
+      ],
+    );
+    // Customer v1 remains usable by an opportunity created under app version v2.
+    await client.query(
+      `INSERT INTO opportunities (
+         id, tenant_id, application_id, application_version_id,
+         customer_id, name, created_by_membership_id, assignee_membership_id,
+         stage, lock_version
+       ) VALUES ($1, $2, $3, $4, $5, 'CRM Opportunity', $6, $6, 'qualified', 2)`,
+      [
+        opportunityAlphaId,
+        tenantAlphaId,
+        applicationAlphaId,
+        applicationVersionAlphaV2Id,
+        customerAlphaId,
+        membershipAlphaId,
+      ],
+    );
+    await client.query(
+      `INSERT INTO opportunity_stage_events (
+         tenant_id, application_id, application_version_id,
+         opportunity_id, actor_membership_id, from_stage, to_stage,
+         opportunity_lock_version
+       ) VALUES ($1, $2, $3, $4, $5, 'new', 'qualified', 2)`,
+      [
+        tenantAlphaId,
+        applicationAlphaId,
+        applicationVersionAlphaV2Id,
+        opportunityAlphaId,
+        membershipAlphaId,
+      ],
+    );
 
     const cases: Array<{
       name: string;
@@ -893,6 +972,113 @@ export async function verifySchema(
         ],
         expectedConstraint: 'inventory_receipts_application_version_fk',
       },
+      {
+        name: 'CRM customer cannot use a version from another app',
+        sql: `INSERT INTO customers (
+                tenant_id, application_id, application_version_id,
+                customer_code, name, created_by_membership_id
+              ) VALUES ($1, $2, $3, 'INVALID-APP', 'Invalid', $4)`,
+        values: [
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionSecondaryAlphaId,
+          membershipAlphaId,
+        ],
+        expectedConstraint: 'customers_application_version_fk',
+      },
+      {
+        name: 'CRM contact cannot use a customer from another app in the same tenant',
+        sql: `INSERT INTO contacts (
+                tenant_id, application_id, application_version_id,
+                customer_id, name, created_by_membership_id
+              ) VALUES ($1, $2, $3, $4, 'Invalid', $5)`,
+        values: [
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          customerSecondaryAlphaId,
+          membershipAlphaId,
+        ],
+        expectedConstraint: 'contacts_customer_fk',
+      },
+      {
+        name: 'CRM opportunity cannot use a customer from another tenant',
+        sql: `INSERT INTO opportunities (
+                tenant_id, application_id, application_version_id,
+                customer_id, name, created_by_membership_id
+              ) VALUES ($1, $2, $3, $4, 'Invalid', $5)`,
+        values: [
+          tenantBetaId,
+          applicationBetaId,
+          applicationVersionBetaId,
+          customerAlphaId,
+          membershipBetaId,
+        ],
+        expectedConstraint: 'opportunities_customer_fk',
+      },
+      {
+        name: 'CRM opportunity cannot use a customer from another app in the same tenant',
+        sql: `INSERT INTO opportunities (
+                tenant_id, application_id, application_version_id,
+                customer_id, name, created_by_membership_id
+              ) VALUES ($1, $2, $3, $4, 'Invalid', $5)`,
+        values: [
+          tenantAlphaId,
+          applicationSecondaryAlphaId,
+          applicationVersionSecondaryAlphaId,
+          customerAlphaId,
+          membershipAlphaId,
+        ],
+        expectedConstraint: 'opportunities_customer_fk',
+      },
+      {
+        name: 'CRM opportunity cannot assign a member from another tenant',
+        sql: `INSERT INTO opportunities (
+                tenant_id, application_id, application_version_id,
+                customer_id, name, created_by_membership_id, assignee_membership_id
+              ) VALUES ($1, $2, $3, $4, 'Invalid', $5, $6)`,
+        values: [
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          customerAlphaId,
+          membershipAlphaId,
+          membershipBetaId,
+        ],
+        expectedConstraint: 'opportunities_assignee_fk',
+      },
+      {
+        name: 'CRM event cannot use another opportunity version',
+        sql: `INSERT INTO opportunity_stage_events (
+                tenant_id, application_id, application_version_id,
+                opportunity_id, actor_membership_id, from_stage, to_stage,
+                opportunity_lock_version
+              ) VALUES ($1, $2, $3, $4, $5, 'qualified', 'proposal', 3)`,
+        values: [
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          opportunityAlphaId,
+          membershipAlphaId,
+        ],
+        expectedConstraint: 'opportunity_stage_events_opportunity_fk',
+      },
+      {
+        name: 'CRM event cannot use an actor from another tenant',
+        sql: `INSERT INTO opportunity_stage_events (
+                tenant_id, application_id, application_version_id,
+                opportunity_id, actor_membership_id, from_stage, to_stage,
+                opportunity_lock_version
+              ) VALUES ($1, $2, $3, $4, $5, 'qualified', 'proposal', 3)`,
+        values: [
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaV2Id,
+          opportunityAlphaId,
+          membershipBetaId,
+        ],
+        expectedConstraint: 'opportunity_stage_events_actor_fk',
+      },
     ];
 
     for (const [index, testCase] of cases.entries()) {
@@ -945,6 +1131,34 @@ export async function verifySchema(
           applicationAlphaId,
           applicationVersionAlphaId,
           purchaseRequestAlphaId,
+          membershipAlphaId,
+        ],
+      },
+      {
+        name: 'duplicate CRM customer code is rejected within an application',
+        sql: `INSERT INTO customers (
+                tenant_id, application_id, application_version_id,
+                customer_code, name, created_by_membership_id
+              ) VALUES ($1, $2, $3, 'VERIFY-CRM', 'Duplicate', $4)`,
+        values: [
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaV2Id,
+          membershipAlphaId,
+        ],
+      },
+      {
+        name: 'duplicate CRM opportunity stage version is rejected',
+        sql: `INSERT INTO opportunity_stage_events (
+                tenant_id, application_id, application_version_id,
+                opportunity_id, actor_membership_id, from_stage, to_stage,
+                opportunity_lock_version
+              ) VALUES ($1, $2, $3, $4, $5, 'new', 'qualified', 2)`,
+        values: [
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaV2Id,
+          opportunityAlphaId,
           membershipAlphaId,
         ],
       },
@@ -1062,6 +1276,75 @@ export async function verifySchema(
           materialAlphaId,
         ],
       },
+      {
+        name: 'blank CRM customer code is rejected',
+        sql: `INSERT INTO customers (
+                tenant_id, application_id, application_version_id,
+                customer_code, name, created_by_membership_id
+              ) VALUES ($1, $2, $3, '  ', 'Invalid', $4)`,
+        values: [
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          membershipAlphaId,
+        ],
+      },
+      {
+        name: 'blank CRM contact name is rejected',
+        sql: `INSERT INTO contacts (
+                tenant_id, application_id, application_version_id,
+                customer_id, name, created_by_membership_id
+              ) VALUES ($1, $2, $3, $4, ' ', $5)`,
+        values: [
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          customerAlphaId,
+          membershipAlphaId,
+        ],
+      },
+      {
+        name: 'invalid CRM contact email is rejected',
+        sql: `INSERT INTO contacts (
+                tenant_id, application_id, application_version_id,
+                customer_id, name, email, created_by_membership_id
+              ) VALUES ($1, $2, $3, $4, 'Invalid', 'not-an-email', $5)`,
+        values: [
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          customerAlphaId,
+          membershipAlphaId,
+        ],
+      },
+      {
+        name: 'invalid CRM opportunity stage is rejected',
+        sql: `INSERT INTO opportunities (
+                tenant_id, application_id, application_version_id,
+                customer_id, name, stage, created_by_membership_id
+              ) VALUES ($1, $2, $3, $4, 'Invalid', 'lost', $5)`,
+        values: [
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          customerAlphaId,
+          membershipAlphaId,
+        ],
+      },
+      {
+        name: 'non-positive CRM opportunity version is rejected',
+        sql: `INSERT INTO opportunities (
+                tenant_id, application_id, application_version_id,
+                customer_id, name, lock_version, created_by_membership_id
+              ) VALUES ($1, $2, $3, $4, 'Invalid', 0, $5)`,
+        values: [
+          tenantAlphaId,
+          applicationAlphaId,
+          applicationVersionAlphaId,
+          customerAlphaId,
+          membershipAlphaId,
+        ],
+      },
     ];
 
     for (const [index, testCase] of edgeCases.entries()) {
@@ -1117,7 +1400,7 @@ if (require.main === module) {
         console.log(`- ${caseName}`);
       }
       console.log(
-        `ERP integrity constraints rejected: ${result.rejectedIntegrityCases.length}`,
+        `Business integrity constraints rejected: ${result.rejectedIntegrityCases.length}`,
       );
       for (const caseName of result.rejectedIntegrityCases) {
         console.log(`- ${caseName}`);
