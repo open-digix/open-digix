@@ -22,6 +22,7 @@ const material: MaterialRecord = {
 describe('MaterialsService', () => {
   let service: MaterialsService;
   let repository: {
+    getPublishedFeatureStatus: jest.Mock;
     create: jest.Mock;
     list: jest.Mock;
     findById: jest.Mock;
@@ -33,6 +34,7 @@ describe('MaterialsService', () => {
 
   beforeEach(() => {
     repository = {
+      getPublishedFeatureStatus: jest.fn().mockResolvedValue('enabled'),
       create: jest.fn().mockResolvedValue(material),
       list: jest.fn(),
       findById: jest.fn().mockResolvedValue(material),
@@ -96,6 +98,7 @@ describe('MaterialsService', () => {
   });
 
   it('returns a conflict when no published app version is available', async () => {
+    repository.getPublishedFeatureStatus.mockResolvedValueOnce('missing');
     repository.create.mockResolvedValueOnce(null);
 
     await expect(
@@ -107,6 +110,24 @@ describe('MaterialsService', () => {
         body: { sku: material.sku, name: material.name, unit: material.unit },
       }),
     ).rejects.toBeInstanceOf(ConflictException);
-    expect(idempotency.fail).toHaveBeenCalled();
+    expect(idempotency.claim).not.toHaveBeenCalled();
+    expect(repository.create).not.toHaveBeenCalled();
+  });
+
+  it('rejects a material request when the published app disables the feature', async () => {
+    repository.getPublishedFeatureStatus.mockResolvedValueOnce('disabled');
+
+    await expect(
+      service.list({
+        tenantId: material.tenantId,
+        applicationId: material.applicationId,
+        limit: 20,
+      }),
+    ).rejects.toMatchObject({
+      response: {
+        error: { code: 'FEATURE_NOT_ENABLED' },
+      },
+    });
+    expect(repository.list).not.toHaveBeenCalled();
   });
 });

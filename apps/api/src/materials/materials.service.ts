@@ -28,6 +28,8 @@ export class MaterialsService {
     idempotencyKey: string;
     body: CreateMaterialBody;
   }): Promise<MaterialRecord> {
+    await this.requireFeature(input.tenantId, input.applicationId);
+
     const scope = this.scope(
       input,
       'erp.materials.materials.create',
@@ -68,10 +70,8 @@ export class MaterialsService {
     applicationId: string;
     limit: number;
   }): Promise<MaterialListResult> {
-    return this.repository.list(
-      input.tenantId,
-      input.applicationId,
-      input.limit,
+    return this.requireFeature(input.tenantId, input.applicationId).then(() =>
+      this.repository.list(input.tenantId, input.applicationId, input.limit),
     );
   }
 
@@ -80,6 +80,8 @@ export class MaterialsService {
     applicationId: string;
     materialId: string;
   }): Promise<MaterialRecord> {
+    await this.requireFeature(input.tenantId, input.applicationId);
+
     const material = await this.repository.findById(
       input.tenantId,
       input.applicationId,
@@ -104,6 +106,8 @@ export class MaterialsService {
     idempotencyKey: string;
     body: UpdateMaterialNoteBody;
   }): Promise<MaterialRecord> {
+    await this.requireFeature(input.tenantId, input.applicationId);
+
     const scope = this.scope(
       input,
       'erp.materials.materials.update_note',
@@ -160,6 +164,36 @@ export class MaterialsService {
       action,
       idempotencyKey,
     };
+  }
+
+  private async requireFeature(
+    tenantId: string,
+    applicationId: string,
+  ): Promise<void> {
+    const status = await this.repository.getPublishedFeatureStatus(
+      tenantId,
+      applicationId,
+      'erp.materials',
+    );
+
+    if (status === 'missing') {
+      throw new ConflictException({
+        error: {
+          code: 'APP_VERSION_NOT_PUBLISHED',
+          message: 'A published application version is required.',
+        },
+      });
+    }
+
+    if (status === 'disabled') {
+      throw new ConflictException({
+        error: {
+          code: 'FEATURE_NOT_ENABLED',
+          message:
+            'The erp.materials feature is not enabled in the published application version.',
+        },
+      });
+    }
   }
 
   private async completeFailure(
