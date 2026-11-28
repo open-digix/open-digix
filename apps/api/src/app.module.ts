@@ -20,6 +20,7 @@ import { StorageModule } from './storage/storage.module';
 import { OptimisticVersionModule } from './versioning/optimistic-version.module';
 import { FeatureModuleModule } from './feature-modules/feature-module.module';
 import { WorkflowModule } from './workflow/workflow.module';
+import { MaterialsModule } from './materials/materials.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { WorkflowModule } from './workflow/workflow.module';
     OptimisticVersionModule,
     FeatureModuleModule,
     WorkflowModule,
+    MaterialsModule,
   ],
   controllers: [AppController, HealthController],
   providers: [
