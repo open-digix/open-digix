@@ -94,11 +94,7 @@ export default function AppRenderer({
   const handleSelectPage = (pageId: string) => {
     setInternalPageId(pageId);
     onPageChange?.(pageId);
-    if (typeof window !== "undefined") {
-      const currentParams = new URLSearchParams(window.location.search);
-      currentParams.set("tab", pageId);
-      router.replace(`?${currentParams.toString()}`, { scroll: false });
-    }
+    router.push(`/app/${normalizedApp.appId}/${pageId}`);
   };
 
   const isMock = showMockBanner !== undefined ? showMockBanner : dataSource.isMock;
@@ -134,23 +130,27 @@ export default function AppRenderer({
             <strong style={{ whiteSpace: "nowrap", flexShrink: 0 }}>MẪU THỬ</strong>
             <span>– Dữ liệu mô phỏng, thao tác không ghi vào cơ sở dữ liệu thật.</span>
           </div>
-          {roleId && (
-            <span className="badge" style={{ fontSize: 11, background: "var(--ws-soft)", color: "var(--ws-teal)" }}>
-              Vai trò: {getRoleLabel(roleId)}
-            </span>
-          )}
         </div>
       )}
 
       {/* Header ứng dụng & Tabs chuyển trang */}
       <div className="panel" style={{ padding: "16px 20px", marginBottom: 20 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>
-            {normalizedApp.name}
-          </h2>
-          <span className="badge" style={{ fontSize: 11, background: "var(--ws-canvas)", color: "var(--ws-muted)" }}>
-            v{normalizedApp.version}
-          </span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "var(--ws-text)" }}>
+              {normalizedApp.name}
+            </h2>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              {roleId && (
+                <span className="badge" style={{ fontSize: 11, background: "var(--ws-bg-soft)", color: "var(--ws-accent)", border: "1px solid var(--ws-border)" }}>
+                  Vai trò: {getRoleLabel(roleId)}
+                </span>
+              )}
+              <span className="badge" style={{ fontSize: 11, background: "var(--ws-bg-surface-2)", color: "var(--ws-text-muted)", border: "1px solid var(--ws-border)" }}>
+                v{normalizedApp.version}
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Thanh tab trang của hệ thống */}

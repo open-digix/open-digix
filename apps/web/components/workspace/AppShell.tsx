@@ -20,12 +20,14 @@ import { useState, useEffect, useRef, Suspense } from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import type { MeMembership, MeUser } from "../../lib/tenant/types";
+import type { DigiXTheme } from "../../lib/theme";
 
 interface AppShellProps {
   user: MeUser;
   activeMemberships: MeMembership[];
   currentTenantId: string | null;
   roles: string[];
+  initialTheme?: DigiXTheme;
   children: React.ReactNode;
 }
 
@@ -34,8 +36,10 @@ export default function AppShell({
   activeMemberships,
   currentTenantId,
   roles,
+  initialTheme = "light",
   children,
 }: AppShellProps) {
+  const [currentTheme, setCurrentTheme] = useState<DigiXTheme>(initialTheme);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
   const [isPeek, setIsPeek] = useState(false);
@@ -55,6 +59,19 @@ export default function AppShell({
     }, 0);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", initialTheme);
+    const observer = new MutationObserver(() => {
+      const active = document.documentElement.getAttribute("data-theme") as DigiXTheme | null;
+      if (active) setCurrentTheme(active);
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => {
+      observer.disconnect();
+      document.documentElement.setAttribute("data-theme", "light");
+    };
+  }, [initialTheme]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -129,7 +146,7 @@ export default function AppShell({
   const modeClass = isPinned ? "pinned" : isPeek ? "peek" : "mini";
 
   return (
-    <div className={`ws-root app-shell ${modeClass}`}>
+    <div className={`ws-root app-shell ${modeClass}`} data-theme={currentTheme}>
       <Suspense fallback={null}>
         <Sidebar
           roles={roles}

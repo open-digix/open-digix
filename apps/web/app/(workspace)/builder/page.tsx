@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
+import { getTenantContext } from "../../../lib/api/server";
+import BuilderListView from "./BuilderListView";
 
 export const metadata: Metadata = {
   title: "Thiết kế ứng dụng · DigiX",
@@ -24,5 +27,22 @@ export const metadata: Metadata = {
 
 export default async function BuilderPage() {
   await connection();
-  redirect("/apps?tab=drafts");
+  const context = await getTenantContext();
+  if (!context) {
+    redirect("/login");
+  }
+
+  return (
+    <Suspense
+      fallback={
+        <div className="page apps-page">
+          <div className="panel empty-state">
+            <p>Đang tải danh sách bản nháp...</p>
+          </div>
+        </div>
+      }
+    >
+      <BuilderListView />
+    </Suspense>
+  );
 }

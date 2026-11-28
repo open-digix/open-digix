@@ -96,11 +96,11 @@ body {
   --ws-sb-w: 242px;
   --ws-sb-mini: 76px;
 
-  --ws-glass-bg: rgba(255, 255, 255, 0.85);
-  --ws-glass-bg-strong: rgba(255, 255, 255, 0.94);
-  --ws-glass-border: rgba(255, 255, 255, 0.60);
+  --ws-glass-bg: rgba(255, 255, 255, 0.72);
+  --ws-glass-bg-strong: rgba(255, 255, 255, 0.90);
+  --ws-glass-border: rgba(255, 255, 255, 0.75);
   --ws-glass-blur: blur(14px) saturate(140%);
-  --ws-shadow-color: rgba(17, 43, 69, 0.06);
+  --ws-shadow-color: rgba(17, 43, 69, 0.08);
   --ws-shadow: 0 8px 28px var(--ws-shadow-color);
   --ws-canvas-glow: radial-gradient(ellipse at 20% 0%, rgba(11, 119, 111, 0.16) 0%, transparent 50%), radial-gradient(ellipse at 80% 0%, rgba(36, 90, 135, 0.12) 0%, transparent 50%);
 }
@@ -181,9 +181,9 @@ body {
   --ws-sb-w: 242px;
   --ws-sb-mini: 76px;
 
-  --ws-glass-bg: rgba(17, 31, 43, 0.85);
-  --ws-glass-bg-strong: rgba(17, 31, 43, 0.94);
-  --ws-glass-border: rgba(255, 255, 255, 0.08);
+  --ws-glass-bg: rgba(17, 31, 43, 0.72);
+  --ws-glass-bg-strong: rgba(17, 31, 43, 0.92);
+  --ws-glass-border: rgba(255, 255, 255, 0.09);
   --ws-glass-blur: blur(14px) saturate(140%);
   --ws-shadow-color: rgba(0, 0, 0, 0.35);
   --ws-shadow: 0 8px 28px var(--ws-shadow-color);
@@ -262,11 +262,11 @@ body {
   --ws-sb-w: 242px;
   --ws-sb-mini: 76px;
 
-  --ws-glass-bg: rgba(255, 255, 255, 0.85);
-  --ws-glass-bg-strong: rgba(255, 255, 255, 0.94);
-  --ws-glass-border: rgba(255, 255, 255, 0.60);
+  --ws-glass-bg: rgba(255, 255, 255, 0.72);
+  --ws-glass-bg-strong: rgba(255, 255, 255, 0.90);
+  --ws-glass-border: rgba(255, 255, 255, 0.75);
   --ws-glass-blur: blur(14px) saturate(140%);
-  --ws-shadow-color: rgba(17, 43, 69, 0.06);
+  --ws-shadow-color: rgba(17, 43, 69, 0.08);
   --ws-shadow: 0 8px 28px var(--ws-shadow-color);
   --ws-canvas-glow: radial-gradient(ellipse at 20% 0%, rgba(11, 119, 111, 0.16) 0%, transparent 50%), radial-gradient(ellipse at 80% 0%, rgba(36, 90, 135, 0.12) 0%, transparent 50%);
 }
@@ -347,12 +347,21 @@ body {
   --ws-sb-w: 242px;
   --ws-sb-mini: 76px;
 
-    --ws-glass-bg: rgba(17, 31, 43, 0.85);
-    --ws-glass-bg-strong: rgba(17, 31, 43, 0.94);
-    --ws-glass-border: rgba(255, 255, 255, 0.08);
+    --ws-glass-bg: rgba(17, 31, 43, 0.72);
+    --ws-glass-bg-strong: rgba(17, 31, 43, 0.92);
+    --ws-glass-border: rgba(255, 255, 255, 0.09);
     --ws-glass-blur: blur(14px) saturate(140%);
     --ws-shadow-color: rgba(0, 0, 0, 0.35);
     --ws-shadow: 0 8px 28px var(--ws-shadow-color);
     --ws-canvas-glow: radial-gradient(ellipse at 20% 0%, rgba(43, 181, 167, 0.14) 0%, transparent 50%), radial-gradient(ellipse at 80% 0%, rgba(124, 180, 232, 0.10) 0%, transparent 50%);
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .ws-root .topbar,
+  .ws-root .app-card,
+  .ws-root .panel,
+  .ws-root [role="menu"] {
+    background: var(--ws-bg-surface) !important;
   }
 }

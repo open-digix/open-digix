@@ -16,8 +16,11 @@
 
 import Link from "next/link";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { getTenantContext } from "@/lib/api/server";
 import { getRuntime } from "@/lib/app-config/client";
+import { normalizeApp } from "@/lib/app-runtime/normalize";
+import { isPageVisible } from "@/lib/app-runtime/visibility";
 import AppPageClient from "./AppPageClient";
 
 interface PageProps {
@@ -85,16 +88,32 @@ export default async function AppPage({ params }: PageProps) {
     );
   }
 
-  const activePageId = page?.[0] || app.pages[0]?.id;
+  const normalized = normalizeApp(app);
 
   // Chọn vai trò phù hợp nhất với quyền của người dùng trong app
-  const matchingRole = (app.roles || []).find((r) =>
+  const matchingRole = (normalized.roles || []).find((r) =>
     roles.includes(r.id) ||
     (roles.includes("employee") && (r.id === "buyer" || r.id === "sales")) ||
     (roles.includes("manager") && (r.id === "approver" || r.id === "manager")) ||
     roles.some((userRole) => ["admin", "owner", "tenant_admin", "designer"].includes(userRole))
   );
-  const activeRoleId = matchingRole?.id || app.roles?.[0]?.id;
+  const activeRoleId = matchingRole?.id || normalized.roles?.[0]?.id;
+
+  // Lọc các trang được phép hiển thị theo vai trò
+  const visiblePages = normalized.pages.filter((p) =>
+    isPageVisible(p, normalized, activeRoleId)
+  );
+
+  const requestedPageId = page?.[0];
+  const isRequestedAllowed =
+    requestedPageId && visiblePages.some((p) => p.id === requestedPageId);
+
+  // Nếu người dùng nhập trực tiếp URL trang không có quyền xem, chuyển hướng về trang hợp lệ đầu tiên
+  if (requestedPageId && !isRequestedAllowed && visiblePages.length > 0) {
+    redirect(`/app/${appId}/${visiblePages[0].id}`);
+  }
+
+  const activePageId = isRequestedAllowed ? requestedPageId : visiblePages[0]?.id;
 
   return (
     <div className="page" style={{ padding: "0 0 24px" }}>

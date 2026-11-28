@@ -234,13 +234,23 @@
   text-overflow:ellipsis;
   white-space:nowrap;
   display:inline-block;
+  color:var(--ws-text);
+  font-weight:600;
 }
 
 .ws-root .tenant-select select,
 .ws-root .tenant-select-dropdown,
 .ws-root .app-select select,
 .ws-root .app-select-dropdown {
-  border:0;background:transparent;color:var(--ws-text);font-weight:700;max-width:180px;padding:4px 17px 4px 2px;cursor:pointer
+  border:1px solid var(--ws-border);
+  background:var(--ws-bg-surface);
+  border-radius:8px;
+  color:var(--ws-text);
+  font-weight:600;
+  max-width:180px;
+  padding:5px 12px;
+  cursor:pointer;
+  font-size:13px;
 }
 
 .ws-root .icon-button {
@@ -2318,19 +2328,30 @@
   flex: 0 0 44px;
   width: 44px;
   height: 44px;
-  border: 0;
+  border: 1px solid var(--ws-border);
   border-radius: 10px;
   display: grid;
   place-items: center;
-  color: var(--ws-text-on-accent);
-  background: var(--ws-border-strong);
+  color: var(--ws-text-muted);
+  background: var(--ws-bg-surface-2);
   cursor: not-allowed;
-  transition: background .15s ease;
+  transition: all .15s ease;
+}
+
+.ws-root .assistant-btn-send:disabled {
+  opacity: 0.6;
 }
 
 .ws-root .assistant-btn-send.has-text {
   background: var(--ws-accent);
+  color: var(--ws-text-on-accent);
+  border-color: var(--ws-accent);
   cursor: pointer;
+  opacity: 1;
+}
+
+.ws-root .assistant-btn-send.has-text:hover {
+  background: var(--ws-accent-hover);
 }
 
 .ws-root .assistant-input-hint {
@@ -2727,21 +2748,21 @@
 }
 
 /* App Filter Tabs & App View (WEB-UI04 & F07) */
-.ws-root .apps-page {
+.ws-root .apps-page,
+.ws-root .builder-list-page {
   max-width: 1200px;
 }
 
 .ws-root .app-filter-tabs {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   background: var(--ws-bg-surface-2);
   padding: 4px;
-  border-radius: 999px;
+  border-radius: 10px;
   border: 1px solid var(--ws-border);
   margin-top: 16px;
-  margin-bottom: 16px;
-  overflow-x: auto;
+  margin-bottom: 20px;
   max-width: 100%;
 }
 
@@ -2749,10 +2770,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 16px;
-  min-height: 36px;
-  border-radius: 999px;
-  border: 0;
+  padding: 6px 16px;
+  min-height: 34px;
+  border-radius: 7px;
+  border: 1px solid transparent;
   background: transparent;
   color: var(--ws-text-muted);
   font-size: 13px;
@@ -2764,8 +2785,8 @@
 
 @media (max-width: 768px) {
   .ws-root .app-filter-tab {
-    min-height: 44px;
-    padding: 0 14px;
+    min-height: 40px;
+    padding: 0 12px;
   }
 }
 
@@ -2779,10 +2800,11 @@
 }
 
 .ws-root .app-filter-tab.active {
-  background: var(--ws-bg-soft);
-  color: var(--ws-accent);
-  font-weight: 700;
-  box-shadow: var(--ws-shadow);
+  background: var(--ws-bg-surface);
+  color: var(--ws-text);
+  border-color: var(--ws-border);
+  font-weight: 600;
+  box-shadow: 0 1px 3px var(--ws-shadow-color);
 }
 
 .ws-root .app-search-bar {
@@ -2812,16 +2834,19 @@
 .ws-root .app-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  gap: 20px;
 }
 
 .ws-root .app-card {
   display: flex;
   flex-direction: column;
   padding: 20px;
-  background: var(--ws-bg-surface);
-  border: 1px solid var(--ws-border);
-  border-radius: 12px;
+  background: var(--ws-glass-bg);
+  backdrop-filter: var(--ws-glass-blur);
+  -webkit-backdrop-filter: var(--ws-glass-blur);
+  border: 1px solid var(--ws-glass-border);
+  border-radius: 14px;
+  box-shadow: var(--ws-shadow);
   transition: transform var(--ws-dur-fast) var(--ws-ease), box-shadow var(--ws-dur-fast) var(--ws-ease), border-color var(--ws-dur-fast) var(--ws-ease);
 }
 

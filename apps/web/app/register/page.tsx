@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import EnforceLightMode from "@/components/common/EnforceLightMode";
 import RegisterFlow from "./RegisterFlow";
 import "./register.css";
 
@@ -10,15 +11,19 @@ export const metadata: Metadata = {
 
 export default function RegisterPage() {
   return (
-    <Suspense
-      fallback={
-        <div
-          className="register-page"
-          style={{ minHeight: "100vh", background: "var(--canvas)" }}
-        />
-      }
-    >
-      <RegisterFlow />
-    </Suspense>
+    <div data-theme="light">
+      <EnforceLightMode />
+      <Suspense
+        fallback={
+          <div
+            className="register-page"
+            data-theme="light"
+            style={{ minHeight: "100vh", background: "var(--canvas)" }}
+          />
+        }
+      >
+        <RegisterFlow />
+      </Suspense>
+    </div>
   );
 }

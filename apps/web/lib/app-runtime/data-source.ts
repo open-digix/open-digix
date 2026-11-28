@@ -144,10 +144,19 @@ export class MockDataSource implements DataSource {
     // Đưa lên đầu danh sách để người dùng thấy ngay
     this.data[resource].unshift(newRecord);
 
+    const RESOURCE_NAMES: Record<string, string> = {
+      requests: "yêu cầu mua",
+      materials: "vật tư",
+      customers: "khách hàng",
+      opportunities: "cơ hội bán hàng",
+      receipts: "phiếu nhập kho",
+      stock: "tồn kho",
+    };
+    const viResource = RESOURCE_NAMES[resource] || resource;
     return {
       success: true,
       id,
-      message: `Tạo bản ghi mới thành công trong ${resource} (${id})`,
+      message: `Đã tạo ${viResource} mới thành công (${id}).`,
     };
   }
 

@@ -284,7 +284,7 @@ export default function AppSummaryView({
         <div>
           <div className="eyebrow" style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <span>QUẢN TRỊ BẢN NHÁP v2.5</span>
-            <span className="badge" style={{ fontSize: 11, background: "var(--ws-soft)", color: "var(--ws-teal)" }}>
+            <span className="badge" style={{ fontSize: 11, background: "var(--ws-bg-soft)", color: "var(--ws-accent)", border: "1px solid var(--ws-border)" }}>
               Khóa: v{lockVersion}
             </span>
           </div>
@@ -412,9 +412,10 @@ export default function AppSummaryView({
                   key={featId}
                   style={{
                     padding: 16,
-                    border: "1px solid var(--ws-line)",
-                    borderRadius: 6,
-                    background: "var(--ws-surface)",
+                    border: "1px solid var(--ws-border)",
+                    borderRadius: 8,
+                    background: "var(--ws-bg-surface-2)",
+                    color: "var(--ws-text)",
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
@@ -459,7 +460,7 @@ export default function AppSummaryView({
       </section>
 
       {/* Thông tin kỹ thuật (được thu gọn để ưu tiên thông tin nghiệp vụ) */}
-      <details className="panel" style={{ padding: 16, borderRadius: 8, background: "var(--ws-surface)" }}>
+      <details className="panel" style={{ padding: 16, borderRadius: 8, background: "var(--ws-bg-surface)", border: "1px solid var(--ws-border)", color: "var(--ws-text)" }}>
         <summary style={{ fontSize: 13, fontWeight: 600, color: "var(--ws-muted)", cursor: "pointer" }}>
           Thông tin kỹ thuật (Mã ID, Schema, Khóa)
         </summary>
@@ -524,9 +525,10 @@ export default function AppSummaryView({
                     alignItems: "flex-start",
                     gap: 12,
                     padding: 12,
-                    border: "1px solid var(--ws-line)",
-                    borderRadius: 6,
-                    background: isSelected ? "var(--ws-soft)" : "var(--ws-surface)",
+                    border: "1px solid var(--ws-border)",
+                    borderRadius: 8,
+                    background: isSelected ? "var(--ws-bg-soft)" : "var(--ws-bg-surface)",
+                    color: "var(--ws-text)",
                     cursor: isSupported ? "pointer" : "not-allowed",
                     opacity: isSupported ? 1 : 0.6,
                   }}

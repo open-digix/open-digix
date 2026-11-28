@@ -17,7 +17,8 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import TenantSelect from "./TenantSelect";
 import AppSelect from "./AppSelect";
 import LogoutButton from "../../app/components/LogoutButton";
@@ -55,7 +56,6 @@ export default function Topbar({
   onToggleSidebar,
 }: TopbarProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const avatarBtnRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -117,9 +117,13 @@ export default function Topbar({
 
   // Compute breadcrumb title
   let pageTitle = "Không gian làm việc";
-  const currentTab = searchParams?.get("tab");
-  if (pathname === "/apps" && (currentTab === "draft" || currentTab === "drafts")) {
+  if (pathname === "/builder") {
     pageTitle = "Thiết kế ứng dụng";
+  } else if (pathname.startsWith("/builder")) {
+    if (pathname === "/builder/new") pageTitle = "Thiết kế ứng dụng / Tạo mới";
+    else if (pathname === "/builder/xem-mau") pageTitle = "Thiết kế ứng dụng / Xem mẫu";
+    else if (pathname.match(/^\/builder\/[^/]+/)) pageTitle = "Thiết kế ứng dụng / Chi tiết bản nháp";
+    else pageTitle = "Thiết kế ứng dụng";
   } else {
     for (const [route, title] of Object.entries(BREADCRUMB_MAP)) {
       if (pathname === route || pathname.startsWith(route + "/")) {
@@ -298,6 +302,37 @@ export default function Topbar({
                   gap: 6,
                 }}
               >
+                <Link
+                  href="/settings"
+                  className="text-link"
+                  role="menuitem"
+                  onClick={() => setIsProfileOpen(false)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    fontSize: 12,
+                    color: "var(--ws-text)",
+                    textDecoration: "none",
+                    padding: "4px 0",
+                  }}
+                >
+                  <svg
+                    aria-hidden="true"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+                  </svg>
+                  <span>Cài đặt</span>
+                </Link>
                 <a
                   href={`${process.env.NEXT_PUBLIC_KEYCLOAK_ACCOUNT_URL || "http://localhost:8080/realms/digix/account"}`}
                   target="_blank"
@@ -314,8 +349,39 @@ export default function Topbar({
                     padding: "4px 0",
                   }}
                 >
-                  <span>Đổi mật khẩu</span>
-                  <span aria-hidden="true" style={{ fontSize: 11, opacity: 0.7 }}>↗</span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <svg
+                      aria-hidden="true"
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="7.5" cy="15.5" r="4.5" />
+                      <path d="m10.7 12.3 9.3-9.3M17 6l3 3" />
+                    </svg>
+                    <span>Đổi mật khẩu</span>
+                  </span>
+                  <svg
+                    aria-hidden="true"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ opacity: 0.7 }}
+                  >
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
                 </a>
                 <LogoutButton className="text-link" />
               </div>

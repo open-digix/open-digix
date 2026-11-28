@@ -17,6 +17,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import LoginErrorView from "./LoginErrorView";
+import EnforceLightMode from "@/components/common/EnforceLightMode";
 
 export const metadata: Metadata = {
   title: "Lỗi đăng nhập · DigiX",
@@ -25,7 +26,9 @@ export const metadata: Metadata = {
 
 export default function LoginErrorPage() {
   return (
-    <Suspense
+    <div data-theme="light">
+      <EnforceLightMode />
+      <Suspense
       fallback={
         <div className="landing-page" style={{ minHeight: "100vh" }}>
           <main>
@@ -49,5 +52,6 @@ export default function LoginErrorPage() {
     >
       <LoginErrorView />
     </Suspense>
+    </div>
   );
 }

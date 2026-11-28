@@ -298,7 +298,7 @@ export default function NewAppWizard({
       )}
 
       {/* Stepper */}
-      <nav className="flow-stepper" aria-label="Các bước tạo ứng dụng">
+      <nav className="flow-stepper" aria-label="Các bước tạo ứng dụng" style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
         <div
           className={`flow-stage ${currentStep === 1 ? "active" : currentStep > 1 ? "complete" : ""}`}
           onClick={() => setCurrentStep(1)}
@@ -354,8 +354,8 @@ export default function NewAppWizard({
             </div>
           </header>
 
-          <div className="panel" style={{ padding: 16, marginBottom: 24, background: "var(--ws-surface)" }}>
-            <p style={{ margin: 0, fontSize: 14, color: "var(--ws-muted)", display: "flex", alignItems: "flex-start", gap: 8 }}>
+          <div className="panel" style={{ padding: 16, marginBottom: 24, background: "var(--ws-bg-surface)", border: "1px solid var(--ws-border)", borderRadius: 10, color: "var(--ws-text)" }}>
+            <p style={{ margin: 0, fontSize: 14, color: "var(--ws-text-muted)", display: "flex", alignItems: "flex-start", gap: 8 }}>
               <svg
                 width={18}
                 height={18}
@@ -409,36 +409,23 @@ export default function NewAppWizard({
               onClick={() => handleSelectStartingPoint("erp")}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                <span
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 6,
-                    background: "var(--ws-soft)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
+                <svg
+                  width={22}
+                  height={22}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                  style={{ color: "var(--ws-accent)", flexShrink: 0 }}
                 >
-                  <svg
-                    width={18}
-                    height={18}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.9"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                    style={{ color: "var(--ws-accent)" }}
-                  >
-                    <path d="m7.5 4.27 9 5.15" />
-                    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-                    <path d="m3.3 7 8.7 5 8.7-5" />
-                    <path d="M12 22V12" />
-                  </svg>
-                </span>
+                  <path d="m7.5 4.27 9 5.15" />
+                  <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                  <path d="m3.3 7 8.7 5 8.7-5" />
+                  <path d="M12 22V12" />
+                </svg>
                 <h3 style={{ margin: 0, fontSize: 18 }}>Bắt đầu với ERP</h3>
               </div>
               <p style={{ fontSize: 14, color: "var(--ws-muted)", marginBottom: 16 }}>
@@ -478,37 +465,24 @@ export default function NewAppWizard({
               onClick={() => handleSelectStartingPoint("crm")}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                <span
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 6,
-                    background: "var(--ws-soft)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
+                <svg
+                  width={22}
+                  height={22}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                  style={{ color: "var(--ws-accent)", flexShrink: 0 }}
                 >
-                  <svg
-                    width={18}
-                    height={18}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.9"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                    style={{ color: "var(--ws-accent)" }}
-                  >
-                    <path d="m11 17 2 2a1 1 0 0 0 1.4 0l4.3-4.3a1 1 0 0 0 0-1.4l-2-2" />
-                    <path d="m18 10 3.3-3.3a2 2 0 0 0 0-2.8l-.2-.2a2 2 0 0 0-2.8 0L15 7" />
-                    <path d="m13 7-3.7-3.7a2 2 0 0 0-2.8 0l-.2.2a2 2 0 0 0 0 2.8L10 10" />
-                    <path d="m2 14 3-3" />
-                    <path d="m7 19 2-2" />
-                  </svg>
-                </span>
+                  <path d="m11 17 2 2a1 1 0 0 0 1.4 0l4.3-4.3a1 1 0 0 0 0-1.4l-2-2" />
+                  <path d="m18 10 3.3-3.3a2 2 0 0 0 0-2.8l-.2-.2a2 2 0 0 0-2.8 0L15 7" />
+                  <path d="m13 7-3.7-3.7a2 2 0 0 0-2.8 0l-.2.2a2 2 0 0 0 0 2.8L10 10" />
+                  <path d="m2 14 3-3" />
+                  <path d="m7 19 2-2" />
+                </svg>
                 <h3 style={{ margin: 0, fontSize: 18 }}>Bắt đầu với CRM</h3>
               </div>
               <p style={{ fontSize: 14, color: "var(--ws-muted)", marginBottom: 16 }}>
@@ -547,35 +521,22 @@ export default function NewAppWizard({
               onClick={() => handleSelectStartingPoint("blank")}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                <span
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 6,
-                    background: "var(--ws-soft)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
+                <svg
+                  width={22}
+                  height={22}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                  style={{ color: "var(--ws-accent)", flexShrink: 0 }}
                 >
-                  <svg
-                    width={18}
-                    height={18}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.9"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                    style={{ color: "var(--ws-accent)" }}
-                  >
-                    <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
-                    <path d="M20 3v4" />
-                    <path d="M22 5h-4" />
-                  </svg>
-                </span>
+                  <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+                  <path d="M20 3v4" />
+                  <path d="M22 5h-4" />
+                </svg>
                 <h3 style={{ margin: 0, fontSize: 18 }}>Tạo từ trống</h3>
               </div>
               <p style={{ fontSize: 14, color: "var(--ws-muted)", marginBottom: 16 }}>
@@ -600,9 +561,21 @@ export default function NewAppWizard({
             <button
               type="button"
               className="button primary"
+              style={{
+                background: "var(--ws-accent)",
+                color: "var(--ws-text-on-accent)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                opacity: 1,
+                visibility: "visible",
+              }}
               onClick={() => setCurrentStep(2)}
             >
-              Tiếp tục: Chọn chức năng →
+              <span>Tiếp tục: Chọn chức năng</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
             </button>
           </div>
         </section>
@@ -733,9 +706,21 @@ export default function NewAppWizard({
             <button
               type="button"
               className="button primary"
+              style={{
+                background: "var(--ws-accent)",
+                color: "var(--ws-text-on-accent)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                opacity: 1,
+                visibility: "visible",
+              }}
               onClick={() => setCurrentStep(3)}
             >
-              Tiếp tục: Thông tin ứng dụng →
+              <span>Tiếp tục: Thông tin ứng dụng</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
             </button>
           </div>
         </section>
@@ -889,6 +874,15 @@ export default function NewAppWizard({
               <button
                 type="submit"
                 className="button primary"
+                style={{
+                  background: "var(--ws-accent)",
+                  color: "var(--ws-text-on-accent)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  opacity: 1,
+                  visibility: "visible",
+                }}
                 disabled={isSubmitting || !appName.trim() || !isValidAppKey}
               >
                 {isSubmitting ? "Đang lưu bản nháp..." : "Lưu bản nháp"}

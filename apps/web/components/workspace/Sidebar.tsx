@@ -19,7 +19,7 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { getRuntimeSync } from "../../lib/app-runtime/fixtures";
 import { getRuntimeAction } from "../../lib/app-config/actions";
 import type { PublishedAppV25 } from "../../lib/app-runtime/types";
@@ -56,13 +56,10 @@ export default function Sidebar({
   onHideTip,
 }: SidebarProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams?.() ?? null;
-  const tabParam = searchParams?.get?.("tab") ?? null;
-  const isDraftTab =
-    pathname === "/apps" && (tabParam === "draft" || tabParam === "drafts");
   const isAppsActive =
-    (pathname === "/apps" || pathname.startsWith("/apps/")) && !isDraftTab;
-  const isBuilderActive = isDraftTab || pathname.startsWith("/builder");
+    (pathname === "/apps" || pathname.startsWith("/apps/") || pathname.startsWith("/app/")) &&
+    !pathname.startsWith("/builder");
+  const isBuilderActive = pathname.startsWith("/builder");
 
   const canAccessBuilder = roles.some((r) =>
     ["designer", "publisher", "tenant_admin", "admin", "owner"].includes(r),
@@ -281,7 +278,7 @@ export default function Sidebar({
         {/* Thiết kế ứng dụng - chỉ cho designer, publisher, tenant_admin, admin, owner */}
         {canAccessBuilder && (
           <Link
-            href="/apps?tab=drafts"
+            href="/builder"
             className={`nav-link ${isBuilderActive ? "active" : ""}`}
             aria-current={isBuilderActive ? "page" : undefined}
             data-tip="Thiết kế ứng dụng"

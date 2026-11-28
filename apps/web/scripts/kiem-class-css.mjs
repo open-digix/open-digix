@@ -229,6 +229,37 @@ if (fs.existsSync(globalsCssPath) && fs.existsSync(workspaceCssPath)) {
   }
 }
 
+// 6. Check for forbidden emojis, decorative symbols, and untranslated raw strings in UI code
+const forbiddenSymbolRegex = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]|[\u2713\u2714\u2715\u2716\u2726\u2197]/u;
+const uiSourceDirs = [
+  path.join(webRoot, "app"),
+  path.join(webRoot, "components"),
+  path.join(webRoot, "lib"),
+];
+
+for (const dir of uiSourceDirs) {
+  if (!fs.existsSync(dir)) continue;
+  const files = walk(dir, [".tsx", ".css"]);
+  for (const file of files) {
+    if (file.includes(".test.") || file.includes(".spec.")) continue;
+    const content = fs.readFileSync(file, "utf8");
+    const lines = content.split("\n");
+    lines.forEach((line, idx) => {
+      const trimmed = line.trim();
+      // Skip comment lines
+      if (trimmed.startsWith("//") || trimmed.startsWith("/*") || trimmed.startsWith("*")) return;
+
+      if (forbiddenSymbolRegex.test(trimmed)) {
+        errors.push(`[Forbidden Symbol/Emoji] Line ${idx + 1} in ${path.relative(webRoot, file)}: "${trimmed}"`);
+      }
+
+      if (trimmed.includes("Danh sách: ${resource}") || trimmed.includes("Danh sách: ${")) {
+        errors.push(`[Untranslated String] Line ${idx + 1} in ${path.relative(webRoot, file)}: "${trimmed}"`);
+      }
+    });
+  }
+}
+
 if (errors.length > 0) {
   console.error(errors.join("\n"));
   process.exit(1);
