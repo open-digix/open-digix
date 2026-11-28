@@ -22,6 +22,7 @@ describe('InventoryService', () => {
     getPublishedFeatureStatus: jest.Mock;
     receive: jest.Mock;
     findById: jest.Mock;
+    listReceipts: jest.Mock;
     listStock: jest.Mock;
   };
   let idempotency: {
@@ -35,6 +36,10 @@ describe('InventoryService', () => {
       getPublishedFeatureStatus: jest.fn().mockResolvedValue('enabled'),
       receive: jest.fn().mockResolvedValue(receipt),
       findById: jest.fn().mockResolvedValue(receipt),
+      listReceipts: jest.fn().mockResolvedValue({
+        items: [receipt],
+        nextCursor: null,
+      }),
       listStock: jest.fn().mockResolvedValue({ items: [], nextCursor: null }),
     };
     idempotency = {
@@ -104,6 +109,24 @@ describe('InventoryService', () => {
         receiptId: receipt.id,
       }),
     ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('lists receipts through the app-scoped repository', async () => {
+    const receipts = { items: [receipt], nextCursor: null };
+    repository.listReceipts.mockResolvedValue(receipts);
+
+    await expect(
+      service.listReceipts({
+        tenantId: receipt.tenantId,
+        applicationId: receipt.applicationId,
+        limit: 20,
+      }),
+    ).resolves.toBe(receipts);
+    expect(repository.listReceipts).toHaveBeenCalledWith({
+      tenantId: receipt.tenantId,
+      applicationId: receipt.applicationId,
+      limit: 20,
+    });
   });
 
   it('lists stock through the app-scoped repository', async () => {

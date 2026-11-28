@@ -7,6 +7,8 @@ import { IdempotencyService } from '../idempotency/idempotency.service';
 import type { IdempotencyScope } from '../idempotency/idempotency.types';
 import { InventoryRepository } from './inventory.repository';
 import type {
+  InventoryReceiptListCursor,
+  InventoryReceiptListResult,
   InventoryReceiptRecord,
   StockListCursor,
   StockListResult,
@@ -89,6 +91,16 @@ export class InventoryService {
       });
     }
     return receipt;
+  }
+
+  async listReceipts(input: {
+    tenantId: string;
+    applicationId: string;
+    limit: number;
+    cursor?: InventoryReceiptListCursor;
+  }): Promise<InventoryReceiptListResult> {
+    await this.requireFeature(input.tenantId, input.applicationId);
+    return this.repository.listReceipts(input);
   }
 
   async listStock(input: {

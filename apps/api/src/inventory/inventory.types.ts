@@ -20,6 +20,16 @@ export interface InventoryReceiptRecord {
   readonly lines: readonly InventoryReceiptLine[];
 }
 
+export interface InventoryReceiptListCursor {
+  readonly createdAt: string;
+  readonly id: string;
+}
+
+export interface InventoryReceiptListResult {
+  readonly items: readonly InventoryReceiptRecord[];
+  readonly nextCursor: string | null;
+}
+
 export interface StockItem {
   readonly materialId: string;
   readonly sku: string;

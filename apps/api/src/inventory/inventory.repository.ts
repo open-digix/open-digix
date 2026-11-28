@@ -2,12 +2,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { Pool, PoolClient, QueryResultRow } from 'pg';
 import { DATABASE_POOL } from '../database/database.module';
 import type {
+  InventoryReceiptListCursor,
+  InventoryReceiptListResult,
   InventoryReceiptRecord,
   StockItem,
   StockListCursor,
   StockListResult,
 } from './inventory.types';
-import { encodeStockCursor } from './inventory.cursor';
+import { encodeReceiptCursor, encodeStockCursor } from './inventory.cursor';
 
 interface ReceiptRow extends QueryResultRow {
   id: string;
@@ -20,8 +22,18 @@ interface ReceiptRow extends QueryResultRow {
   created_at: Date;
 }
 
+interface ReceiptListRow extends ReceiptRow {
+  created_at_cursor: string;
+}
+
 interface ReceiptLineRow extends QueryResultRow {
   id: string;
+  material_id: string;
+  quantity: number;
+}
+
+interface ReceiptListLineRow extends QueryResultRow {
+  receipt_id: string;
   material_id: string;
   quantity: number;
 }
@@ -139,7 +151,7 @@ export class InventoryRepository {
     applicationId: string,
     receiptId: string,
   ): Promise<InventoryReceiptRecord | null> {
-    const result = await this.pool.query<ReceiptRow>(
+    const result = await this.pool.query<ReceiptListRow>(
       `
         SELECT ${RECEIPT_COLUMNS}
         FROM inventory_receipts
@@ -160,6 +172,75 @@ export class InventoryRepository {
       [tenantId, applicationId, receiptId],
     );
     return toReceipt(receipt, lines.rows);
+  }
+
+  async listReceipts(input: {
+    tenantId: string;
+    applicationId: string;
+    limit: number;
+    cursor?: InventoryReceiptListCursor;
+  }): Promise<InventoryReceiptListResult> {
+    const result = await this.pool.query<ReceiptRow>(
+      `
+        SELECT ${RECEIPT_COLUMNS}, created_at::text AS created_at_cursor
+        FROM inventory_receipts
+        WHERE tenant_id = $1
+          AND application_id = $2
+          AND (
+            $3::timestamptz IS NULL
+            OR (created_at, id) < ($3::timestamptz, $4::uuid)
+          )
+        ORDER BY created_at DESC, id DESC
+        LIMIT $5
+      `,
+      [
+        input.tenantId,
+        input.applicationId,
+        input.cursor?.createdAt ?? null,
+        input.cursor?.id ?? null,
+        input.limit + 1,
+      ],
+    );
+    const hasNextPage = result.rows.length > input.limit;
+    const rows = hasNextPage ? result.rows.slice(0, input.limit) : result.rows;
+    const receiptIds = rows.map((row) => row.id);
+    const lines = receiptIds.length
+      ? await this.pool.query<ReceiptListLineRow>(
+          `
+            SELECT receipt_id, material_id, quantity
+            FROM inventory_receipt_lines
+            WHERE tenant_id = $1
+              AND application_id = $2
+              AND receipt_id = ANY($3::uuid[])
+            ORDER BY receipt_id, id
+          `,
+          [input.tenantId, input.applicationId, receiptIds],
+        )
+      : { rows: [] as ReceiptListLineRow[] };
+    const linesByReceipt = new Map<string, ReceiptLineRow[]>();
+    for (const line of lines.rows) {
+      const receiptLines = linesByReceipt.get(line.receipt_id) ?? [];
+      receiptLines.push({
+        id: line.receipt_id,
+        material_id: line.material_id,
+        quantity: line.quantity,
+      });
+      linesByReceipt.set(line.receipt_id, receiptLines);
+    }
+    const lastRow = rows.at(-1) as ReceiptListRow | undefined;
+
+    return {
+      items: rows.map((row) =>
+        toReceipt(row, linesByReceipt.get(row.id) ?? []),
+      ),
+      nextCursor:
+        hasNextPage && lastRow
+          ? encodeReceiptCursor({
+              createdAt: lastRow.created_at_cursor,
+              id: lastRow.id,
+            })
+          : null,
+    };
   }
 
   async listStock(

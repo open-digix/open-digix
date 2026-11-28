@@ -5,11 +5,13 @@ import {
 import {
   parseInventoryReceiptId,
   parseOptionalMaterialId,
+  parseReceiptCursor,
+  parseReceiptLimit,
   parseReceiveInventoryBody,
   parseStockCursor,
   parseStockLimit,
 } from './inventory.input';
-import { encodeStockCursor } from './inventory.cursor';
+import { encodeReceiptCursor, encodeStockCursor } from './inventory.cursor';
 
 describe('inventory input', () => {
   const requestId = '11111111-1111-4111-8111-111111111111';
@@ -39,6 +41,20 @@ describe('inventory input', () => {
       encodeStockCursor({ sku: 'MAT-001', id: requestId }),
     );
     expect(cursor).toEqual({ sku: 'MAT-001', id: requestId });
+  });
+
+  it('parses bounded receipt pagination', () => {
+    expect(parseReceiptLimit(undefined)).toBe(20);
+    const cursor = parseReceiptCursor(
+      encodeReceiptCursor({
+        createdAt: '2026-11-28T10:00:00.000Z',
+        id: requestId,
+      }),
+    );
+    expect(cursor).toEqual({
+      createdAt: '2026-11-28T10:00:00.000Z',
+      id: requestId,
+    });
   });
 
   it('rejects an invalid stock limit', () => {

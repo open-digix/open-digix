@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
 } from '@nestjs/common';
 import type { TenantContext } from '../identity/identity.types';
 import { RequireAppPermission } from '../identity/app-permission.decorator';
@@ -15,6 +16,8 @@ import { parseAppId } from '../identity/app-role.input';
 import { requirePurchaseRequestIdempotencyKey } from '../purchase-requests/purchase-requests.input';
 import {
   parseInventoryReceiptId,
+  parseReceiptCursor,
+  parseReceiptLimit,
   parseReceiveInventoryBody,
 } from './inventory.input';
 import { InventoryService } from './inventory.service';
@@ -39,6 +42,22 @@ export class InventoryController {
       actorMembershipId: context.membership.id,
       idempotencyKey: requirePurchaseRequestIdempotencyKey(idempotencyKey),
       ...parsed,
+    });
+  }
+
+  @Get()
+  @RequireAppPermission('erp.inventory.receipts.read')
+  list(
+    @Param('appId') appId: string,
+    @Query('limit') limit: string | undefined,
+    @Query('cursor') cursor: string | undefined,
+    @CurrentTenantContext() context: TenantContext,
+  ) {
+    return this.inventory.listReceipts({
+      tenantId: context.membership.tenant.id,
+      applicationId: parseAppId(appId),
+      limit: parseReceiptLimit(limit),
+      cursor: parseReceiptCursor(cursor),
     });
   }
 
