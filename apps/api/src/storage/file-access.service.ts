@@ -1,5 +1,10 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { AppAuthorizationService } from '../identity/app-authorization.service';
 import { StoredFileRepository } from './stored-file.repository';
 import { StorageObjectService } from './storage-object.service';
 
@@ -8,8 +13,8 @@ export interface FileAccessContext {
   membershipId: string;
 }
 
-// B02 policy is deliberately limited to requesters of existing records.
-// B03a must supply the app-scoped authorizer before expanding access.
+// Until record-level assignee/manager policies exist, keep the requester-only
+// B02 record scope and require current app membership as well.
 @Injectable()
 export class FileAccess {
   private readonly key: string;
@@ -18,6 +23,7 @@ export class FileAccess {
   constructor(
     private readonly repository: StoredFileRepository,
     private readonly objects: StorageObjectService,
+    private readonly authorization: AppAuthorizationService,
   ) {
     const key = process.env.FILE_URL_SIGNING_KEY;
     if (!key || key.length < 32)
@@ -49,6 +55,23 @@ export class FileAccess {
       throw new NotFoundException({
         error: { code: 'FILE_NOT_FOUND', message: 'File not found.' },
       });
+    try {
+      await this.authorization.requireAppAccess({
+        tenantId: context.tenantId,
+        applicationId: file.applicationId,
+        membershipId: context.membershipId,
+      });
+    } catch (error) {
+      if (
+        error instanceof ForbiddenException ||
+        error instanceof NotFoundException
+      ) {
+        throw new NotFoundException({
+          error: { code: 'FILE_NOT_FOUND', message: 'File not found.' },
+        });
+      }
+      throw error;
+    }
     return file;
   }
 
