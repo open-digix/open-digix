@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { AuditService } from '../audit/audit.service';
 import { IdempotencyService } from '../idempotency/idempotency.service';
 import type { IdempotencyScope } from '../idempotency/idempotency.types';
 import { OptimisticVersionService } from '../versioning/optimistic-version.service';
@@ -11,7 +12,11 @@ import { PurchaseRequestsRepository } from './purchase-requests.repository';
 import { PurchaseRequestWorkflowService } from './purchase-request-workflow.service';
 import type {
   CreatePurchaseRequestBody,
+  PurchaseRequestListCursor,
+  PurchaseRequestListResult,
   PurchaseRequestRecord,
+  PurchaseRequestTaskListResult,
+  PurchaseRequestStatus,
 } from './purchase-requests.types';
 
 @Injectable()
@@ -21,6 +26,7 @@ export class PurchaseRequestsService {
     private readonly idempotency: IdempotencyService,
     private readonly optimisticVersion: OptimisticVersionService,
     private readonly workflow: PurchaseRequestWorkflowService,
+    private readonly audit: AuditService,
   ) {}
 
   async create(input: {
@@ -88,6 +94,39 @@ export class PurchaseRequestsService {
       });
     }
     return request;
+  }
+
+  async list(input: {
+    tenantId: string;
+    applicationId: string;
+    limit: number;
+    status?: PurchaseRequestStatus;
+    cursor?: PurchaseRequestListCursor;
+  }): Promise<PurchaseRequestListResult> {
+    await this.requireFeature(input.tenantId, input.applicationId);
+    return this.repository.list(input);
+  }
+
+  async history(input: {
+    tenantId: string;
+    applicationId: string;
+    purchaseRequestId: string;
+  }) {
+    await this.get(input);
+    return this.audit.findByResource(
+      input.tenantId,
+      'purchase_request',
+      input.purchaseRequestId,
+    );
+  }
+
+  async listTasks(input: {
+    tenantId: string;
+    applicationId: string;
+    membershipId: string;
+  }): Promise<PurchaseRequestTaskListResult> {
+    await this.requireFeature(input.tenantId, input.applicationId);
+    return this.workflow.listOpenPurchaseRequestTasks(input);
   }
 
   async submit(

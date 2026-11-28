@@ -1,6 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Pool, QueryResultRow } from 'pg';
 import { DATABASE_POOL } from '../database/database.module';
+import type {
+  PurchaseRequestTaskListResult,
+  PurchaseRequestTaskSummary,
+} from './purchase-requests.types';
 
 export interface StartingWorkflowInstance {
   readonly id: string;
@@ -217,6 +221,71 @@ export class PurchaseRequestWorkflowRepository {
       `,
       [input.tenantId, input.instanceId],
     );
+  }
+
+  async listOpenPurchaseRequestTasks(input: {
+    tenantId: string;
+    applicationId: string;
+    membershipId: string;
+  }): Promise<PurchaseRequestTaskListResult> {
+    const result = await this.pool.query<{
+      task_id: string;
+      purchase_request_id: string;
+      business_record_id: string;
+      request_status: PurchaseRequestTaskSummary['requestStatus'];
+      request_version: number;
+      role_code: string;
+      assignee_membership_id: string | null;
+      created_at: Date;
+      due_at: Date | null;
+    }>(
+      `
+        SELECT
+          wt.id AS task_id,
+          pr.id AS purchase_request_id,
+          pr.business_record_id,
+          pr.status AS request_status,
+          pr.lock_version AS request_version,
+          wt.role_code,
+          wt.assignee_membership_id,
+          wt.created_at,
+          wt.due_at
+        FROM workflow_tasks wt
+        JOIN workflow_instances wi
+          ON wi.tenant_id = wt.tenant_id
+         AND wi.id = wt.workflow_instance_id
+        JOIN application_versions av
+          ON av.tenant_id = wi.tenant_id
+         AND av.id = wi.application_version_id
+        JOIN purchase_requests pr
+          ON pr.tenant_id = wi.tenant_id
+         AND pr.application_version_id = wi.application_version_id
+         AND pr.business_record_id = wi.record_id
+        WHERE wt.tenant_id = $1
+          AND av.application_id = $2
+          AND wt.status IN ('open', 'claimed')
+          AND (
+            wt.assignee_membership_id = $3
+            OR (wt.assignee_membership_id IS NULL AND wt.role_code = 'approver')
+          )
+        ORDER BY wt.created_at DESC, wt.id DESC
+      `,
+      [input.tenantId, input.applicationId, input.membershipId],
+    );
+
+    return {
+      items: result.rows.map((row) => ({
+        taskId: row.task_id,
+        purchaseRequestId: row.purchase_request_id,
+        businessRecordId: row.business_record_id,
+        requestStatus: row.request_status,
+        requestVersion: row.request_version,
+        roleCode: row.role_code,
+        assigneeMembershipId: row.assignee_membership_id,
+        createdAt: row.created_at,
+        dueAt: row.due_at,
+      })),
+    };
   }
 }
 

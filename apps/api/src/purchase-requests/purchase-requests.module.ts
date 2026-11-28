@@ -6,6 +6,7 @@ import { WorkflowModule } from '../workflow/workflow.module';
 import { PurchaseRequestWorkflowRepository } from './purchase-request-workflow.repository';
 import { PurchaseRequestWorkflowService } from './purchase-request-workflow.service';
 import { PurchaseRequestsController } from './purchase-requests.controller';
+import { PurchaseRequestTasksController } from './purchase-request-tasks.controller';
 import { PurchaseRequestsRepository } from './purchase-requests.repository';
 import { PurchaseRequestsService } from './purchase-requests.service';
 
@@ -16,7 +17,7 @@ import { PurchaseRequestsService } from './purchase-requests.service';
     OptimisticVersionModule,
     WorkflowModule,
   ],
-  controllers: [PurchaseRequestsController],
+  controllers: [PurchaseRequestsController, PurchaseRequestTasksController],
   providers: [
     PurchaseRequestsRepository,
     PurchaseRequestsService,

@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
+import type { AuditService } from '../audit/audit.service';
 import type { IdempotencyService } from '../idempotency/idempotency.service';
 import { PurchaseRequestsRepository } from './purchase-requests.repository';
 import { PurchaseRequestsService } from './purchase-requests.service';
@@ -33,6 +34,7 @@ describe('PurchaseRequestsService', () => {
     getPublishedFeatureStatus: jest.Mock;
     create: jest.Mock;
     findById: jest.Mock;
+    list: jest.Mock;
     transitionIfVersionMatches: jest.Mock;
     currentVersion: jest.Mock;
   };
@@ -47,13 +49,16 @@ describe('PurchaseRequestsService', () => {
   let workflow: {
     startIfConfigured: jest.Mock;
     completeDecisionIfConfigured: jest.Mock;
+    listOpenPurchaseRequestTasks: jest.Mock;
   };
+  let audit: { findByResource: jest.Mock };
 
   beforeEach(() => {
     repository = {
       getPublishedFeatureStatus: jest.fn().mockResolvedValue('enabled'),
       create: jest.fn().mockResolvedValue(request),
       findById: jest.fn().mockResolvedValue(request),
+      list: jest.fn().mockResolvedValue({ items: [request], nextCursor: null }),
       transitionIfVersionMatches: jest.fn().mockResolvedValue({
         ...request,
         status: 'submitted',
@@ -81,12 +86,15 @@ describe('PurchaseRequestsService', () => {
     workflow = {
       startIfConfigured: jest.fn().mockResolvedValue(null),
       completeDecisionIfConfigured: jest.fn().mockResolvedValue(false),
+      listOpenPurchaseRequestTasks: jest.fn().mockResolvedValue({ items: [] }),
     };
+    audit = { findByResource: jest.fn().mockResolvedValue([]) };
     service = new PurchaseRequestsService(
       repository as unknown as PurchaseRequestsRepository,
       idempotency as unknown as IdempotencyService,
       optimisticVersion,
       workflow as unknown as PurchaseRequestWorkflowService,
+      audit as unknown as AuditService,
     );
   });
 
@@ -141,6 +149,58 @@ describe('PurchaseRequestsService', () => {
         purchaseRequestId: request.id,
       }),
     ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('lists requests only after checking the published feature', async () => {
+    const result = await service.list({
+      tenantId: request.tenantId,
+      applicationId: request.applicationId,
+      limit: 20,
+      status: 'submitted',
+    });
+
+    expect(result.items).toEqual([request]);
+    expect(repository.list).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: request.tenantId,
+        applicationId: request.applicationId,
+        limit: 20,
+        status: 'submitted',
+      }),
+    );
+  });
+
+  it('returns history only after checking request scope', async () => {
+    const history = [{ id: 'audit-1', resourceType: 'purchase_request' }];
+    audit.findByResource.mockResolvedValueOnce(history);
+
+    await expect(
+      service.history({
+        tenantId: request.tenantId,
+        applicationId: request.applicationId,
+        purchaseRequestId: request.id,
+      }),
+    ).resolves.toBe(history);
+    expect(audit.findByResource).toHaveBeenCalledWith(
+      request.tenantId,
+      'purchase_request',
+      request.id,
+    );
+  });
+
+  it('lists workflow tasks only for a published purchase feature', async () => {
+    await expect(
+      service.listTasks({
+        tenantId: request.tenantId,
+        applicationId: request.applicationId,
+        membershipId: request.requesterMembershipId,
+      }),
+    ).resolves.toEqual({ items: [] });
+    expect(workflow.listOpenPurchaseRequestTasks).toHaveBeenCalledWith({
+      tenantId: request.tenantId,
+      applicationId: request.applicationId,
+      membershipId: request.requesterMembershipId,
+    });
   });
 
   it('rejects when the feature is disabled', async () => {

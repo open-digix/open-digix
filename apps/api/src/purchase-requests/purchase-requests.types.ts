@@ -40,3 +40,29 @@ export interface PurchaseRequestRecord {
   readonly decidedAt: Date | null;
   readonly lines: readonly PurchaseRequestLineRecord[];
 }
+
+export interface PurchaseRequestListCursor {
+  readonly createdAt: string;
+  readonly id: string;
+}
+
+export interface PurchaseRequestListResult {
+  readonly items: readonly PurchaseRequestRecord[];
+  readonly nextCursor: string | null;
+}
+
+export interface PurchaseRequestTaskSummary {
+  readonly taskId: string;
+  readonly purchaseRequestId: string;
+  readonly businessRecordId: string;
+  readonly requestStatus: PurchaseRequestStatus;
+  readonly requestVersion: number;
+  readonly roleCode: string;
+  readonly assigneeMembershipId: string | null;
+  readonly createdAt: Date;
+  readonly dueAt: Date | null;
+}
+
+export interface PurchaseRequestTaskListResult {
+  readonly items: readonly PurchaseRequestTaskSummary[];
+}

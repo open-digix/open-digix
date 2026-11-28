@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
 } from '@nestjs/common';
 import type { TenantContext } from '../identity/identity.types';
 import { RequireAppPermission } from '../identity/app-permission.decorator';
@@ -14,6 +15,7 @@ import { CurrentTenantContext } from '../identity/tenant-context.decorator';
 import { parseAppId } from '../identity/app-role.input';
 import {
   parseCreatePurchaseRequestBody,
+  parseListPurchaseRequestsQuery,
   parsePurchaseRequestActionBody,
   parsePurchaseRequestId,
   parseRejectPurchaseRequestBody,
@@ -25,6 +27,20 @@ import { PurchaseRequestsService } from './purchase-requests.service';
 export class PurchaseRequestsController {
   constructor(private readonly purchaseRequests: PurchaseRequestsService) {}
 
+  @Get()
+  @RequireAppPermission('erp.purchase_requests.requests.read')
+  list(
+    @Param('appId') appId: string,
+    @Query() query: Record<string, unknown>,
+    @CurrentTenantContext() context: TenantContext,
+  ) {
+    return this.purchaseRequests.list({
+      tenantId: context.membership.tenant.id,
+      applicationId: parseAppId(appId),
+      ...parseListPurchaseRequestsQuery(query),
+    });
+  }
+
   @Get(':purchaseRequestId')
   @RequireAppPermission('erp.purchase_requests.requests.read')
   get(
@@ -33,6 +49,20 @@ export class PurchaseRequestsController {
     @CurrentTenantContext() context: TenantContext,
   ) {
     return this.purchaseRequests.get({
+      tenantId: context.membership.tenant.id,
+      applicationId: parseAppId(appId),
+      purchaseRequestId: parsePurchaseRequestId(purchaseRequestId),
+    });
+  }
+
+  @Get(':purchaseRequestId/history')
+  @RequireAppPermission('erp.purchase_requests.requests.read')
+  history(
+    @Param('appId') appId: string,
+    @Param('purchaseRequestId') purchaseRequestId: string,
+    @CurrentTenantContext() context: TenantContext,
+  ) {
+    return this.purchaseRequests.history({
       tenantId: context.membership.tenant.id,
       applicationId: parseAppId(appId),
       purchaseRequestId: parsePurchaseRequestId(purchaseRequestId),

@@ -1,9 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Pool, QueryResultRow } from 'pg';
 import { DATABASE_POOL } from '../database/database.module';
+import { encodePurchaseRequestCursor } from './purchase-requests.cursor';
 import type {
   CreatePurchaseRequestBody,
+  PurchaseRequestListCursor,
+  PurchaseRequestListResult,
   PurchaseRequestRecord,
+  PurchaseRequestStatus,
 } from './purchase-requests.types';
 
 interface PurchaseRequestRow extends QueryResultRow {
@@ -18,12 +22,14 @@ interface PurchaseRequestRow extends QueryResultRow {
   rejection_reason: string | null;
   lock_version: number;
   created_at: Date;
+  created_at_cursor: string;
   updated_at: Date;
   submitted_at: Date | null;
   decided_at: Date | null;
 }
 
 interface PurchaseRequestLineRow extends QueryResultRow {
+  purchase_request_id: string;
   id: string;
   material_id: string;
   quantity: number;
@@ -192,6 +198,75 @@ export class PurchaseRequestsRepository {
       [tenantId, applicationId, purchaseRequestId],
     );
     return toPurchaseRequest(requestRow, linesResult.rows);
+  }
+
+  async list(input: {
+    tenantId: string;
+    applicationId: string;
+    limit: number;
+    status?: PurchaseRequestStatus;
+    cursor?: PurchaseRequestListCursor;
+  }): Promise<PurchaseRequestListResult> {
+    const result = await this.pool.query<PurchaseRequestRow>(
+      `
+        SELECT ${REQUEST_COLUMNS}, created_at::text AS created_at_cursor
+        FROM purchase_requests
+        WHERE tenant_id = $1
+          AND application_id = $2
+          AND ($3::text IS NULL OR status = $3)
+          AND (
+            $4::timestamptz IS NULL
+            OR (created_at, id) < ($4::timestamptz, $5::uuid)
+          )
+        ORDER BY created_at DESC, id DESC
+        LIMIT $6
+      `,
+      [
+        input.tenantId,
+        input.applicationId,
+        input.status ?? null,
+        input.cursor?.createdAt ?? null,
+        input.cursor?.id ?? null,
+        input.limit + 1,
+      ],
+    );
+
+    const hasNextPage = result.rows.length > input.limit;
+    const rows = hasNextPage ? result.rows.slice(0, input.limit) : result.rows;
+    const requestIds = rows.map((row) => row.id);
+    const lines = requestIds.length
+      ? await this.pool.query<PurchaseRequestLineRow>(
+          `
+            SELECT purchase_request_id, id, material_id, quantity
+            FROM purchase_request_lines
+            WHERE tenant_id = $1
+              AND application_id = $2
+              AND purchase_request_id = ANY($3::uuid[])
+            ORDER BY purchase_request_id, id
+          `,
+          [input.tenantId, input.applicationId, requestIds],
+        )
+      : { rows: [] as PurchaseRequestLineRow[] };
+    const linesByRequest = new Map<string, PurchaseRequestLineRow[]>();
+    for (const line of lines.rows) {
+      const requestLines = linesByRequest.get(line.purchase_request_id) ?? [];
+      requestLines.push(line);
+      linesByRequest.set(line.purchase_request_id, requestLines);
+    }
+    const lastRow = rows.at(-1);
+
+    return {
+      items: rows.map((row) =>
+        toPurchaseRequest(row, linesByRequest.get(row.id) ?? []),
+      ),
+      nextCursor:
+        hasNextPage && lastRow
+          ? encodePurchaseRequestCursor({
+              createdAt: lastRow.created_at_cursor,
+              id: lastRow.id,
+            })
+          : null,
+    };
   }
 
   async transitionIfVersionMatches(input: {

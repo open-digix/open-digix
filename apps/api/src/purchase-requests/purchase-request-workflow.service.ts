@@ -2,6 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { WorkflowRuntimeService } from '../workflow/workflow-runtime.service';
 import { WorkflowTaskService } from '../workflow/workflow-task.service';
 import { PurchaseRequestWorkflowRepository } from './purchase-request-workflow.repository';
+import type { PurchaseRequestTaskListResult } from './purchase-requests.types';
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -33,6 +34,14 @@ export class PurchaseRequestWorkflowService {
     private readonly runtime: WorkflowRuntimeService,
     private readonly tasks: WorkflowTaskService,
   ) {}
+
+  listOpenPurchaseRequestTasks(input: {
+    tenantId: string;
+    applicationId: string;
+    membershipId: string;
+  }): Promise<PurchaseRequestTaskListResult> {
+    return this.repository.listOpenPurchaseRequestTasks(input);
+  }
 
   async startIfConfigured(
     input: StartPurchaseRequestWorkflowInput,

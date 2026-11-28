@@ -5,9 +5,18 @@ import {
 import type {
   CreatePurchaseRequestBody,
   PurchaseRequestActionBody,
+  PurchaseRequestListCursor,
   RejectPurchaseRequestBody,
   PurchaseRequestLineInput,
+  PurchaseRequestStatus,
 } from './purchase-requests.types';
+import { parsePurchaseRequestCursor } from './purchase-requests.cursor';
+
+export interface ListPurchaseRequestsQuery {
+  readonly limit: number;
+  readonly status?: PurchaseRequestStatus;
+  readonly cursor?: PurchaseRequestListCursor;
+}
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -28,6 +37,60 @@ export function parsePurchaseRequestId(value: string): string {
     });
   }
   return normalized;
+}
+
+export function parseListPurchaseRequestsQuery(
+  query: Record<string, unknown>,
+): ListPurchaseRequestsQuery {
+  const rawLimit = query.limit;
+  const cursor = parsePurchaseRequestCursor(
+    typeof query.cursor === 'string' ? query.cursor : undefined,
+  );
+  const status = parsePurchaseRequestStatus(query.status);
+
+  if (rawLimit === undefined || rawLimit === '') {
+    return {
+      limit: 20,
+      ...(status ? { status } : {}),
+      ...(cursor ? { cursor } : {}),
+    };
+  }
+
+  const limit = Number(rawLimit);
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100) {
+    throw new UnprocessableEntityException({
+      error: {
+        code: 'INVALID_LIMIT',
+        message: 'limit must be an integer between 1 and 100.',
+      },
+    });
+  }
+  return {
+    limit,
+    ...(status ? { status } : {}),
+    ...(cursor ? { cursor } : {}),
+  };
+}
+
+function parsePurchaseRequestStatus(
+  value: unknown,
+): PurchaseRequestStatus | undefined {
+  if (value === undefined || value === '') return undefined;
+  if (
+    value !== 'draft' &&
+    value !== 'submitted' &&
+    value !== 'approved' &&
+    value !== 'rejected'
+  ) {
+    throw new BadRequestException({
+      error: {
+        code: 'INVALID_STATUS',
+        message:
+          'status must be one of draft, submitted, approved or rejected.',
+      },
+    });
+  }
+  return value;
 }
 
 export function parseCreatePurchaseRequestBody(
