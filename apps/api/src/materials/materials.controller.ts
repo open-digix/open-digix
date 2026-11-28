@@ -36,7 +36,7 @@ export class MaterialsController {
     return this.materials.list({
       tenantId: context.membership.tenant.id,
       applicationId: parseAppId(appId),
-      limit: parseListMaterialsQuery(query).limit,
+      ...parseListMaterialsQuery(query),
     });
   }
 

@@ -47,4 +47,24 @@ describe('materials input', () => {
       UnprocessableEntityException,
     );
   });
+
+  it('parses and rejects pagination cursors', () => {
+    const cursor = Buffer.from(
+      JSON.stringify({
+        createdAt: '2026-11-28T10:00:00.123456+00:00',
+        id: '11111111-1111-4111-8111-111111111111',
+      }),
+      'utf8',
+    ).toString('base64url');
+
+    expect(parseListMaterialsQuery({ cursor })).toMatchObject({
+      limit: 20,
+      cursor: {
+        id: '11111111-1111-4111-8111-111111111111',
+      },
+    });
+    expect(() => parseListMaterialsQuery({ cursor: 'broken' })).toThrow(
+      UnprocessableEntityException,
+    );
+  });
 });

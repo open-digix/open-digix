@@ -2,6 +2,8 @@ import {
   BadRequestException,
   UnprocessableEntityException,
 } from '@nestjs/common';
+import { parseMaterialCursor } from './materials.cursor';
+import type { MaterialListCursor } from './materials.types';
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -25,6 +27,7 @@ export interface UpdateMaterialNoteBody {
 
 export interface ListMaterialsQuery {
   readonly limit: number;
+  readonly cursor?: MaterialListCursor;
 }
 
 export function parseMaterialId(value: string): string {
@@ -105,7 +108,12 @@ export function parseListMaterialsQuery(
   query: Record<string, unknown>,
 ): ListMaterialsQuery {
   const rawLimit = query.limit;
-  if (rawLimit === undefined || rawLimit === '') return { limit: 20 };
+  const cursor = parseMaterialCursor(
+    typeof query.cursor === 'string' ? query.cursor : undefined,
+  );
+  if (rawLimit === undefined || rawLimit === '') {
+    return cursor ? { limit: 20, cursor } : { limit: 20 };
+  }
 
   const limit = Number(rawLimit);
   if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100) {
@@ -116,7 +124,7 @@ export function parseListMaterialsQuery(
       },
     });
   }
-  return { limit };
+  return cursor ? { limit, cursor } : { limit };
 }
 
 function asRecord(body: unknown): Record<string, unknown> {

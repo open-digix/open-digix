@@ -1,7 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Pool, QueryResultRow } from 'pg';
 import { DATABASE_POOL } from '../database/database.module';
-import type { MaterialListResult, MaterialRecord } from './materials.types';
+import { encodeMaterialCursor } from './materials.cursor';
+import type {
+  MaterialListCursor,
+  MaterialListResult,
+  MaterialRecord,
+} from './materials.types';
 
 interface MaterialRow extends QueryResultRow {
   id: string;
@@ -15,6 +20,7 @@ interface MaterialRow extends QueryResultRow {
   created_by_membership_id: string;
   lock_version: number;
   created_at: Date;
+  created_at_cursor: string;
   updated_at: Date;
 }
 
@@ -30,6 +36,7 @@ const MATERIAL_COLUMNS = `
   created_by_membership_id,
   lock_version,
   created_at,
+  created_at::text AS created_at_cursor,
   updated_at
 `;
 
@@ -111,18 +118,42 @@ export class MaterialsRepository {
     tenantId: string,
     applicationId: string,
     limit: number,
+    cursor?: MaterialListCursor,
   ): Promise<MaterialListResult> {
     const result = await this.pool.query<MaterialRow>(
       `
         SELECT ${MATERIAL_COLUMNS}
         FROM materials
-        WHERE tenant_id = $1 AND application_id = $2
+        WHERE tenant_id = $1
+          AND application_id = $2
+          AND (
+            $3::timestamptz IS NULL
+            OR (created_at, id) < ($3::timestamptz, $4::uuid)
+          )
         ORDER BY created_at DESC, id DESC
-        LIMIT $3
+        LIMIT $5
       `,
-      [tenantId, applicationId, limit],
+      [
+        tenantId,
+        applicationId,
+        cursor?.createdAt ?? null,
+        cursor?.id ?? null,
+        limit + 1,
+      ],
     );
-    return { items: result.rows.map(toMaterial), nextCursor: null };
+    const hasNextPage = result.rows.length > limit;
+    const rows = hasNextPage ? result.rows.slice(0, limit) : result.rows;
+    const lastRow = rows.at(-1);
+    return {
+      items: rows.map(toMaterial),
+      nextCursor:
+        hasNextPage && lastRow
+          ? encodeMaterialCursor({
+              createdAt: lastRow.created_at_cursor,
+              id: lastRow.id,
+            })
+          : null,
+    };
   }
 
   async findById(

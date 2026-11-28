@@ -11,7 +11,11 @@ import type {
   CreateMaterialBody,
   UpdateMaterialNoteBody,
 } from './materials.input';
-import type { MaterialListResult, MaterialRecord } from './materials.types';
+import type {
+  MaterialListCursor,
+  MaterialListResult,
+  MaterialRecord,
+} from './materials.types';
 
 @Injectable()
 export class MaterialsService {
@@ -69,9 +73,15 @@ export class MaterialsService {
     tenantId: string;
     applicationId: string;
     limit: number;
+    cursor?: MaterialListCursor;
   }): Promise<MaterialListResult> {
     return this.requireFeature(input.tenantId, input.applicationId).then(() =>
-      this.repository.list(input.tenantId, input.applicationId, input.limit),
+      this.repository.list(
+        input.tenantId,
+        input.applicationId,
+        input.limit,
+        input.cursor,
+      ),
     );
   }
 

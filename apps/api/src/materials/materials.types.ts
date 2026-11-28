@@ -13,7 +13,12 @@ export interface MaterialRecord {
   readonly updatedAt: Date;
 }
 
+export interface MaterialListCursor {
+  readonly createdAt: string;
+  readonly id: string;
+}
+
 export interface MaterialListResult {
   readonly items: readonly MaterialRecord[];
-  readonly nextCursor: null;
+  readonly nextCursor: string | null;
 }
