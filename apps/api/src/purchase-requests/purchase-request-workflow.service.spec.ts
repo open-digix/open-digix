@@ -29,6 +29,7 @@ describe('PurchaseRequestWorkflowService', () => {
     markFailed: jest.Mock;
     upsertTask: jest.Mock;
     markTaskCompleted: jest.Mock;
+    markCompleted: jest.Mock;
   };
   let runtime: {
     start: jest.MockedFunction<
@@ -55,6 +56,7 @@ describe('PurchaseRequestWorkflowService', () => {
       markFailed: jest.fn().mockResolvedValue(undefined),
       upsertTask: jest.fn().mockResolvedValue(undefined),
       markTaskCompleted: jest.fn().mockResolvedValue(undefined),
+      markCompleted: jest.fn().mockResolvedValue(undefined),
     };
     runtime = {
       start: jest.fn().mockResolvedValue({ id: 'engine-instance-1' }),
@@ -182,6 +184,10 @@ describe('PurchaseRequestWorkflowService', () => {
     expect(repository.markTaskCompleted).toHaveBeenCalledWith({
       tenantId: 'tenant-1',
       engineTaskId: 'task-1',
+    });
+    expect(repository.markCompleted).toHaveBeenCalledWith({
+      tenantId: 'tenant-1',
+      instanceId: 'workflow-1',
     });
   });
 });

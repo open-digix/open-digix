@@ -156,6 +156,10 @@ export class PurchaseRequestWorkflowService {
       tenantId: input.tenantId,
       engineTaskId: task.id,
     });
+    await this.repository.markCompleted({
+      tenantId: input.tenantId,
+      instanceId: instance.id,
+    });
     return true;
   }
 

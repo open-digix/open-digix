@@ -202,6 +202,22 @@ export class PurchaseRequestWorkflowRepository {
       [input.tenantId, input.engineTaskId],
     );
   }
+
+  async markCompleted(input: {
+    tenantId: string;
+    instanceId: string;
+  }): Promise<void> {
+    await this.pool.query(
+      `
+        UPDATE workflow_instances
+        SET status = 'completed', completed_at = now()
+        WHERE tenant_id = $1
+          AND id = $2
+          AND status = 'running'
+      `,
+      [input.tenantId, input.instanceId],
+    );
+  }
 }
 
 function toWorkflowInstance(
